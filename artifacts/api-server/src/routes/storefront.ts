@@ -1,4 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
+import { notifyMerchantNewOrder } from "../telegram/bot";
 import {
   CreateOrderBody,
   CreateOrderResponse,
@@ -254,16 +255,44 @@ router.post("/shipping/rates", (req: Request, res: Response): void => {
 let nextOrderId = 1048;
 router.post("/orders", (req: Request, res: Response): void => {
   const input = CreateOrderBody.parse(req.body);
-  const totalAmount = input.items.reduce((total, item) => {
+  const itemsDetailed = input.items.map((item) => {
     const product = products.find((candidate) => candidate.id === item.productId);
-    return total + (product?.price ?? 0) * item.quantity;
-  }, 0);
+    const variant = product?.variants?.find((v) => v.id === item.variantId);
+    return {
+      name: product?.nameAr || "مستحضر طبيعي",
+      variantName: variant?.nameAr,
+      quantity: item.quantity,
+      price: product?.price ?? 0,
+    };
+  });
+
+  const totalAmount = itemsDetailed.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  const orderId = nextOrderId++;
   const order = {
-    id: nextOrderId++,
+    id: orderId,
     status: "pending",
     totalAmount,
     createdAt: new Date().toISOString(),
   };
+
+  // Asynchronously push notification to Merchant Telegram Channel / Bot
+  notifyMerchantNewOrder({
+    orderId,
+    orderNumber: `ROMA-${orderId}`,
+    customerName: (req.body as any)?.customerName || (req.body as any)?.name || "عميل زائر",
+    customerPhone: (req.body as any)?.phone || (req.body as any)?.customerPhone || "01000000000",
+    shippingAddress: input.shippingAddress,
+    paymentMethod: (req.body as any)?.paymentMethod || "الدفع عند الاستلام (COD)",
+    items: itemsDetailed,
+    totalAmount,
+  }).catch((err) => {
+    console.error("Failed to notify merchant on Telegram:", err);
+  });
+
   res.status(201).json(CreateOrderResponse.parse(order));
 });
 

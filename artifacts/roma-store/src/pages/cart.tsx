@@ -60,7 +60,7 @@ export default function CartPage() {
   const submitOrder = (event: FormEvent) => {
     event.preventDefault();
 
-    const orderData = {
+    const orderData: any = {
       email,
       shippingAddress: `${address} - ${city} (${country})`,
       items: lines.map((line) => ({
@@ -68,6 +68,11 @@ export default function CartPage() {
         variantId: line.variant?.id ?? null,
         quantity: line.quantity,
       })),
+      name,
+      customerName: name,
+      phone,
+      customerPhone: phone,
+      paymentMethod,
     };
 
     orderMutation.mutate(
