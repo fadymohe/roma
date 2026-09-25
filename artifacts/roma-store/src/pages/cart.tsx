@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { useCreateOrder, useGetShippingRates } from '@workspace/api-client-react';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
+import { notifyTelegramNewOrder } from '@/lib/telegram';
 
 export default function CartPage() {
   const { lines, subtotal, setQuantity, remove, clear } = useCart();
@@ -60,6 +61,34 @@ export default function CartPage() {
   const submitOrder = (event: FormEvent) => {
     event.preventDefault();
 
+    const fallbackId = Math.floor(1000 + Math.random() * 9000);
+
+    const paymentLabel =
+      paymentMethod === 'vodafone'
+        ? 'فودافون كاش (Vodafone Cash)'
+        : paymentMethod === 'card'
+        ? 'بطاقة بنكية (Visa / Mastercard)'
+        : paymentMethod === 'fawry'
+        ? 'فوري (Fawry)'
+        : 'الدفع عند الاستلام (COD)';
+
+    // Trigger instant Telegram alert to merchant phone
+    notifyTelegramNewOrder({
+      orderId: fallbackId,
+      customerName: name || 'عميل زائر',
+      customerPhone: phone || 'غير متوفر',
+      shippingAddress: `${address} - ${city} (${country})`,
+      paymentMethod: paymentLabel,
+      items: lines.map((line) => ({
+        name: line.product.nameAr,
+        quantity: line.quantity,
+        price: line.product.price,
+        variantName: line.variant?.nameAr,
+      })),
+      shippingCost: shipping,
+      totalAmount: total,
+    }).catch(console.error);
+
     const orderData: any = {
       email,
       shippingAddress: `${address} - ${city} (${country})`,
@@ -72,19 +101,17 @@ export default function CartPage() {
       customerName: name,
       phone,
       customerPhone: phone,
-      paymentMethod,
+      paymentMethod: paymentLabel,
     };
 
     orderMutation.mutate(
       { data: orderData },
       {
         onSuccess: (order) => {
-          setComplete({ id: order.id, total });
+          setComplete({ id: order.id || fallbackId, total });
           clear();
         },
         onError: () => {
-          // Graceful fallback for local demonstration
-          const fallbackId = Math.floor(1000 + Math.random() * 9000);
           setComplete({ id: fallbackId, total });
           clear();
         },

@@ -3,23 +3,23 @@ import { useState } from 'react';
 import { Link } from 'wouter';
 import { useGetStorefrontSummary } from '@workspace/api-client-react';
 import { ProductCard } from '@/components/product-card';
-import { CATEGORIES, PRODUCTS, TESTIMONIALS } from '@/lib/catalog-data';
+import { CATEGORIES, TESTIMONIALS, useLiveProducts, Product } from '@/lib/catalog-data';
 import { useCart } from '@/hooks/use-cart';
 
 export default function Home() {
   const summary = useGetStorefrontSummary();
   const { add } = useCart();
-  const [activeCategory, setActiveCategory] = useState('face');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [heroAdded, setHeroAdded] = useState(false);
 
-  // Use API data if available, fallback gracefully to our rich catalog
+  // Dynamic live products synced with Telegram Bot
+  const liveProducts = useLiveProducts();
+
   const categories = (Array.isArray(summary.data?.categories) && summary.data.categories.length > 0)
     ? summary.data.categories
     : CATEGORIES;
 
-  const featuredProducts = (Array.isArray(summary.data?.featuredProducts) && summary.data.featuredProducts.length > 0)
-    ? summary.data.featuredProducts
-    : PRODUCTS;
+  const featuredProducts = liveProducts;
 
   const testimonials = (Array.isArray(summary.data?.testimonials) && summary.data.testimonials.length > 0)
     ? summary.data.testimonials
@@ -39,9 +39,11 @@ export default function Home() {
   const heroProduct = featuredProducts[0];
 
   const handleHeroAdd = () => {
-    add(heroProduct);
-    setHeroAdded(true);
-    setTimeout(() => setHeroAdded(false), 1600);
+    if (heroProduct) {
+      add(heroProduct);
+      setHeroAdded(true);
+      setTimeout(() => setHeroAdded(false), 1600);
+    }
   };
 
   const categoryPills = [
@@ -95,65 +97,92 @@ export default function Home() {
       <section className="roma-container">
         <div className="grid gap-6 md:grid-cols-[1.1fr_0.9fr] items-stretch">
           {/* Main Hero Card: Sage green luxury card with large product (Images 1 & 3) */}
-          <div className="relative overflow-hidden rounded-[32px] bg-[#E8EFEA] dark:bg-secondary/40 p-6 md:p-8 flex flex-col justify-between shadow-xs border border-[#DEE6E0]">
-            {/* Top Row: Brand & Badge */}
-            <div className="flex items-center justify-between z-10">
-              <span className="rounded-full bg-white/80 backdrop-blur-md px-3 py-1 text-xs font-bold text-[#3B6648] shadow-xs">
-                الأكثر تميزاً في روتين العناية
-              </span>
-              <span className="text-xs font-mono text-muted-foreground">
-                NORTHEN CARE
-              </span>
-            </div>
+          {heroProduct ? (
+            <div className="relative overflow-hidden rounded-[32px] bg-[#E8EFEA] dark:bg-secondary/40 p-6 md:p-8 flex flex-col justify-between shadow-xs border border-[#DEE6E0]">
+              {/* Top Row: Brand & Badge */}
+              <div className="flex items-center justify-between z-10">
+                <span className="rounded-full bg-white/80 backdrop-blur-md px-3 py-1 text-xs font-bold text-[#3B6648] shadow-xs">
+                  الأكثر تميزاً في روتين العناية
+                </span>
+                <span className="text-xs font-mono text-muted-foreground">
+                  NORTHEN CARE
+                </span>
+              </div>
 
-            {/* Central Product Image */}
-            <div className="relative my-4 aspect-[1.1] w-full max-w-[340px] mx-auto flex items-center justify-center">
-              <img
-                src={heroProduct.imageUrl || "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=1000&q=90"}
-                alt={heroProduct.nameAr}
-                className="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-700 hover:scale-105"
-              />
-            </div>
+              {/* Central Product Image */}
+              <div className="relative my-4 aspect-[1.1] w-full max-w-[340px] mx-auto flex items-center justify-center">
+                <img
+                  src={heroProduct.imageUrl || "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=1000&q=90"}
+                  alt={heroProduct.nameAr}
+                  className="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-700 hover:scale-105"
+                />
+              </div>
 
-            {/* Bottom Info: Title, Volume, Price & Circular Add Button */}
-            <div className="z-10 pt-2 border-t border-[#D5E2D8]">
-              <Link href={`/product/${heroProduct.slug}`} className="block group">
-                <h3 className="font-display text-xl md:text-2xl font-bold text-foreground group-hover:text-[#4E7A5A] transition">
-                  {heroProduct.nameAr}
-                </h3>
-              </Link>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                50 ml / 1.7 fl oz · تركيبة ترطيب وحماية مكثفة
-              </p>
+              {/* Bottom Info: Title, Volume, Price & Circular Add Button */}
+              <div className="z-10 pt-2 border-t border-[#D5E2D8]">
+                <Link href={`/product/${heroProduct.slug}`} className="block group">
+                  <h3 className="font-display text-xl md:text-2xl font-bold text-foreground group-hover:text-[#4E7A5A] transition">
+                    {heroProduct.nameAr}
+                  </h3>
+                </Link>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  50 ml / 1.7 fl oz · تركيبة ترطيب وحماية مكثفة
+                </p>
 
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl md:text-3xl font-extrabold font-mono-brand text-foreground">
-                    {heroProduct.price}
-                  </span>
-                  <span className="text-sm font-bold text-muted-foreground">ج.م</span>
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl md:text-3xl font-extrabold font-mono-brand text-foreground">
+                      {heroProduct.price}
+                    </span>
+                    <span className="text-sm font-bold text-muted-foreground">ج.م</span>
+                  </div>
+
+                  {/* Circular Sage Green Add Button (Image 1, 3) */}
+                  <button
+                    type="button"
+                    onClick={handleHeroAdd}
+                    aria-label="إضافة المنتج للسلة"
+                    className={`flex size-12 items-center justify-center rounded-full text-white shadow-md transition-all active:scale-95 ${
+                      heroAdded
+                        ? 'bg-[#2E583A] scale-105'
+                        : 'bg-[#76A080] hover:bg-[#628F6D] hover:scale-105 shadow-[#76A080]/30'
+                    }`}
+                  >
+                    {heroAdded ? (
+                      <Check className="size-6 animate-in zoom-in" strokeWidth={2.5} />
+                    ) : (
+                      <Plus className="size-6" strokeWidth={2.5} />
+                    )}
+                  </button>
                 </div>
-
-                {/* Circular Sage Green Add Button (Image 1, 3) */}
-                <button
-                  type="button"
-                  onClick={handleHeroAdd}
-                  aria-label="إضافة المنتج للسلة"
-                  className={`flex size-12 items-center justify-center rounded-full text-white shadow-md transition-all active:scale-95 ${
-                    heroAdded
-                      ? 'bg-[#2E583A] scale-105'
-                      : 'bg-[#76A080] hover:bg-[#628F6D] hover:scale-105 shadow-[#76A080]/30'
-                  }`}
-                >
-                  {heroAdded ? (
-                    <Check className="size-6 animate-in zoom-in" strokeWidth={2.5} />
-                  ) : (
-                    <Plus className="size-6" strokeWidth={2.5} />
-                  )}
-                </button>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="relative overflow-hidden rounded-[32px] bg-[#E8EFEA] p-8 md:p-10 flex flex-col justify-between shadow-xs border border-[#DEE6E0] min-h-[380px]">
+              <div>
+                <span className="rounded-full bg-white/90 backdrop-blur-md px-3.5 py-1 text-xs font-bold text-[#3B6648] shadow-xs">
+                  إدارة المتجر الذكية · Telegram Bot
+                </span>
+                <h3 className="mt-4 font-display text-2xl md:text-3xl font-bold text-foreground leading-snug">
+                  المتجر جاهز لاستقبال أحدث المنتجات 🌱
+                </h3>
+                <p className="mt-2.5 text-xs md:text-sm text-muted-foreground leading-relaxed max-w-md">
+                  تم تفريغ المنتجات الافتراضية وربط المتجر بالكامل مع بوت تيليجرام. يمكنك الآن إضافة أول منتج فوري بالاسم والسعر والصورة مباشرة عبر محادثة البوت.
+                </p>
+              </div>
+
+              <div className="pt-6">
+                <a
+                  href="https://t.me/romaupbot"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#4E7A5A] px-6 py-3 text-xs md:text-sm font-bold text-white shadow-md hover:bg-[#3D6647] transition active:scale-95"
+                >
+                  إضافة منتج عبر تيليجرام ➕
+                </a>
+              </div>
+            </div>
+          )}
 
           {/* Right Column: Special Offer Promo Card (Image 5) + Quick Feature Highlights */}
           <div className="flex flex-col gap-6">
@@ -300,11 +329,27 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-5">
-          {displayedProducts.slice(0, 8).map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
-          ))}
-        </div>
+        {displayedProducts.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-5">
+            {displayedProducts.slice(0, 8).map((product, index) => (
+              <ProductCard key={product.id} product={product} index={index} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[32px] border border-[#DEE6E0] bg-white p-10 text-center shadow-xs">
+            <span className="text-4xl">🌱</span>
+            <h4 className="mt-3 font-display text-lg font-bold text-foreground">لا توجد منتجات معروضة حالياً</h4>
+            <p className="mt-1 text-xs text-muted-foreground">أرسل أمر /add_product إلى بوت تيليجرام @romaupbot لإضافة ونشر منتجاتك فوراً هنا</p>
+            <a
+              href="https://t.me/romaupbot"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#4E7A5A] px-6 py-2.5 text-xs font-bold text-white hover:bg-[#3D6647] shadow-xs"
+            >
+              إضافة منتج عبر تيليجرام 🤖
+            </a>
+          </div>
+        )}
       </section>
 
       {/* Botanical Brand Story Banner - Sage Green Luxury */}

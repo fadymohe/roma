@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useListCategories, useListProducts } from '@workspace/api-client-react';
 import { ProductCard } from '@/components/product-card';
-import { CATEGORIES, PRODUCTS } from '@/lib/catalog-data';
+import { CATEGORIES, useLiveProducts } from '@/lib/catalog-data';
 
 export default function Shop() {
   const [wouterLocation] = useLocation();
@@ -47,16 +47,18 @@ export default function Shop() {
     }
   );
 
+  const liveProducts = useLiveProducts();
+
   const allCategories = (Array.isArray(categoriesQuery.data) && categoriesQuery.data.length > 0)
     ? categoriesQuery.data
     : CATEGORIES;
 
   const rawProducts = (Array.isArray(productsQuery.data) && productsQuery.data.length > 0)
     ? productsQuery.data
-    : PRODUCTS;
+    : liveProducts;
 
   const products = useMemo(() => {
-    let list = Array.isArray(rawProducts) ? [...rawProducts] : [...PRODUCTS];
+    let list = Array.isArray(rawProducts) ? [...rawProducts] : [...liveProducts];
 
     if (category) {
       list = list.filter((p) => {
@@ -204,20 +206,33 @@ export default function Shop() {
             ))}
           </div>
         ) : (
-          <div className="rounded-[32px] border border-[#DEE6E0] bg-white py-16 text-center shadow-xs">
-            <p className="text-base font-bold text-foreground">لم نجد منتجات مطابقة لبحثكِ</p>
-            <p className="text-xs text-muted-foreground mt-1">جربي البحث بكلمات أخرى أو تصفح الأقسام الكاملة</p>
-            <button
-              type="button"
-              onClick={() => {
-                setCategory('');
-                setSearch('');
-                setSearchInput('');
-              }}
-              className="mt-4 rounded-full bg-[#4E7A5A] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#3D6647]"
-            >
-              إعادة تعيين الفلاتر
-            </button>
+          <div className="rounded-[32px] border border-[#DEE6E0] bg-white py-16 text-center shadow-xs p-6">
+            <span className="text-4xl">🌱</span>
+            <p className="text-base font-bold text-foreground mt-3">لا توجد منتجات مسجلة حالياً</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              تم تجهيز المتجر لربط منتجاتك الجديدة. يمكنك البدء بإضافة المنتجات وتحديد الأسعار والتصنيفات بسهولة عبر بوت تيليجرام.
+            </p>
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <a
+                href="https://t.me/romaupbot"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-[#4E7A5A] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#3D6647] transition"
+              >
+                إضافة منتج عبر تيليجرام ➕
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setCategory('');
+                  setSearch('');
+                  setSearchInput('');
+                }}
+                className="rounded-full border border-[#DEE6E0] px-5 py-2.5 text-xs font-bold text-foreground hover:bg-[#E8EFEA] transition"
+              >
+                إعادة تعيين الفلاتر
+              </button>
+            </div>
           </div>
         )}
       </div>
