@@ -1,0 +1,1 @@
+- [Generated client typings](codegen-dom-iterable.md) — include `dom.iterable` when generated browser clients use Headers or other iterable DOM APIs.

@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 12px);
+  --radius-3xl: calc(var(--radius) + 18px);
+}
+
+:root {
+  /* Natural Care & Organic Luxury Sage Green Palette (Matches Design UI) */
+  --background: 135 15% 98.5%;
+  --foreground: 140 22% 14%;
+  --border: 138 15% 90%;
+  --input: 138 15% 90%;
+  --ring: 138 25% 42%;
+  --card: 0 0% 100%;
+  --card-foreground: 140 22% 14%;
+  --card-border: 138 15% 91%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 140 22% 14%;
+  --popover-border: 138 15% 90%;
+  
+  /* Primary Sage Botanical Green */
+  --primary: 138 25% 42%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Soft Sage Surface for Product Image Containers & Badges */
+  --secondary: 136 22% 93%;
+  --secondary-foreground: 140 32% 18%;
+  
+  --muted: 136 16% 94%;
+  --muted-foreground: 138 10% 48%;
+  
+  --accent: 138 28% 34%;
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 75% 50%;
+  --destructive-foreground: 0 0% 100%;
+  
+  --sidebar: 138 24% 18%;
+  --sidebar-foreground: 135 15% 98%;
+  --sidebar-border: 138 20% 25%;
+  --sidebar-primary: 138 25% 45%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  
+  /* Modern clean fonts */
+  --app-font-sans: 'Plus Jakarta Sans', 'Cairo', 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --app-font-serif: 'Outfit', 'Cairo', serif;
+  --app-font-mono: 'Space Mono', monospace;
+  --radius: 1.5rem;
+  
+  --primary-border: hsl(var(--primary));
+  --secondary-border: hsl(var(--secondary));
+  --muted-border: hsl(var(--muted));
+  --accent-border: hsl(var(--accent));
+  --destructive-border: hsl(var(--destructive));
+}
+
+.dark {
+  --background: 140 22% 9%;
+  --foreground: 135 15% 95%;
+  --border: 138 18% 18%;
+  --input: 138 18% 18%;
+  --ring: 138 25% 55%;
+  --card: 140 20% 12%;
+  --card-foreground: 135 15% 95%;
+  --card-border: 138 18% 18%;
+  --popover: 140 20% 12%;
+  --popover-foreground: 135 15% 95%;
+  --popover-border: 138 18% 18%;
+  --primary: 138 25% 50%;
+  --primary-foreground: 140 25% 9%;
+  --secondary: 140 20% 16%;
+  --secondary-foreground: 135 15% 95%;
+  --muted: 140 18% 18%;
+  --muted-foreground: 138 10% 65%;
+  --accent: 138 28% 42%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 70% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --sidebar: 140 22% 8%;
+  --sidebar-foreground: 135 15% 95%;
+  --sidebar-border: 138 18% 18%;
+  --sidebar-primary: 138 25% 50%;
+  --sidebar-primary-foreground: 140 25% 9%;
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { scroll-behavior: smooth; }
+  body { 
+    font-family: var(--app-font-sans);
+    @apply antialiased bg-background text-foreground; 
+  }
+  button, a, input, select { -webkit-tap-highlight-color: transparent; }
+}
+
+@layer utilities {
+  .font-display { font-family: var(--app-font-sans); }
+  .font-mono-brand { font-family: var(--app-font-mono); }
+  .text-balance { text-wrap: balance; }
+  .roma-container { width: min(100% - 2rem, 1280px); margin-inline: auto; }
+  
+  /* Signature Glassmorphism Floating Dock */
+  .floating-dock {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 16px 36px -10px rgba(45, 83, 57, 0.14), 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Soft Sage Surface container for product cards */
+  .sage-surface {
+    background-color: #E8EFEA;
+  }
+  
+  /* Quantity Stepper Capsule */
+  .stepper-capsule {
+    background: #FFFFFF;
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #E2EBE5;
+  }
+}
+
+.roma-reveal { animation: roma-reveal .6s cubic-bezier(.2,.75,.25,1) both; }
+.roma-reveal-delay-1 { animation-delay: .08s; }
+.roma-reveal-delay-2 { animation-delay: .16s; }
+.roma-reveal-delay-3 { animation-delay: .24s; }
+@keyframes roma-reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.roma-image { transition: transform .6s cubic-bezier(.2,.75,.25,1), filter .6s ease; }
+.roma-card:hover .roma-image { transform: scale(1.05); }
+
+/* Custom scrollbars hidden for sleek horizontal pills */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media (min-width: 768px) { .roma-container { width: min(100% - 4rem, 1280px); } }

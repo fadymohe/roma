@@ -1,0 +1,294 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: storefront
+    description: Public storefront content
+  - name: commerce
+    description: Cart, shipping, and order operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [storefront]
+      summary: List product categories
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+  /products:
+    get:
+      operationId: listProducts
+      tags: [storefront]
+      summary: List products
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+  /products/{slug}:
+    get:
+      operationId: getProduct
+      tags: [storefront]
+      summary: Get a product by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Product not found
+  /storefront/summary:
+    get:
+      operationId: getStorefrontSummary
+      tags: [storefront]
+      summary: Get featured storefront content
+      responses:
+        "200":
+          description: Storefront summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorefrontSummary"
+  /shipping/rates:
+    post:
+      operationId: getShippingRates
+      tags: [commerce]
+      summary: Calculate shipping rates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShippingRateInput"
+      responses:
+        "200":
+          description: Shipping options
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShippingRate"
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [commerce]
+      summary: Create a guest or account order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Category:
+      type: object
+      required: [id, nameAr, slug, imageUrl]
+      properties:
+        id:
+          type: integer
+        nameAr:
+          type: string
+        slug:
+          type: string
+        imageUrl:
+          type: string
+    Variant:
+      type: object
+      required: [id, nameAr, hex, sku, stock]
+      properties:
+        id:
+          type: integer
+        nameAr:
+          type: string
+        hex:
+          type: string
+        sku:
+          type: string
+        stock:
+          type: integer
+    Product:
+      type: object
+      required: [id, nameAr, slug, descriptionAr, price, category, imageUrl, rating, reviewCount, badge, variants]
+      properties:
+        id:
+          type: integer
+        nameAr:
+          type: string
+        slug:
+          type: string
+        descriptionAr:
+          type: string
+        price:
+          type: number
+        compareAtPrice:
+          type: ["number", "null"]
+        category:
+          type: string
+        imageUrl:
+          type: string
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        badge:
+          type: ["string", "null"]
+        variants:
+          type: array
+          items:
+            $ref: "#/components/schemas/Variant"
+    Testimonial:
+      type: object
+      required: [id, name, quote, rating]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        quote:
+          type: string
+        rating:
+          type: integer
+    StorefrontSummary:
+      type: object
+      required: [categories, featuredProducts, testimonials]
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+        featuredProducts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        testimonials:
+          type: array
+          items:
+            $ref: "#/components/schemas/Testimonial"
+    ShippingRateInput:
+      type: object
+      required: [country, weightGrams]
+      properties:
+        country:
+          type: string
+        weightGrams:
+          type: integer
+          minimum: 1
+    ShippingRate:
+      type: object
+      required: [id, carrier, service, price, estimatedDays]
+      properties:
+        id:
+          type: string
+        carrier:
+          type: string
+        service:
+          type: string
+        price:
+          type: number
+        estimatedDays:
+          type: string
+    OrderItemInput:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId:
+          type: integer
+        variantId:
+          type: ["integer", "null"]
+        quantity:
+          type: integer
+          minimum: 1
+    OrderInput:
+      type: object
+      required: [items, email, shippingAddress]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItemInput"
+        email:
+          type: string
+          format: email
+        shippingAddress:
+          type: string
+    Order:
+      type: object
+      required: [id, status, totalAmount, createdAt]
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+        totalAmount:
+          type: number
+        createdAt:
+          type: string
+

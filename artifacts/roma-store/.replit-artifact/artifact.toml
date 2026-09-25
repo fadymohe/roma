@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "ROMA Beauty Store"
+description = "A refined Arabic RTL storefront for ROMA luxury makeup and skincare, with product discovery, shade selection, cart interactions, and a foundation for checkout and shipping."
+version = "1.0.0"
+id = "artifacts/roma-store"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23884
+
+[services.development]
+run = "pnpm --filter @workspace/roma-store run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/roma-store", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/roma-store/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23884"
+BASE_PATH = "/"
