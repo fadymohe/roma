@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import {
   CreateOrderBody,
   CreateOrderResponse,
@@ -191,11 +191,11 @@ const testimonials = [
   { id: 4, name: "هدى السعيد", quote: "الفاونديشن تغطيته حريرية وخفيفة جداً كأنه بشرة طبيعية ومناسب للجو تماماً، والمنتجات وصلت في وقت قياسي.", rating: 5 },
 ];
 
-router.get("/categories", (_req, res): void => {
+router.get("/categories", (_req: Request, res: Response): void => {
   res.json(ListCategoriesResponse.parse(categories));
 });
 
-router.get("/products", (req, res): void => {
+router.get("/products", (req: Request, res: Response): void => {
   const query = ListProductsQueryParams.parse(req.query);
   let result = products;
   if (query.category) {
@@ -211,7 +211,7 @@ router.get("/products", (req, res): void => {
   res.json(ListProductsResponse.parse(result));
 });
 
-router.get("/products/:slug", (req, res): void => {
+router.get("/products/:slug", (req: Request, res: Response): void => {
   const { slug } = GetProductParams.parse(req.params);
   const product = products.find((item) => item.slug === slug);
   if (!product) {
@@ -221,7 +221,7 @@ router.get("/products/:slug", (req, res): void => {
   res.json(GetProductResponse.parse(product));
 });
 
-router.get("/storefront/summary", (_req, res): void => {
+router.get("/storefront/summary", (_req: Request, res: Response): void => {
   res.json(GetStorefrontSummaryResponse.parse({
     categories,
     featuredProducts: products.slice(0, 3),
@@ -229,7 +229,7 @@ router.get("/storefront/summary", (_req, res): void => {
   }));
 });
 
-router.post("/shipping/rates", (req, res): void => {
+router.post("/shipping/rates", (req: Request, res: Response): void => {
   const input = GetShippingRatesBody.parse(req.body);
   const isDomestic = input.country.toLowerCase() === "مصر" || input.country.toLowerCase() === "egypt" || input.country.toUpperCase() === "EG";
   const weightFee = Math.max(0, Math.ceil(input.weightGrams / 500) - 1) * 10;
@@ -252,7 +252,7 @@ router.post("/shipping/rates", (req, res): void => {
 });
 
 let nextOrderId = 1048;
-router.post("/orders", (req, res): void => {
+router.post("/orders", (req: Request, res: Response): void => {
   const input = CreateOrderBody.parse(req.body);
   const totalAmount = input.items.reduce((total, item) => {
     const product = products.find((candidate) => candidate.id === item.productId);
