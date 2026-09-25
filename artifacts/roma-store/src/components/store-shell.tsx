@@ -350,10 +350,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
             </h4>
             <div className="space-y-2.5 text-sm">
               <Link href="/shop" className="block text-muted-foreground hover:text-primary transition">كل المنتجات</Link>
-              <Link href="/shop?category=lipstick" className="block text-muted-foreground hover:text-primary transition">أرواج ومحددات الشفاه</Link>
-              <Link href="/shop?category=complexion" className="block text-muted-foreground hover:text-primary transition">كريمات الأساس والوجه</Link>
-              <Link href="/shop?category=skincare" className="block text-muted-foreground hover:text-primary transition">سيرومات وعناية البشرة</Link>
-              <Link href="/shop?category=fragrance" className="block text-muted-foreground hover:text-primary transition">العطور الفاخرة</Link>
+              <Link href="/shop?category=الوجه" className="block text-muted-foreground hover:text-primary transition">كريمات واستعادة نضارة الوجه</Link>
+              <Link href="/shop?category=سيروم" className="block text-muted-foreground hover:text-primary transition">سيرومات النضارة والمسام</Link>
+              <Link href="/shop?category=مرطبات" className="block text-muted-foreground hover:text-primary transition">مرطبات نباتية مركزة</Link>
+              <Link href="/shop?category=الشفاه" className="block text-muted-foreground hover:text-primary transition">مرطبات وعناية الشفاه</Link>
+              <Link href="/shop?category=العطور والجسم" className="block text-muted-foreground hover:text-primary transition">العطور ورذاذ الجسم</Link>
             </div>
           </div>
 
