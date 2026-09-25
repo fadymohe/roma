@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
 import { rm } from "node:fs/promises";
+import fs from "node:fs";
+import { execSync } from "node:child_process";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -118,6 +120,22 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+
+  // Ensure roma-store frontend is built and copied into distDir so Vercel serves the store website
+  const storeDir = path.resolve(artifactDir, "../roma-store");
+  const storeDist = path.resolve(storeDir, "dist");
+  if (!fs.existsSync(path.resolve(storeDist, "index.html"))) {
+    try {
+      execSync("npx vite build", { cwd: storeDir, stdio: "inherit" });
+    } catch (e) {
+      console.warn("Could not build roma-store with vite:", e);
+    }
+  }
+
+  if (fs.existsSync(storeDist)) {
+    fs.cpSync(storeDist, distDir, { recursive: true });
+    console.log("✅ Successfully copied store frontend to api-server/dist");
+  }
 }
 
 buildAll().catch((err) => {
