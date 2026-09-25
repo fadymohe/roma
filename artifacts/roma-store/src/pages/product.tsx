@@ -18,7 +18,9 @@ export default function ProductPage() {
   const [addedNotice, setAddedNotice] = useState(false);
 
   // Fallback to local catalog if API query fails or is loading
-  const product = query.data || PRODUCTS.find((p) => p.slug === slug) || PRODUCTS[0];
+  const product = (query.data && typeof query.data === 'object' && 'id' in query.data && 'nameAr' in query.data)
+    ? query.data
+    : (PRODUCTS.find((p) => p.slug === slug) || PRODUCTS[0]);
   const variant = product.variants?.[selectedVariant];
   const favorited = isWishlisted(product.id);
 

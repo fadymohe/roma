@@ -1,49 +1,86 @@
 import { Search, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'wouter';
 import { useListCategories, useListProducts } from '@workspace/api-client-react';
 import { ProductCard } from '@/components/product-card';
 import { CATEGORIES, PRODUCTS } from '@/lib/catalog-data';
 
 export default function Shop() {
-  const [location] = useState(() => window.location.href);
-  const initialCategory = new URL(location).searchParams.get('category') ?? '';
-  const [category, setCategory] = useState(initialCategory);
+  const [wouterLocation] = useLocation();
+
+  const getUrlCategory = () => {
+    try {
+      return new URLSearchParams(window.location.search).get('category') ?? '';
+    } catch {
+      return '';
+    }
+  };
+
+  const [category, setCategory] = useState(getUrlCategory);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
 
-  const categoriesQuery = useListCategories();
-  const productsQuery = useListProducts({
-    category: category || undefined,
-    search: search || undefined,
+  // Sync category state when URL query param changes
+  useEffect(() => {
+    const urlCat = getUrlCategory();
+    if (urlCat) {
+      setCategory(urlCat);
+    }
+  }, [wouterLocation]);
+
+  const categoriesQuery = useListCategories({
+    query: {
+      retry: false,
+    },
   });
 
-  const allCategories = categoriesQuery.data && categoriesQuery.data.length > 0
+  const productsQuery = useListProducts(
+    {
+      category: category || undefined,
+      search: search || undefined,
+    },
+    {
+      query: {
+        retry: false,
+      },
+    }
+  );
+
+  const allCategories = (Array.isArray(categoriesQuery.data) && categoriesQuery.data.length > 0)
     ? categoriesQuery.data
     : CATEGORIES;
 
-  const rawProducts = productsQuery.data && productsQuery.data.length > 0
+  const rawProducts = (Array.isArray(productsQuery.data) && productsQuery.data.length > 0)
     ? productsQuery.data
     : PRODUCTS;
 
   const products = useMemo(() => {
-    let list = [...rawProducts];
+    let list = Array.isArray(rawProducts) ? [...rawProducts] : [...PRODUCTS];
 
     if (category) {
-      list = list.filter((p) => p.category === category || p.slug.includes(category) || p.category.includes(category));
+      list = list.filter((p) => {
+        if (!p) return false;
+        const pCat = p.category || '';
+        const pSlug = p.slug || '';
+        return pCat === category || pSlug.includes(category) || pCat.includes(category);
+      });
     }
 
     if (search.trim()) {
       const q = search.toLowerCase().trim();
-      list = list.filter((p) => `${p.nameAr} ${p.descriptionAr} ${p.category}`.toLowerCase().includes(q));
+      list = list.filter((p) => {
+        if (!p) return false;
+        return `${p.nameAr || ''} ${p.descriptionAr || ''} ${p.category || ''}`.toLowerCase().includes(q);
+      });
     }
 
     if (sortBy === 'price-low') {
-      list.sort((a, b) => a.price - b.price);
+      list.sort((a, b) => (a.price || 0) - (b.price || 0));
     } else if (sortBy === 'price-high') {
-      list.sort((a, b) => b.price - a.price);
+      list.sort((a, b) => (b.price || 0) - (a.price || 0));
     } else if (sortBy === 'rating') {
-      list.sort((a, b) => b.rating - a.rating);
+      list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
 
     return list;

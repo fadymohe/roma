@@ -433,7 +433,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
         {/* Bottom bar */}
         <div className="border-t border-border/80 py-5">
           <div className="roma-container flex flex-col items-center justify-between gap-3 text-xs text-muted-foreground md:flex-row">
-            <span>© 2026 بوتيك الجمال الفاخر · جميع الحقوق محفوظة</span>
+            <span>© 2026 متجر روما للعناية والجمال · ROMA · جميع الحقوق محفوظة</span>
             <span className="flex items-center gap-3">
               <span>سياسة الخصوصية</span>
               <span>·</span>

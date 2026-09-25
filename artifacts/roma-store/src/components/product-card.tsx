@@ -9,6 +9,11 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
   const { add } = useCart();
   const { isWishlisted, toggleWishlist } = useAuth();
   const [justAdded, setJustAdded] = useState(false);
+
+  if (!product || typeof product !== 'object' || !product.id) {
+    return null;
+  }
+
   const favorited = isWishlisted(product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -31,11 +36,12 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       : null;
 
   // Generate friendly volume subtitle if not present
-  const volumeText = product.category.includes('سيروم')
+  const cat = typeof product.category === 'string' ? product.category : '';
+  const volumeText = cat.includes('سيروم')
     ? '30 ml / 1.0 fl oz'
-    : product.category.includes('كريم') || product.category.includes('أساس')
+    : cat.includes('كريم') || cat.includes('أساس')
     ? '50 ml / 1.7 fl oz'
-    : product.category.includes('عطر')
+    : cat.includes('عطر')
     ? '100 ml / 3.4 fl oz'
     : 'تركيبة نقية فاخرة';
 

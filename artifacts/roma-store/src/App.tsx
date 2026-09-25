@@ -23,15 +23,17 @@ function Router() {
   return (
     // Keep a shared shell (sidebar, navbar) outside the boundary so it
     // survives a page crash.
-    <RoutedErrorBoundary>
-      <StoreShell><Switch>
-        <Route path="/" component={Home} />
-        <Route path="/shop" component={Shop} />
-        <Route path="/product/:slug" component={ProductPage} />
-        <Route path="/cart" component={CartPage} />
-        <Route component={NotFound} />
-      </Switch></StoreShell>
-    </RoutedErrorBoundary>
+    <StoreShell>
+      <RoutedErrorBoundary>
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/shop" component={Shop} />
+          <Route path="/product/:slug" component={ProductPage} />
+          <Route path="/cart" component={CartPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </RoutedErrorBoundary>
+    </StoreShell>
   );
 }
 

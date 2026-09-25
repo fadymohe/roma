@@ -124,16 +124,14 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
   // Ensure roma-store frontend is built and copied into distDir so Vercel serves the store website
   const storeDir = path.resolve(artifactDir, "../roma-store");
   const storeDist = path.resolve(storeDir, "dist");
-  if (!fs.existsSync(path.resolve(storeDist, "index.html"))) {
-    try {
-      execSync("npx vite build", { cwd: storeDir, stdio: "inherit" });
-    } catch (e) {
-      console.warn("Could not build roma-store with vite:", e);
-    }
+  try {
+    execSync("npx vite build", { cwd: storeDir, stdio: "inherit" });
+  } catch (e) {
+    console.warn("Could not build roma-store with vite:", e);
   }
 
   if (fs.existsSync(storeDist)) {
-    fs.cpSync(storeDist, distDir, { recursive: true });
+    fs.cpSync(storeDist, distDir, { recursive: true, force: true });
     console.log("✅ Successfully copied store frontend to api-server/dist");
   }
 }

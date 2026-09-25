@@ -13,15 +13,15 @@ export default function Home() {
   const [heroAdded, setHeroAdded] = useState(false);
 
   // Use API data if available, fallback gracefully to our rich catalog
-  const categories = (summary.data?.categories && summary.data.categories.length > 0)
+  const categories = (Array.isArray(summary.data?.categories) && summary.data.categories.length > 0)
     ? summary.data.categories
     : CATEGORIES;
 
-  const featuredProducts = (summary.data?.featuredProducts && summary.data.featuredProducts.length > 0)
+  const featuredProducts = (Array.isArray(summary.data?.featuredProducts) && summary.data.featuredProducts.length > 0)
     ? summary.data.featuredProducts
     : PRODUCTS;
 
-  const testimonials = (summary.data?.testimonials && summary.data.testimonials.length > 0)
+  const testimonials = (Array.isArray(summary.data?.testimonials) && summary.data.testimonials.length > 0)
     ? summary.data.testimonials
     : TESTIMONIALS;
 
