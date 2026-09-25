@@ -258,7 +258,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       {/* Signature Floating Glassmorphism Bottom Dock Navigation (From Images 1, 3, 5) */}
       <nav
         aria-label="شريط التنقل السريع"
-        className="floating-dock fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center justify-between gap-6 md:gap-9 rounded-full px-6 py-2.5 shadow-2xl transition-all"
+        className="floating-dock fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center justify-between gap-6 md:gap-9 rounded-full bg-white/90 dark:bg-card/90 backdrop-blur-xl border border-[#DEE6E0] dark:border-border/60 px-6 py-2 shadow-2xl shadow-black/15 transition-all"
       >
         {/* Home */}
         <Link

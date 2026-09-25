@@ -28,14 +28,15 @@ export default function Home() {
   // Filter products based on selected tab pill
   const displayedProducts = featuredProducts.filter((p) => {
     if (activeCategory === 'all') return true;
-    if (activeCategory === 'face') return p.category.includes('الوجه') || p.category.includes('البشرة') || p.category.includes('الأساس');
-    if (activeCategory === 'serum') return p.category.includes('البشرة') || p.slug.includes('serum');
+    if (activeCategory === 'face') return p.category.includes('الوجه');
+    if (activeCategory === 'serum') return p.category.includes('سيروم');
+    if (activeCategory === 'moisturizers') return p.category.includes('مرطبات');
     if (activeCategory === 'lips') return p.category.includes('الشفاه');
     if (activeCategory === 'body') return p.category.includes('العطور') || p.category.includes('الجسم');
     return true;
   });
 
-  const heroProduct = featuredProducts.find((p) => p.slug.includes('hydra') || p.slug.includes('cream')) || featuredProducts[0];
+  const heroProduct = featuredProducts[0];
 
   const handleHeroAdd = () => {
     add(heroProduct);
@@ -44,9 +45,10 @@ export default function Home() {
   };
 
   const categoryPills = [
-    { id: 'all', label: 'الكل' },
+    { id: 'all', label: 'الكل (All)' },
     { id: 'face', label: 'الوجه (Face)' },
     { id: 'serum', label: 'سيروم (Serum)' },
+    { id: 'moisturizers', label: 'مرطبات (Moisturizers)' },
     { id: 'lips', label: 'الشفاه (Lips)' },
     { id: 'body', label: 'العطور والجسم (Body)' },
   ];
