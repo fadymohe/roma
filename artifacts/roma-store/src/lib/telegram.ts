@@ -38,9 +38,12 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
     (order.shippingCost ? `🚚 *الشحن:* ${order.shippingCost} ج.م\n` : '') +
     `💰 *الإجمالي النهائي:* *${order.totalAmount} ج.م*\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `الحالة: ⏳ *قيد المراجعة والتجهيز*`;
+    `الحالة: ⏳ *طلب جديد (قيد الانتظار)*`;
 
-  const phoneUrl = order.customerPhone ? `tel:${order.customerPhone.replace(/\s+/g, '')}` : 'https://roma-eg.my';
+  const cleanPhone = (order.customerPhone || '').replace(/\D+/g, '');
+  const phoneUrl = cleanPhone ? `tel:${cleanPhone}` : 'https://roma-eg.my';
+  const waPhone = cleanPhone.startsWith('0') ? `2${cleanPhone}` : cleanPhone.startsWith('2') ? cleanPhone : `20${cleanPhone}`;
+  const waUrl = cleanPhone ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${order.customerName}، بخصوص طلبكِ رقم #ROMA-${order.orderId} من متجر Roma:`)}` : 'https://roma-eg.my';
 
   try {
     const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -53,8 +56,16 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: 'قبول وتأكيد الطلب ✅', callback_data: `ord_ok_${order.orderId}` },
-              { text: 'الاتصال بالعميل 📞', url: phoneUrl },
+              { text: 'تجهيز الطلب 🛠️', callback_data: `ord_status_processing_${order.orderId}` },
+              { text: 'تم الشحن 🚚', callback_data: `ord_status_shipped_${order.orderId}` },
+            ],
+            [
+              { text: 'تم التسليم ✅', callback_data: `ord_status_completed_${order.orderId}` },
+              { text: 'إلغاء الطلب ❌', callback_data: `ord_status_cancelled_${order.orderId}` },
+            ],
+            [
+              { text: 'محادثة واتساب 💬', url: waUrl },
+              { text: 'اتصال هاتفي 📞', url: phoneUrl },
             ],
           ],
         },

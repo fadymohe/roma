@@ -72,19 +72,44 @@ export function useLiveProducts(): Product[] {
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
 
   useEffect(() => {
-    fetch(`/products.json?t=${Date.now()}`)
-      .then((res) => {
-        if (res.ok) return res.json();
-        return [];
-      })
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data);
+    let isMounted = true;
+
+    async function loadProducts() {
+      // 1. Try local products.json first
+      try {
+        const localRes = await fetch(`/products.json?t=${Date.now()}`);
+        if (localRes.ok) {
+          const data = await localRes.json();
+          if (Array.isArray(data) && data.length > 0) {
+            if (isMounted) setProducts(data);
+            return;
+          }
         }
-      })
-      .catch((err) => {
-        console.warn('Could not fetch products.json, using default:', err);
-      });
+      } catch (err) {
+        console.warn('Could not fetch local products.json:', err);
+      }
+
+      // 2. Fallback to GitHub raw for instantaneous updates right after bot push
+      try {
+        const ghRes = await fetch(
+          `https://raw.githubusercontent.com/fadymohe/roma/main/artifacts/roma-store/public/products.json?t=${Date.now()}`
+        );
+        if (ghRes.ok) {
+          const ghData = await ghRes.json();
+          if (Array.isArray(ghData) && ghData.length > 0) {
+            if (isMounted) setProducts(ghData);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch GitHub raw products.json:', err);
+      }
+    }
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return products;

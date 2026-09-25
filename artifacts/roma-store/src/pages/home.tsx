@@ -159,16 +159,16 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <div className="relative overflow-hidden rounded-[32px] bg-[#E8EFEA] p-8 md:p-10 flex flex-col justify-between shadow-xs border border-[#DEE6E0] min-h-[380px]">
+            <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#E8EFEA] to-[#D7E3DA] p-8 md:p-10 flex flex-col justify-between shadow-xs border border-[#DEE6E0] min-h-[380px]">
               <div>
                 <span className="rounded-full bg-white/90 backdrop-blur-md px-3.5 py-1 text-xs font-bold text-[#3B6648] shadow-xs">
-                  إدارة المتجر الذكية · Telegram Bot
+                  عناية طبيعية فاخرة · Roma Care
                 </span>
                 <h3 className="mt-4 font-display text-2xl md:text-3xl font-bold text-foreground leading-snug">
-                  المتجر جاهز لاستقبال أحدث المنتجات 🌱
+                  استعيدي إشراقة وتألق بشرتك الطبيعية 🌱
                 </h3>
                 <p className="mt-2.5 text-xs md:text-sm text-muted-foreground leading-relaxed max-w-md">
-                  تم تفريغ المنتجات الافتراضية وربط المتجر بالكامل مع بوت تيليجرام. يمكنك الآن إضافة أول منتج فوري بالاسم والسعر والصورة مباشرة عبر محادثة البوت.
+                  تركيبات مدروسة غنية بالمستخلصات النباتية الآمنة لتمنحكِ نضارة متجددة، ترطيباً عميقاً، وإطلالة تنبض بالحيوية.
                 </p>
               </div>
 
