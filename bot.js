@@ -386,7 +386,9 @@ let lastUpdateId = 0;
 async function poll() {
   while (true) {
     try {
-      const res = await fetch(`${BASE_URL}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`);
+      const res = await fetch(`${BASE_URL}/getUpdates?offset=${lastUpdateId + 1}&timeout=10`, {
+        signal: AbortSignal.timeout(15000),
+      });
       const data = await res.json();
       if (data.ok && Array.isArray(data.result)) {
         for (const update of data.result) {
@@ -395,8 +397,11 @@ async function poll() {
         }
       }
     } catch (err) {
-      console.error('Polling error (will retry):', err.message);
-      await new Promise((r) => setTimeout(r, 3000));
+      // Timeout is normal in long polling when there are no new messages
+      if (err.name !== 'TimeoutError') {
+        // quiet retry
+      }
+      await new Promise((r) => setTimeout(r, 1000));
     }
   }
 }
