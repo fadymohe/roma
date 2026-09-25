@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "artifacts/roma-store/dist",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
