@@ -157,17 +157,17 @@ export default function Home() {
 
           {/* Right Column: Special Offer Promo Card (Image 5) + Quick Feature Highlights */}
           <div className="flex flex-col gap-6">
-            {/* Promo Banner Card with Lime-Sage Gradient (Image 5) */}
-            <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#A8D86A] via-[#94C955] to-[#74AA37] p-7 text-[#1A2F13] shadow-md flex flex-col justify-between">
+            {/* Promo Banner Card with Luxury Forest-Sage Gradient */}
+            <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#3D694A] via-[#2F533A] to-[#1C3624] p-7 text-white shadow-lg flex flex-col justify-between border border-white/10">
               <div>
-                <span className="inline-block rounded-full bg-black/15 px-3 py-1 text-xs font-bold tracking-wide text-[#1A2F13]">
+                <span className="inline-block rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-xs font-bold tracking-wide text-white">
                   عرض محدود · Limited Offer
                 </span>
-                <h3 className="mt-3 font-display text-2xl md:text-3xl font-extrabold leading-snug">
+                <h3 className="mt-3 font-display text-2xl md:text-3xl font-extrabold leading-snug text-white">
                   استمتعي بخصم حصري على طلبكِ الأول
                 </h3>
-                <p className="mt-1 text-xs md:text-sm font-medium text-[#223E19]/80">
-                  كود خصم <strong className="rounded-full bg-white/40 px-2 py-0.5 font-mono">ROUTINE10</strong> صالح لجميع المجموعات
+                <p className="mt-1 text-xs md:text-sm font-medium text-white/80">
+                  كود خصم <strong className="rounded-full bg-white/30 px-2 py-0.5 font-mono text-white">ROUTINE10</strong> صالح لجميع المجموعات
                 </p>
               </div>
 

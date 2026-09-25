@@ -27,10 +27,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
   const nav = [
     { href: '/', label: 'الرئيسية' },
     { href: '/shop', label: 'المتجر الكامل' },
-    { href: '/shop?category=skincare', label: 'العناية بالبشرة' },
-    { href: '/shop?category=lipstick', label: 'الشفاه والقلوس' },
-    { href: '/shop?category=complexion', label: 'الوجه والأساس' },
-    { href: '/shop?category=fragrance', label: 'العطور الفاخرة' },
+    { href: '/shop?category=الوجه', label: 'كريمات الوجه' },
+    { href: '/shop?category=سيروم', label: 'السيرومات' },
+    { href: '/shop?category=مرطبات', label: 'المرطبات' },
+    { href: '/shop?category=الشفاه', label: 'العناية بالشفاه' },
+    { href: '/shop?category=العطور والجسم', label: 'العطور والجسم' },
   ];
 
   return (
