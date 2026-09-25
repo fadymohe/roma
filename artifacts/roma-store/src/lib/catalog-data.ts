@@ -39,8 +39,31 @@ export const CATEGORIES: Category[] = [
   { id: 6, nameAr: "العطور والجسم (Body)", slug: "body", imageUrl: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=85" },
 ];
 
-// Default products removed as requested - filled dynamically via Telegram Bot
-export const PRODUCTS: Product[] = [];
+// Live products synced from Telegram bot
+export const PRODUCTS: Product[] = [
+  {
+    id: 1790377483235,
+    nameAr: "كريم تفتح البشرة من روما",
+    slug: "prod-1790377483235",
+    descriptionAr: "كريم تفتيح وتوحيد لون البشرة من روما (Roma Skin Brightening Cream)\nاستعيدي إشراقة بشرتك الطبيعية مع كريم التفتيح المتطور من روما. صُمم بتركيبة فعّالة وخفيفة تعمل على تقليل مظهر البقع الداكنة والتصبغات الناتجة عن أشعة الشمس أو آثار الحبوب، ليمنحك بشرة نضرة، متجانسة وأكثر حيوية.",
+    price: 245,
+    compareAtPrice: 306,
+    category: "الوجه (Face)",
+    imageUrl: "/uploads/prod_1790377482618.jpg",
+    rating: 5,
+    reviewCount: 1,
+    badge: "الأكثر تميزاً",
+    variants: [
+      {
+        id: 1,
+        nameAr: "الحجم القياسي",
+        hex: "#76A080",
+        sku: "RM-1790377483235",
+        stock: 50
+      }
+    ]
+  }
+];
 
 /**
  * Hook to load dynamic products updated via Telegram Bot
@@ -55,7 +78,7 @@ export function useLiveProducts(): Product[] {
         return [];
       })
       .then((data) => {
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           setProducts(data);
         }
       })
@@ -71,25 +94,13 @@ export const TESTIMONIALS = [
   {
     id: 1,
     name: "سارة المهدي",
-    quote: "كريم استعادة النضارة غير ملمس بشرتي تماماً خلال أسبوعين. الملمس خفيف وسريع الامتصاص، والتوصيل كان فائق السرعة!",
+    quote: "المنتجات ممتازة ورائحتها طبيعية ناعمة ووصلتني في وقت قياسي.",
     rating: 5,
   },
   {
     id: 2,
     name: "نورا القحطاني",
-    quote: "سيروم النياسيناميد من أفضل السيرومات الطبيعية التي جربتها، خفف مظهر المسام وأعطى بشرتي لمعة صحية جداً.",
-    rating: 5,
-  },
-  {
-    id: 3,
-    name: "ياسمين عادل",
-    quote: "التغليف فاخر والمنتجات نقية ورائحتها طبيعية مهدئة للأعصاب. أصبحت زبونة دائمة لمتجر روما بالتأكيد.",
-    rating: 5,
-  },
-  {
-    id: 4,
-    name: "مريم الشريف",
-    quote: "تجربة الشراء والطلب غاية في السلاسة. وصلني إشعار فوري بحالة الطلب والتغليف وصل بحالة ممتازة.",
+    quote: "التغليف فاخر وجودة التركيبة تنافس البراندات العالمية، تجربة رائعة.",
     rating: 5,
   },
 ];

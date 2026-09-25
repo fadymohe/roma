@@ -61,11 +61,19 @@ export default function Shop() {
     let list = Array.isArray(rawProducts) ? [...rawProducts] : [...liveProducts];
 
     if (category) {
+      const qCat = category.toLowerCase().trim();
       list = list.filter((p) => {
         if (!p) return false;
-        const pCat = p.category || '';
-        const pSlug = p.slug || '';
-        return pCat === category || pSlug.includes(category) || pCat.includes(category);
+        const pCat = (p.category || '').toLowerCase();
+        const pSlug = (p.slug || '').toLowerCase();
+
+        if (qCat === 'face' || qCat.includes('وجه')) return pCat.includes('وجه') || pCat.includes('face');
+        if (qCat === 'serum' || qCat.includes('سيروم')) return pCat.includes('سيروم') || pCat.includes('serum');
+        if (qCat === 'moisturizers' || qCat.includes('مرطب')) return pCat.includes('مرطب') || pCat.includes('moisturizer');
+        if (qCat === 'lips' || qCat.includes('شفاه')) return pCat.includes('شفاه') || pCat.includes('lip');
+        if (qCat === 'body' || qCat.includes('عطور') || qCat.includes('جسم')) return pCat.includes('عطور') || pCat.includes('جسم') || pCat.includes('body');
+
+        return pCat.includes(qCat) || pSlug.includes(qCat);
       });
     }
 
@@ -208,19 +216,11 @@ export default function Shop() {
         ) : (
           <div className="rounded-[32px] border border-[#DEE6E0] bg-white py-16 text-center shadow-xs p-6">
             <span className="text-4xl">🌱</span>
-            <p className="text-base font-bold text-foreground mt-3">لا توجد منتجات مسجلة حالياً</p>
+            <p className="text-base font-bold text-foreground mt-3">لا توجد منتجات مسجلة في هذا القسم حالياً</p>
             <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-              تم تجهيز المتجر لربط منتجاتك الجديدة. يمكنك البدء بإضافة المنتجات وتحديد الأسعار والتصنيفات بسهولة عبر بوت تيليجرام.
+              جربي اختيار تصنيف آخر أو الضغط على "عرض كل المنتجات" للاطلاع على كامل التشكيلة.
             </p>
             <div className="mt-5 flex items-center justify-center gap-3">
-              <a
-                href="https://t.me/romaupbot"
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full bg-[#4E7A5A] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#3D6647] transition"
-              >
-                إضافة منتج عبر تيليجرام ➕
-              </a>
               <button
                 type="button"
                 onClick={() => {
@@ -228,9 +228,9 @@ export default function Shop() {
                   setSearch('');
                   setSearchInput('');
                 }}
-                className="rounded-full border border-[#DEE6E0] px-5 py-2.5 text-xs font-bold text-foreground hover:bg-[#E8EFEA] transition"
+                className="rounded-full bg-[#4E7A5A] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#3D6647] transition active:scale-95"
               >
-                إعادة تعيين الفلاتر
+                عرض كل المنتجات
               </button>
             </div>
           </div>

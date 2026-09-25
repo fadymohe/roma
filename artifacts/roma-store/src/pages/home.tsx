@@ -28,11 +28,12 @@ export default function Home() {
   // Filter products based on selected tab pill
   const displayedProducts = featuredProducts.filter((p) => {
     if (activeCategory === 'all') return true;
-    if (activeCategory === 'face') return p.category.includes('الوجه');
-    if (activeCategory === 'serum') return p.category.includes('سيروم');
-    if (activeCategory === 'moisturizers') return p.category.includes('مرطبات');
-    if (activeCategory === 'lips') return p.category.includes('الشفاه');
-    if (activeCategory === 'body') return p.category.includes('العطور') || p.category.includes('الجسم');
+    const cat = (p.category || '').toLowerCase();
+    if (activeCategory === 'face') return cat.includes('وجه') || cat.includes('face');
+    if (activeCategory === 'serum') return cat.includes('سيروم') || cat.includes('serum');
+    if (activeCategory === 'moisturizers') return cat.includes('مرطب') || cat.includes('moisturizer');
+    if (activeCategory === 'lips') return cat.includes('شفاه') || cat.includes('lip');
+    if (activeCategory === 'body') return cat.includes('عطور') || cat.includes('جسم') || cat.includes('body');
     return true;
   });
 
@@ -172,14 +173,12 @@ export default function Home() {
               </div>
 
               <div className="pt-6">
-                <a
-                  href="https://t.me/romaupbot"
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  href="/shop"
                   className="inline-flex items-center gap-2 rounded-full bg-[#4E7A5A] px-6 py-3 text-xs md:text-sm font-bold text-white shadow-md hover:bg-[#3D6647] transition active:scale-95"
                 >
-                  إضافة منتج عبر تيليجرام ➕
-                </a>
+                  تصفحي المتجر 🛍️
+                </Link>
               </div>
             </div>
           )}
@@ -339,15 +338,13 @@ export default function Home() {
           <div className="rounded-[32px] border border-[#DEE6E0] bg-white p-10 text-center shadow-xs">
             <span className="text-4xl">🌱</span>
             <h4 className="mt-3 font-display text-lg font-bold text-foreground">لا توجد منتجات معروضة حالياً</h4>
-            <p className="mt-1 text-xs text-muted-foreground">أرسل أمر /add_product إلى بوت تيليجرام @romaupbot لإضافة ونشر منتجاتك فوراً هنا</p>
-            <a
-              href="https://t.me/romaupbot"
-              target="_blank"
-              rel="noreferrer"
+            <p className="mt-1 text-xs text-muted-foreground">تابعونا باستمرار، جارٍ تجهيز أحدث التشكيلات الطبيعية قريباً جداً</p>
+            <Link
+              href="/shop"
               className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#4E7A5A] px-6 py-2.5 text-xs font-bold text-white hover:bg-[#3D6647] shadow-xs"
             >
-              إضافة منتج عبر تيليجرام 🤖
-            </a>
+              عرض كل المنتجات 🛍️
+            </Link>
           </div>
         )}
       </section>
