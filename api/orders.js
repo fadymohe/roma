@@ -26,6 +26,11 @@ export default async function handler(req, res) {
     return;
   }
 
+  if (req.method === 'GET') {
+    res.status(200).json({ ok: true, message: 'ROMA Orders & Telegram API is LIVE' });
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
