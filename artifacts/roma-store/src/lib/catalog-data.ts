@@ -42,6 +42,28 @@ export const CATEGORIES: Category[] = [
 // Live products synced from Telegram bot
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790381629962,
+    "nameAr": "مرطب",
+    "slug": "prod-1790381629962",
+    "descriptionAr": "مستحضر طبيعي مميز وفاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.",
+    "price": 300,
+    "compareAtPrice": 375,
+    "category": "مرطبات (Moisturizers)",
+    "imageUrl": "/uploads/prod_1790381629545.jpg",
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#76A080",
+        "sku": "RM-1790381629962",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790381386460,
     "nameAr": "بلحة مصري",
     "slug": "prod-1790381386460",
