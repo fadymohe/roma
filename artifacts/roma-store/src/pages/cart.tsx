@@ -86,7 +86,11 @@ export default function CartPage() {
         ? 'فوري (Fawry)'
         : 'الدفع عند الاستلام (COD)';
 
-    const fullAddress = `${address} - ${city} (${country})`;
+    const cleanAddress = address.trim();
+    const cleanCity = city.trim();
+    const fullAddress = cleanAddress.includes(cleanCity)
+      ? cleanAddress
+      : `${cleanAddress} - ${cleanCity} (${country})`;
 
     try {
       // 1. Upload order directly to Supabase `orders` table
@@ -116,8 +120,8 @@ export default function CartPage() {
         console.warn('Supabase order upload notice:', e);
       }
 
-      // 2. Trigger instant Telegram alert to merchant phone
-      notifyTelegramNewOrder({
+      // 2. Trigger instant Telegram alert to merchant phone (guaranteed dispatch)
+      await notifyTelegramNewOrder({
         orderId: resolvedOrderId,
         customerName: name || 'عميل زائر',
         customerPhone: phone || 'غير متوفر',
@@ -131,7 +135,7 @@ export default function CartPage() {
         })),
         shippingCost: shipping,
         totalAmount: total,
-      }).catch(console.error);
+      }).catch((tgErr) => console.warn('Telegram alert notice:', tgErr));
 
       // 3. Save address and reward points to user profile if authenticated
       if (user && address) {
