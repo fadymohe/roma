@@ -195,9 +195,27 @@
 .roma-reveal-delay-3 { animation-delay: .24s; }
 @keyframes roma-reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-.scrollbar-none::-webkit-scrollbar { display: none; }
-.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar, .scrollbar-none::-webkit-scrollbar { display: none; }
+.no-scrollbar, .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-@media (min-width: 768px) { 
-  .roma-container { width: min(100% - 4rem, 1280px); } 
+/* Third-party accessibility floating widget offset so it sits neatly offset from navigation menus and footer content */
+[class*="accessibility"],
+[id*="accessibility"],
+[id*="userway"],
+.asw-menu-btn,
+.accessibility-trigger {
+  bottom: 5.5rem !important;
+  z-index: 35 !important;
+}
+
+@media (min-width: 768px) {
+  .roma-container { width: min(100% - 4rem, 1280px); }
+  [class*="accessibility"],
+  [id*="accessibility"],
+  [id*="userway"],
+  .asw-menu-btn,
+  .accessibility-trigger {
+    bottom: 2rem !important;
+    z-index: 35 !important;
+  }
 }

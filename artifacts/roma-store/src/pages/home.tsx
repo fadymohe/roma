@@ -90,13 +90,13 @@ export default function Home() {
           </div>
 
           {/* Category Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap py-2">
             {categoryPills.map((pill) => (
               <button
                 key={pill.id}
                 type="button"
                 onClick={() => setActiveCategory(pill.id)}
-                className={`whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-bold transition-all shadow-xs ${
+                className={`shrink-0 whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-bold transition-all shadow-xs ${
                   activeCategory === pill.id
                     ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md'
                     : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white'
@@ -109,7 +109,7 @@ export default function Home() {
         </div>
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {displayedProducts.map((p, i) => (
             <ProductCard key={p.id} product={p} index={i} />
           ))}

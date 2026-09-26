@@ -97,7 +97,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
             <img
               src="/logo-transparent.png"
               alt="ROMA"
-              className="h-9 w-auto max-w-[130px] object-contain drop-shadow"
+              className="h-10 w-auto max-w-[140px] object-contain drop-shadow-md brightness-110 filter contrast-105"
             />
           </Link>
 
@@ -157,7 +157,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
             <img
               src="/logo-transparent.png"
               alt="ROMA Cosmetics & Jewelry"
-              className="h-12 md:h-14 w-auto max-w-[180px] object-contain drop-shadow"
+              className="h-14 md:h-16 w-auto max-w-[200px] object-contain drop-shadow-md brightness-110 filter contrast-105"
             />
           </Link>
 
@@ -245,16 +245,16 @@ export function StoreShell({ children }: { children: ReactNode }) {
               </button>
             )}
 
-            {/* Shopping Cart Button */}
+            {/* Minimalist Luxury Shopping Cart Button */}
             <Link
               href="/cart"
               data-testid="link-cart"
-              className="relative flex items-center gap-2 rounded-full bg-[#D4A5A5] hover:bg-[#C89595] px-4 py-2.5 text-xs font-bold text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20 transition active:scale-95"
+              aria-label={t('nav.cart')}
+              className="relative flex size-10 items-center justify-center rounded-full bg-[#1A1A1A] border border-white/10 hover:border-[#D4A5A5]/40 text-white transition shadow-xs hover:text-[#D4A5A5] active:scale-95"
             >
-              <ShoppingBag className="size-4 text-[#0A0A0A]" strokeWidth={1.5} />
-              <span>{t('nav.cart')}</span>
+              <ShoppingBag className="size-4" strokeWidth={1.5} />
               {count > 0 && (
-                <span className="flex size-5 items-center justify-center rounded-full bg-[#0A0A0A] font-mono-brand text-[10px] font-bold text-[#D4A5A5] shadow-xs">
+                <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#D4A5A5] text-[#0A0A0A] text-[10px] font-bold font-mono">
                   {count}
                 </span>
               )}
@@ -434,7 +434,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 className="h-14 md:h-16 w-auto max-w-[200px] object-contain drop-shadow"
               />
             </Link>
-            <p className="text-xs leading-relaxed text-[#A1A1AA]">
+            <p className="text-xs leading-relaxed text-zinc-400">
               {t('brand.tagline')}
             </p>
             <div className="flex items-center gap-2 pt-1 text-xs font-bold text-[#D4A5A5]">
@@ -449,13 +449,13 @@ export function StoreShell({ children }: { children: ReactNode }) {
               {t('section.categories_title')}
             </h4>
             <div className="space-y-2.5 text-xs">
-              <Link href="/shop" className="block text-[#A1A1AA] hover:text-[#D4A5A5] transition">{t('nav.shop')}</Link>
-              <Link href="/categories" className="block text-[#A1A1AA] hover:text-[#D4A5A5] transition">{isAr ? 'كل الأقسام' : 'All Categories'}</Link>
-              <Link href="/shop?category=face" className="block text-[#A1A1AA] hover:text-[#D4A5A5] transition">{t('nav.face')}</Link>
-              <Link href="/shop?category=serum" className="block text-[#A1A1AA] hover:text-[#D4A5A5] transition">{t('nav.serums')}</Link>
-              <Link href="/shop?category=skincare" className="block text-[#A1A1AA] hover:text-[#D4A5A5] transition">{t('nav.skincare')}</Link>
-              <Link href="/shop?category=lips" className="block text-[#A1A1AA] hover:text-[#D4A5A5] transition">{t('nav.lips')}</Link>
-              <Link href="/shop?category=accessories" className="block text-[#A1A1AA] hover:text-[#D4A5A5] transition">{isAr ? 'إكسسوارات' : 'Accessories'}</Link>
+              <Link href="/shop" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.shop')}</Link>
+              <Link href="/categories" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'كل الأقسام' : 'All Categories'}</Link>
+              <Link href="/shop?category=face" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.face')}</Link>
+              <Link href="/shop?category=serum" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.serums')}</Link>
+              <Link href="/shop?category=skincare" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.skincare')}</Link>
+              <Link href="/shop?category=lips" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.lips')}</Link>
+              <Link href="/shop?category=accessories" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'إكسسوارات' : 'Accessories'}</Link>
             </div>
           </div>
 
@@ -464,20 +464,20 @@ export function StoreShell({ children }: { children: ReactNode }) {
             <h4 className="font-display text-sm font-bold text-white tracking-wide mb-4">
               {t('nav.policies')}
             </h4>
-            <div className="space-y-2.5 text-xs text-[#A1A1AA]">
-              <Link href="/policies" className="block hover:text-[#D4A5A5] transition">
+            <div className="space-y-2.5 text-xs text-zinc-400">
+              <Link href="/policies" className="block hover:text-zinc-200 transition">
                 {isAr ? 'سياسة الاستبدال والاسترجاع (١٤ يوماً)' : '14-Day Returns & Exchanges'}
               </Link>
-              <Link href="/policies" className="block hover:text-[#D4A5A5] transition">
+              <Link href="/policies" className="block hover:text-zinc-200 transition">
                 {isAr ? 'مواعيد وتغطية الشحن السريع' : 'Shipping & Courier Coverage'}
               </Link>
-              <Link href="/policies" className="block hover:text-[#D4A5A5] transition">
+              <Link href="/policies" className="block hover:text-zinc-200 transition">
                 {isAr ? 'سياسة الخصوصية وحماية البيانات' : 'Privacy & Data Protection'}
               </Link>
-              <Link href="/account" className="block hover:text-[#D4A5A5] transition">
+              <Link href="/account" className="block hover:text-zinc-200 transition">
                 {isAr ? 'متابعة وتتبع طلباتي' : 'Track My Orders'}
               </Link>
-              <p className="text-[11px] text-[#A1A1AA] pt-2">
+              <p className="text-[11px] text-zinc-400 pt-2">
                 {isAr ? 'تواصل معنا واتساب: ' : 'WhatsApp Concierge: '}
                 <strong className="text-white font-mono">01012345678</strong>
               </p>
@@ -489,13 +489,13 @@ export function StoreShell({ children }: { children: ReactNode }) {
             <h4 className="font-display text-sm font-bold text-white tracking-wide mb-4">
               {isAr ? 'نادي روما الجمالي الخاص' : 'The ROMA Private Club'}
             </h4>
-            <p className="text-xs leading-relaxed text-[#A1A1AA] mb-4">
+            <p className="text-xs leading-relaxed text-zinc-400 mb-4">
               {isAr
                 ? 'اشتركي لتصلكِ الإصدارات الحصرية والخصومات السرية قبل الجميع.'
                 : 'Join our inner circle for exclusive previews and private atelier offers.'}
             </p>
             <form
-              className="flex rounded-xl border border-white/10 bg-[#141414] p-1 shadow-xs focus-within:border-[#D4A5A5]"
+              className="relative flex items-center bg-[#161616] border border-white/10 rounded-xl overflow-hidden p-1 focus-within:border-[#D4A5A5]/60 transition"
               onSubmit={(e) => {
                 e.preventDefault();
                 if (newsletterEmail) setNewsletterSent(true);
@@ -508,11 +508,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder={newsletterSent ? (isAr ? 'تم الاشتراك بنجاح!' : 'Joined successfully!') : (isAr ? 'بريدك الإلكتروني...' : 'Enter your email...')}
                 disabled={newsletterSent}
-                className="min-w-0 flex-1 bg-transparent px-3 text-xs outline-none text-white placeholder:text-[#A1A1AA]"
+                className="min-w-0 flex-1 bg-transparent px-3 text-xs outline-none text-white placeholder:text-zinc-500"
               />
               <button
                 type="submit"
-                className="rounded-lg bg-[#D4A5A5] px-4 py-2 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition"
+                className="rounded-lg bg-[#D4A5A5] px-4 py-2 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition shrink-0"
               >
                 {newsletterSent ? (isAr ? 'تم' : 'Subscribed') : (isAr ? 'اشتراك' : 'Join')}
               </button>
@@ -520,14 +520,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
             {/* Egyptian Payment Badges */}
             <div className="mt-6">
-              <p className="text-[11px] text-[#A1A1AA] mb-2 font-medium">
+              <p className="text-[11px] text-zinc-400 mb-2 font-medium">
                 {isAr ? 'طرق الدفع المحلية المعتمدة في مصر:' : 'Supported Payment Methods:'}
               </p>
-              <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold text-[#A1A1AA]">
-                <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-white">فودافون كاش</span>
-                <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-white">إنستاباي InstaPay</span>
-                <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-white">فوري Fawry</span>
-                <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-white">الدفع عند الاستلام (COD)</span>
+              <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold text-zinc-400">
+                <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-zinc-200">فودافون كاش</span>
+                <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-zinc-200">إنستاباي InstaPay</span>
+                <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-zinc-200">فوري Fawry</span>
+                <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-zinc-200">الدفع عند الاستلام (COD)</span>
               </div>
             </div>
           </div>
@@ -535,7 +535,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
         {/* Bottom copyright bar */}
         <div className="border-t border-white/10 py-5">
-          <div className="roma-container flex flex-col items-center justify-between gap-3 text-xs text-[#A1A1AA] md:flex-row">
+          <div className="roma-container flex flex-col items-center justify-between gap-3 text-xs text-zinc-400 md:flex-row">
             <span>© 2026 ROMA Luxury Cosmetics & Accessories · {isAr ? 'جميع الحقوق محفوظة' : 'All Rights Reserved'}</span>
             <div className="flex items-center gap-4">
               <span className="inline-flex items-center gap-1 text-[#D4A5A5] font-semibold">

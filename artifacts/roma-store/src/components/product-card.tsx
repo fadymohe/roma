@@ -62,8 +62,8 @@ export function ProductCard({ product }: ProductCardProps) {
       data-testid={`card-product-${product.id}`}
       className="group relative flex flex-col justify-between rounded-3xl border border-white/10 bg-[#141414] p-3 md:p-3.5 shadow-lg transition-all duration-300 hover:border-[#D4A5A5]/40 hover:shadow-2xl hover:shadow-[#D4A5A5]/5 select-none"
     >
-      {/* Top Image Container: Strict 4:5 vertical portrait aspect ratio */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#1A1A1A] flex items-center justify-center">
+      {/* Top Image Container: Strict 4:5 vertical portrait aspect ratio with subtle luxury dark border */}
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#1A1A1A] flex items-center justify-center border border-white/5">
         {/* Skeleton placeholder while image loads */}
         {!imageLoaded && (
           <div className="absolute inset-0 bg-white/5 animate-pulse rounded-2xl" />
@@ -101,19 +101,19 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </Link>
 
-        {/* Top-Right corner Tag (Discount or Most Wanted) */}
+        {/* Top-Right corner Tag (Discount or Most Wanted) - Sleek minimal luxury pill */}
         <div className="absolute top-2.5 right-2.5 z-10 flex flex-col gap-1 pointer-events-none items-end">
           {discountPercent ? (
             <span
               data-testid={`tag-discount-${product.id}`}
-              className="inline-flex items-center rounded-full bg-[#D4A5A5] px-2.5 py-0.5 text-[10px] font-bold text-[#0A0A0A] shadow-md"
+              className="inline-flex items-center rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[11px] font-medium px-2 py-0.5 shadow-xs backdrop-blur-xs"
             >
               {isAr ? `خصم ${discountPercent}%` : `${discountPercent}% OFF`}
             </span>
           ) : displayBadge ? (
             <span
               data-testid={`tag-badge-${product.id}`}
-              className="inline-flex items-center rounded-full bg-[#D4A5A5] px-2.5 py-0.5 text-[10px] font-bold text-[#0A0A0A] shadow-md"
+              className="inline-flex items-center rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[11px] font-medium px-2 py-0.5 shadow-xs backdrop-blur-xs"
             >
               {displayBadge}
             </span>

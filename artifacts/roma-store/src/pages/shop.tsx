@@ -114,7 +114,7 @@ export default function Shop() {
       {/* Filter and Search Bar */}
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-white/10 pb-6">
         {/* Category Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap py-2">
           {categoryFilters.map((f) => {
             const active = category === f.id;
             return (
@@ -122,7 +122,7 @@ export default function Shop() {
                 type="button"
                 key={f.id}
                 onClick={() => setCategory(f.id)}
-                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm ${
+                className={`shrink-0 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm ${
                   active
                     ? 'bg-[#D4A5A5] text-[#0A0A0A]'
                     : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white'
@@ -198,7 +198,7 @@ export default function Shop() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {products.map((product, index) => (
             <ProductCard key={product.id} product={product} index={index} />
           ))}

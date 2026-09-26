@@ -177,6 +177,8 @@ export default function ProductPage() {
                 const target = e.currentTarget;
                 if (product.imageUrl?.startsWith('/uploads/') && !target.src.includes('raw.githubusercontent.com')) {
                   target.src = `https://raw.githubusercontent.com/fadymohe/roma/main/artifacts/roma-store/public${product.imageUrl}`;
+                } else {
+                  target.src = '/logo-white-bg.png';
                 }
               }}
               className="h-full w-full object-cover rounded-2xl transition-transform duration-700 group-hover:scale-105"
@@ -184,7 +186,7 @@ export default function ProductPage() {
 
             {/* Badge */}
             {displayBadge && (
-              <span className="absolute top-5 right-5 rounded-full bg-[#D4A5A5] px-3.5 py-1 text-xs font-bold text-[#0A0A0A] shadow-md">
+              <span className="absolute top-5 right-5 rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[11px] font-medium px-2.5 py-0.5 shadow-md">
                 {displayBadge}
               </span>
             )}
@@ -210,21 +212,33 @@ export default function ProductPage() {
             )}
           </div>
 
-          {/* Thumbnails */}
+          {/* Sleek Image Gallery Thumbnails directly underneath */}
           {galleryImages.length > 1 && (
-            <div className="flex items-center gap-3 overflow-x-auto pb-1">
+            <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
               {galleryImages.map((img, idx) => (
                 <button
                   type="button"
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
-                  className={`relative size-20 shrink-0 rounded-2xl overflow-hidden border-2 transition-all p-0.5 bg-[#141414] ${
+                  className={`relative w-16 h-16 rounded-xl overflow-hidden border transition-all shrink-0 p-0.5 bg-[#141414] ${
                     selectedImage === idx
-                      ? 'border-[#D4A5A5] shadow-lg scale-105'
-                      : 'border-white/10 hover:border-white/30 opacity-60'
+                      ? 'border-[#D4A5A5] shadow-md shadow-[#D4A5A5]/20 ring-1 ring-[#D4A5A5]'
+                      : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt="" className="h-full w-full object-cover rounded-xl" />
+                  <img
+                    src={img}
+                    alt=""
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (img?.startsWith('/uploads/') && !target.src.includes('raw.githubusercontent.com')) {
+                        target.src = `https://raw.githubusercontent.com/fadymohe/roma/main/artifacts/roma-store/public${img}`;
+                      } else {
+                        target.src = '/logo-white-bg.png';
+                      }
+                    }}
+                    className="h-full w-full object-cover rounded-lg"
+                  />
                 </button>
               ))}
             </div>
@@ -373,14 +387,14 @@ export default function ProductPage() {
                 </button>
               </div>
 
-              {/* Add to Cart CTA */}
+              {/* Secondary CTA: Add to Bag */}
               <button
                 type="button"
                 data-testid="button-add-to-cart"
                 onClick={addToBag}
-                className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-[#D4A5A5] hover:bg-[#C89595] py-3.5 px-6 text-sm font-bold text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20 transition active:scale-[0.99]"
+                className="flex-1 flex items-center justify-center gap-2 rounded-2xl border border-[#D4A5A5]/40 text-[#D4A5A5] hover:bg-[#D4A5A5]/10 py-3.5 px-6 text-sm font-bold transition active:scale-[0.99]"
               >
-                <ShoppingBag className="size-4 text-[#0A0A0A]" />
+                <ShoppingBag className="size-4 text-[#D4A5A5]" />
                 <span>
                   {addedNotice
                     ? isAr
@@ -391,15 +405,15 @@ export default function ProductPage() {
               </button>
             </div>
 
-            {/* Buy Now Direct Button */}
+            {/* Primary CTA: High-emphasis Fast Cash Buy Now */}
             <button
               type="button"
               data-testid="button-buy-now"
               onClick={buyNowDirect}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[#1A1A1A] hover:bg-white/5 py-3.5 px-6 text-sm font-bold text-white shadow-sm transition active:scale-[0.99]"
+              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#D4A5A5] to-[#C89595] text-[#0A0A0A] font-bold shadow-lg shadow-[#D4A5A5]/10 hover:opacity-95 py-3.5 px-6 text-sm transition active:scale-[0.99]"
             >
-              <Zap className="size-4 text-[#D4A5A5]" />
-              <span>{t('product.buy_now')}</span>
+              <Zap className="size-4 text-[#0A0A0A]" />
+              <span>{isAr ? 'شراء سريع كاش (الدفع عند الاستلام)' : t('product.buy_now')}</span>
             </button>
           </div>
 
@@ -568,7 +582,7 @@ export default function ProductPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {relatedProducts.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} />
             ))}
@@ -577,13 +591,13 @@ export default function ProductPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* AMAZON-STYLE STICKY MOBILE ADD-TO-CART BAR WITH INSTANT FEEDBACK          */}
+      {/* LUXURY STICKY MOBILE ACTION BAR                                           */}
       {/* Sits right above or on bottom on mobile viewport                          */}
       {/* ========================================================================= */}
       <div className="fixed bottom-14 left-0 right-0 z-40 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 p-3 px-4 shadow-2xl">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <span className="text-[10px] text-[#A1A1AA] block">{t('cart.total')}</span>
+            <span className="text-[10px] text-zinc-400 block">{t('cart.total')}</span>
             <span className="text-base font-extrabold font-mono-brand text-[#D4A5A5]">
               {formatPrice(product.price * quantity)}
             </span>
@@ -593,10 +607,8 @@ export default function ProductPage() {
             <button
               type="button"
               onClick={addToBag}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md ${
-                addedNotice
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-[#D4A5A5] text-[#0A0A0A] hover:bg-[#C89595]'
+              className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border border-[#D4A5A5]/40 text-[#D4A5A5] hover:bg-[#D4A5A5]/10 ${
+                addedNotice ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : ''
               }`}
             >
               {addedNotice ? '✓ تمت الإضافة' : t('product.add_to_cart')}
@@ -604,9 +616,9 @@ export default function ProductPage() {
             <button
               type="button"
               onClick={buyNowDirect}
-              className="px-4 py-2.5 rounded-xl bg-[#1A1A1A] border border-white/15 text-white text-xs font-bold hover:bg-white/10 transition"
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#D4A5A5] to-[#C89595] text-[#0A0A0A] font-bold shadow-lg shadow-[#D4A5A5]/10 hover:opacity-95 text-xs transition active:scale-95"
             >
-              {t('product.buy_now')}
+              {isAr ? 'شراء سريع كاش' : t('product.buy_now')}
             </button>
           </div>
         </div>
