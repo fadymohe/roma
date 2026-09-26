@@ -55,29 +55,19 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
     ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${order.customerName}، بخصوص طلبكِ رقم #ROMA-${order.orderId} من متجر Roma:`)}`
     : 'https://roma-eg.my';
 
-  const primaryKeyboard = [
+  const keyboard = [
     [
       { text: 'قبول الطلب ✅', callback_data: `accept_${order.orderId}` },
       { text: 'إلغاء الطلب ❌', callback_data: `cancel_${order.orderId}` },
     ],
     [
-      { text: 'الاتصال بالعميل 📞', url: `tel:${cleanPhone}` },
-    ],
-  ];
-
-  const fallbackKeyboard = [
-    [
-      { text: 'قبول الطلب ✅', callback_data: `accept_${order.orderId}` },
-      { text: 'إلغاء الطلب ❌', callback_data: `cancel_${order.orderId}` },
-    ],
-    [
-      { text: 'محادثة واتساب مباشرة 💬', url: waUrl },
+      { text: 'محادثة العميل عبر واتساب 💬', url: waUrl },
     ],
   ];
 
   // 1. First attempt: Safe HTML mode via /api/tg cloud proxy (bypasses ISP blocks in Egypt)
   try {
-    let res = await fetch(`/api/tg/bot${BOT_TOKEN}/sendMessage`, {
+    const res = await fetch(`/api/tg/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -85,30 +75,14 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
         text,
         parse_mode: 'HTML',
         reply_markup: {
-          inline_keyboard: primaryKeyboard,
+          inline_keyboard: keyboard,
         },
       }),
     });
-    let data = await res.json();
+    const data = await res.json();
     if (data.ok) return data;
-
-    if (!data.ok && data.description?.includes('inline keyboard button URL')) {
-      res = await fetch(`/api/tg/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: ADMIN_CHAT_ID,
-          text,
-          parse_mode: 'HTML',
-          reply_markup: {
-            inline_keyboard: fallbackKeyboard,
-          },
-        }),
-      });
-      data = await res.json();
-      if (data.ok) return data;
-    }
   } catch (err) {
+    console.error('Telegram proxy error:', JSON.stringify(err));
     // try direct endpoint if proxy not reachable
     try {
       let directRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {

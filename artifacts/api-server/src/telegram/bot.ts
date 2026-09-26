@@ -136,56 +136,32 @@ export async function notifyMerchantNewOrder(order: TelegramOrderPayload) {
       `━━━━━━━━━━━━━━━━━━\n` +
       `الحالة الحالية: ⏳ <b>قيد الانتظار والتحقق (Pending)</b>`;
 
-    // Interactive inline keyboard buttons as specified in requirements:
+    // Interactive inline keyboard buttons:
     // [ قبول الطلب ✅ ] (callback data: accept_<order_id>)
     // [ إلغاء الطلب ❌ ] (callback data: cancel_<order_id>)
-    // [ الاتصال بالعميل 📞 ] (tel URL with customer phone)
-    const primaryKeyboard = {
+    // [ محادثة واتساب مباشرة 💬 ] (wa URL with customer phone)
+    const keyboard = {
       inline_keyboard: [
         [
           { text: "قبول الطلب ✅", callback_data: `accept_${order.orderId}` },
           { text: "إلغاء الطلب ❌", callback_data: `cancel_${order.orderId}` },
         ],
         [
-          { text: "الاتصال بالعميل 📞", url: `tel:${cleanPhone}` },
+          {
+            text: "محادثة العميل عبر واتساب 💬",
+            url: `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${order.customerName}، بخصوص طلبكِ #${orderNum} من متجر Roma:`)}`,
+          },
         ],
       ],
     };
 
     const targetChat = ADMIN_CHAT_ID;
-    let result = await callTelegramApi("sendMessage", {
+    const result = await callTelegramApi("sendMessage", {
       chat_id: targetChat,
       text: messageHtml,
       parse_mode: "HTML",
-      reply_markup: primaryKeyboard,
+      reply_markup: keyboard,
     });
-
-    // If Telegram rejects 'tel:' inline URL (Telegram Bot API strictly enforces http/https/tg scheme),
-    // automatically fallback to WhatsApp/direct link so order alert NEVER fails.
-    if (!result?.ok && result?.description?.includes("inline keyboard button URL")) {
-      console.warn("Retrying Telegram order alert with safe link button...");
-      const fallbackKeyboard = {
-        inline_keyboard: [
-          [
-            { text: "قبول الطلب ✅", callback_data: `accept_${order.orderId}` },
-            { text: "إلغاء الطلب ❌", callback_data: `cancel_${order.orderId}` },
-          ],
-          [
-            {
-              text: "محادثة واتساب مباشرة 💬",
-              url: `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${order.customerName}، بخصوص طلبكِ #${orderNum} من متجر Roma:`)}`,
-            },
-          ],
-        ],
-      };
-
-      result = await callTelegramApi("sendMessage", {
-        chat_id: targetChat,
-        text: messageHtml,
-        parse_mode: "HTML",
-        reply_markup: fallbackKeyboard,
-      });
-    }
 
     if (result?.ok && result.result?.message_id) {
       const existing = ordersStore.get(orderKey);

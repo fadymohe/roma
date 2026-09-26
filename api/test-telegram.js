@@ -65,60 +65,34 @@ export default async function handler(req, res) {
   // Required interactive inline keyboard buttons:
   // [ قبول الطلب ✅ ] (callback data: accept_<order_id>)
   // [ إلغاء الطلب ❌ ] (callback data: cancel_<order_id>)
-  // [ الاتصال بالعميل 📞 ] (tel URL with customer phone)
-  const primaryKeyboard = {
+  // [ محادثة واتساب مباشرة 💬 ] (wa URL with customer phone)
+  const keyboard = {
     inline_keyboard: [
       [
         { text: 'قبول الطلب ✅', callback_data: `accept_${dummyOrder.orderId}` },
         { text: 'إلغاء الطلب ❌', callback_data: `cancel_${dummyOrder.orderId}` },
       ],
       [
-        { text: 'الاتصال بالعميل 📞', url: `tel:${cleanPhone}` },
+        { text: 'محادثة العميل عبر واتساب 💬', url: `https://wa.me/${waPhone}` },
       ],
     ],
   };
 
   try {
-    let tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: ADMIN_CHAT_ID,
         text: messageHtml,
         parse_mode: 'HTML',
-        reply_markup: primaryKeyboard,
+        reply_markup: keyboard,
       }),
     });
-    let result = await tgRes.json();
-
-    if (!result?.ok && result?.description?.includes('inline keyboard button URL')) {
-      console.warn('Retrying test alert with safe link button...');
-      const fallbackKeyboard = {
-        inline_keyboard: [
-          [
-            { text: 'قبول الطلب ✅', callback_data: `accept_${dummyOrder.orderId}` },
-            { text: 'إلغاء الطلب ❌', callback_data: `cancel_${dummyOrder.orderId}` },
-          ],
-          [
-            { text: 'محادثة واتساب مباشرة 💬', url: `https://wa.me/${waPhone}` },
-          ],
-        ],
-      };
-      tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: ADMIN_CHAT_ID,
-          text: messageHtml,
-          parse_mode: 'HTML',
-          reply_markup: fallbackKeyboard,
-        }),
-      });
-      result = await tgRes.json();
-    }
+    const result = await tgRes.json();
 
     if (!result?.ok) {
-      console.error('Telegram dispatch error on /api/test-telegram:', result);
+      console.error('Telegram dispatch error on /api/test-telegram:', JSON.stringify(result));
       return res.status(500).json({
         success: false,
         message: 'Telegram API returned error',
@@ -134,7 +108,8 @@ export default async function handler(req, res) {
       telegramResult: result,
     });
   } catch (error) {
-    console.error('Telegram dispatch error:', error);
+    console.error('Telegram dispatch error:', JSON.stringify(error));
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: 'Failed to communicate with Telegram API',

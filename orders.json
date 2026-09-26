@@ -5,7 +5,7 @@
     "customerPhone": "طلب مؤكد من الموقع",
     "shippingAddress": "giza - القاهرة (EG) - القاهرة (EG)",
     "totalAmount": 10299,
-    "status": "cancelled",
+    "status": "completed",
     "items": [
       {
         "name": "مستحضرات ROMA الطبيعية",
@@ -14,6 +14,6 @@
       }
     ],
     "createdAt": "2026-09-26T13:20:00.000Z",
-    "updatedAt": "2026-09-26T13:56:58.036Z"
+    "updatedAt": "2026-09-26T15:42:16.856Z"
   }
 ]

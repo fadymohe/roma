@@ -1,7 +1,7 @@
-const BOT_TOKEN = '8358497211:AAF5Tr2e3VHXSt5K1BEvxqa-8bgIaHj-nwA';
-const ADMIN_CHAT_ID = '8940310160';
-const SUPABASE_URL = 'https://dsgrgbmvbvqwzizbbwxf.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzZ3JnYm12YnZxd3ppemJid3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzODE0MTMsImV4cCI6MjEwNTk1NzQxM30.kd8bIzK5UzbWIPP4eCHhkflhaRLQ7C1AKb-RhDnvbhM';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8358497211:AAF5Tr2e3VHXSt5K1BEvxqa-8bgIaHj-nwA';
+const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID || '8940310160';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://dsgrgbmvbvqwzizbbwxf.supabase.co';
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzZ3JnYm12YnZxd3ppemJid3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzODE0MTMsImV4cCI6MjEwNTk1NzQxM30.kd8bIzK5UzbWIPP4eCHhkflhaRLQ7C1AKb-RhDnvbhM';
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -109,20 +109,21 @@ export default async function handler(req, res) {
       ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، بخصوص طلبكِ رقم #ROMA-${orderId} من متجر Roma:`)}`
       : 'https://roma-eg.my';
 
-    const primaryKeyboard = [
+    // Interactive buttons: Accept, Cancel, WhatsApp Direct Contact
+    const keyboard = [
       [
         { text: 'قبول الطلب ✅', callback_data: `accept_${orderId}` },
         { text: 'إلغاء الطلب ❌', callback_data: `cancel_${orderId}` },
       ],
       [
-        { text: 'الاتصال بالعميل 📞', url: `tel:${cleanPhone}` },
+        { text: 'محادثة العميل عبر واتساب 💬', url: waUrl },
       ],
     ];
 
-    // 3. Send Telegram notification from Vercel Cloud Server
+    // 3. Send Telegram notification from Cloud Server (parse_mode: 'HTML')
     let telegramResult = null;
     try {
-      let tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -130,39 +131,18 @@ export default async function handler(req, res) {
           text,
           parse_mode: 'HTML',
           reply_markup: {
-            inline_keyboard: primaryKeyboard,
+            inline_keyboard: keyboard,
           },
         }),
       });
       telegramResult = await tgRes.json();
 
-      if (!telegramResult?.ok && telegramResult?.description?.includes('inline keyboard button URL')) {
-        console.warn('Retrying with safe link button in /api/orders...');
-        const fallbackKeyboard = [
-          [
-            { text: 'قبول الطلب ✅', callback_data: `accept_${orderId}` },
-            { text: 'إلغاء الطلب ❌', callback_data: `cancel_${orderId}` },
-          ],
-          [
-            { text: 'محادثة واتساب مباشرة 💬', url: waUrl },
-          ],
-        ];
-        tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: ADMIN_CHAT_ID,
-            text,
-            parse_mode: 'HTML',
-            reply_markup: {
-              inline_keyboard: fallbackKeyboard,
-            },
-          }),
-        });
-        telegramResult = await tgRes.json();
+      if (!telegramResult?.ok) {
+        console.error('Telegram API error response:', JSON.stringify(telegramResult));
       }
     } catch (tgErr) {
-      console.error('Telegram dispatch error inside /api/orders:', tgErr);
+      console.error('Telegram dispatch error inside /api/orders:', JSON.stringify(tgErr));
+      console.error(tgErr);
     }
 
     res.status(200).json({
@@ -172,7 +152,8 @@ export default async function handler(req, res) {
       supabase: supabaseResult,
     });
   } catch (error) {
-    console.error('/api/orders serverless error:', error);
+    console.error('/api/orders serverless error:', JSON.stringify(error));
+    console.error(error);
     res.status(500).json({ success: false, error: String(error) });
   }
 }
