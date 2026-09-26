@@ -141,11 +141,12 @@ export function AuthModal() {
             <X className="size-4.5" />
           </button>
 
-          <div className="flex flex-col items-center mb-2">
-            <span className="font-display text-2xl font-extrabold tracking-widest text-white">ROMA</span>
-            <span className="text-[9px] uppercase tracking-[0.25em] text-[#D4A5A5] font-semibold -mt-1">
-              Cosmetics & Jewelry
-            </span>
+          <div className="flex flex-col items-center mb-3">
+            <img
+              src="/logo-transparent.png"
+              alt="ROMA"
+              className="h-12 w-auto max-w-[170px] object-contain drop-shadow"
+            />
           </div>
 
           <h3 className="font-display text-lg font-bold text-white">

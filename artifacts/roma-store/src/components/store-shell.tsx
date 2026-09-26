@@ -88,18 +88,17 @@ export function StoreShell({ children }: { children: ReactNode }) {
         {/* MOBILE TOP BAR (< md): Clean, Luxury, Never Overflows Screen Width        */}
         {/* ========================================================================= */}
         <div className="flex md:hidden items-center justify-between h-14 px-4 w-full">
-          {/* Brand Logo */}
+          {/* Brand Logo with Official Transparent Image */}
           <Link
             href="/"
             data-testid="link-logo-mobile"
-            className="flex flex-col py-0.5 active:scale-95 transition"
+            className="flex items-center gap-1.5 py-0.5 active:scale-95 transition"
           >
-            <span className="font-display text-xl font-extrabold tracking-widest text-[#F9FAFB] leading-none">
-              ROMA
-            </span>
-            <span className="text-[7.5px] uppercase tracking-[0.25em] text-[#D4A5A5] font-semibold mt-0.5">
-              Cosmetics & Jewelry
-            </span>
+            <img
+              src="/logo-transparent.png"
+              alt="ROMA"
+              className="h-9 w-auto max-w-[130px] object-contain drop-shadow"
+            />
           </Link>
 
           {/* Mobile Right Controls: Language Switch + Search + Wishlist */}
@@ -155,14 +154,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
             data-testid="link-logo"
             className="flex items-center gap-2 transition transform hover:scale-105 active:scale-95 py-1"
           >
-            <div className="flex flex-col items-center">
-              <span className="font-display text-2xl md:text-3xl font-extrabold tracking-widest text-[#F9FAFB]">
-                ROMA
-              </span>
-              <span className="text-[9px] uppercase tracking-[0.3em] text-[#D4A5A5] font-semibold -mt-1">
-                Cosmetics & Jewelry
-              </span>
-            </div>
+            <img
+              src="/logo-transparent.png"
+              alt="ROMA Cosmetics & Jewelry"
+              className="h-12 md:h-14 w-auto max-w-[180px] object-contain drop-shadow"
+            />
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -278,10 +274,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
           <div className="relative z-10 flex h-full w-[85%] max-w-sm flex-col bg-[#141414] p-6 shadow-2xl border-x border-white/10">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <Link href="/" onClick={() => setMenuOpen(false)}>
-                <div className="flex flex-col">
-                  <span className="font-display text-2xl font-extrabold tracking-widest text-white">ROMA</span>
-                  <span className="text-[9px] uppercase tracking-[0.25em] text-[#D4A5A5]">Cosmetics</span>
-                </div>
+                <img
+                  src="/logo-transparent.png"
+                  alt="ROMA"
+                  className="h-10 w-auto object-contain drop-shadow"
+                />
               </Link>
               <button
                 type="button"
@@ -430,13 +427,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
         <div className="roma-container grid gap-10 py-16 md:grid-cols-4">
           {/* Col 1: Brand & Identity */}
           <div className="space-y-4 md:col-span-1">
-            <Link href="/" className="inline-block">
-              <div className="flex flex-col">
-                <span className="font-display text-3xl font-extrabold tracking-widest text-white">ROMA</span>
-                <span className="text-[10px] uppercase tracking-[0.3em] text-[#D4A5A5] font-semibold -mt-1">
-                  Luxury Cosmetics & Accessories
-                </span>
-              </div>
+            <Link href="/" className="inline-block py-1">
+              <img
+                src="/logo-transparent.png"
+                alt="ROMA Cosmetics & Jewelry"
+                className="h-14 md:h-16 w-auto max-w-[200px] object-contain drop-shadow"
+              />
             </Link>
             <p className="text-xs leading-relaxed text-[#A1A1AA]">
               {t('brand.tagline')}
