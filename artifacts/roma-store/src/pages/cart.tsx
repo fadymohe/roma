@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import { useState, useEffect, type FormEvent } from 'react';
 import { Link } from 'wouter';
-import { useCreateOrder } from '@workspace/api-client-react';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
 import { notifyTelegramNewOrder } from '@/lib/telegram';
@@ -42,9 +41,7 @@ export default function CartPage() {
   // Shipping
   const isFreeShipping = subtotal >= 500;
   const [shipping, setShipping] = useState(isFreeShipping ? 0 : 40);
-  const [complete, setComplete] = useState<{ id: number | string; total: number } | null>(null);
-
-  const orderMutation = useCreateOrder();
+  const [complete, setComplete] = useState<{ id: string; total: number } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -78,7 +75,7 @@ export default function CartPage() {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const fallbackId = Math.floor(1000 + Math.random() * 9000);
+    const fallbackId = String(Math.floor(1000 + Math.random() * 9000));
 
     const paymentLabel =
       paymentMethod === 'vodafone'
@@ -92,9 +89,9 @@ export default function CartPage() {
     const fullAddress = `${address} - ${city} (${country})`;
 
     // 1. Upload order directly to Supabase `orders` table
-    let supabaseOrderId: number | string | null = null;
+    let resolvedOrderId: string = fallbackId;
     try {
-      supabaseOrderId = await uploadOrderToSupabase({
+      const res = await uploadOrderToSupabase({
         user_id: user?.id || null,
         customer_name: name || 'عميل روما',
         phone: phone || '',
@@ -102,23 +99,25 @@ export default function CartPage() {
         total_amount: total,
         status: 'pending',
         items: lines.map((line) => ({
-          productId: line.product.id,
+          product_id: line.product.id,
           name: line.product.nameAr,
           price: line.product.price,
           quantity: line.quantity,
-          variantId: line.variant?.id ?? null,
-          variantName: line.variant?.nameAr ?? null,
+          variant: line.variant?.nameAr || null,
+          image: line.product.imageUrl || '',
         })),
       });
+
+      if (res && res.success && res.data && res.data.id) {
+        resolvedOrderId = String(res.data.id);
+      }
     } catch (e) {
       console.warn('Supabase order upload notice:', e);
     }
 
-    const finalOrderId = supabaseOrderId || fallbackId;
-
     // 2. Trigger instant Telegram alert to merchant phone
     notifyTelegramNewOrder({
-      orderId: finalOrderId,
+      orderId: resolvedOrderId,
       customerName: name || 'عميل زائر',
       customerPhone: phone || 'غير متوفر',
       shippingAddress: fullAddress,
@@ -145,37 +144,32 @@ export default function CartPage() {
       } catch (_) {}
     }
 
-    // 4. Also post to mock/internal API for consistency
-    const orderData: any = {
-      email,
-      shippingAddress: fullAddress,
-      items: lines.map((line) => ({
-        productId: line.product.id,
-        variantId: line.variant?.id ?? null,
-        quantity: line.quantity,
-      })),
-      name,
-      customerName: name,
-      phone,
-      customerPhone: phone,
-      paymentMethod: paymentLabel,
-    };
+    // 4. Also notify local backend asynchronously if available (failsafe)
+    try {
+      fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          shippingAddress: fullAddress,
+          items: lines.map((line) => ({
+            productId: line.product.id,
+            variantId: line.variant?.id ?? null,
+            quantity: line.quantity,
+          })),
+          name,
+          customerName: name,
+          phone,
+          customerPhone: phone,
+          paymentMethod: paymentLabel,
+        }),
+      }).catch(() => {});
+    } catch (_) {}
 
-    orderMutation.mutate(
-      { data: orderData },
-      {
-        onSuccess: () => {
-          setComplete({ id: finalOrderId, total });
-          clear();
-          setIsSubmitting(false);
-        },
-        onError: () => {
-          setComplete({ id: finalOrderId, total });
-          clear();
-          setIsSubmitting(false);
-        },
-      }
-    );
+    // Complete order view
+    setComplete({ id: String(resolvedOrderId), total });
+    clear();
+    setIsSubmitting(false);
   };
 
   if (complete) {
@@ -254,7 +248,7 @@ export default function CartPage() {
           {/* Supabase status badge */}
           <div className="mt-4 flex items-center justify-center gap-1.5 rounded-2xl bg-[#E8EFEA]/70 py-2 px-3 text-[11px] text-[#2A4331] font-semibold border border-[#DEE6E0]">
             <Database className="size-3.5 text-[#4E7A5A]" />
-            <span>تم رفع الطلب ومزامنته مع Supabase Cloud</span>
+            <span>تم حفظ الطلب بنجاح وإرسال إشعار فوري</span>
           </div>
 
           {/* Actions */}
@@ -264,7 +258,7 @@ export default function CartPage() {
               onClick={() => alert(`طلبكِ رقم ROMA-${complete.id} مسجل في قاعدة البيانات وهو الآن في مرحلة التجهيز للشحن المباشر إلى ${address || city}!`)}
               className="w-full flex items-center justify-center gap-2 rounded-full bg-[#4E7A5A] hover:bg-[#3F6649] py-3.5 px-6 text-sm font-bold text-white shadow-md shadow-[#4E7A5A]/20 transition active:scale-95"
             >
-              <Truck className="size-4.5" />
+              <Truck className="size-4" />
               <span>تتبع الطلب · Track Order</span>
             </button>
 
@@ -668,11 +662,11 @@ export default function CartPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isSubmitting || orderMutation.isPending}
+              disabled={isSubmitting}
               data-testid="button-submit-order"
               className="w-full rounded-full bg-[#4E7A5A] py-3.5 text-sm font-bold text-white shadow-md shadow-[#4E7A5A]/25 transition hover:bg-[#3F6649] active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {isSubmitting || orderMutation.isPending ? (
+              {isSubmitting ? (
                 <span className="inline-flex items-center gap-2">
                   <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   جارٍ إرسال الطلب وحفظه في قاعدة البيانات...
