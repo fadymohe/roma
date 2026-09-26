@@ -72,9 +72,9 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
     ]);
   }
 
-  // 1. First attempt: Safe HTML mode
+  // 1. First attempt: Safe HTML mode via /api/tg cloud proxy (bypasses ISP blocks in Egypt)
   try {
-    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    const res = await fetch(`/api/tg/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -88,9 +88,24 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
     });
     const data = await res.json();
     if (data.ok) return data;
-    console.warn('Telegram HTML alert attempt note:', data);
   } catch (err) {
-    console.warn('Telegram primary fetch notice:', err);
+    // try direct endpoint if proxy not reachable
+    try {
+      const directRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: ADMIN_CHAT_ID,
+          text,
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: inlineKeyboard,
+          },
+        }),
+      });
+      const data = await directRes.json();
+      if (data.ok) return data;
+    } catch (_) {}
   }
 
   // 2. Failsafe attempt: Plain Text without HTML tags
