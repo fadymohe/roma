@@ -120,7 +120,33 @@ export default function CartPage() {
         console.warn('Supabase order upload notice:', e);
       }
 
-      // 2. Trigger instant Telegram alert to merchant phone (guaranteed dispatch)
+      // 2. Cloud Serverless Dispatch via /api/orders (guaranteed delivery from Vercel Cloud)
+      try {
+        await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: resolvedOrderId,
+            customerName: name || 'عميل روما',
+            customerPhone: phone || '',
+            shippingAddress: fullAddress,
+            paymentMethod: paymentLabel,
+            items: lines.map((line) => ({
+              name: line?.product?.nameAr || 'مستحضر عناية',
+              quantity: Number(line?.quantity) || 1,
+              price: Number(line?.product?.price) || 0,
+              variantName: line?.variant?.nameAr,
+            })),
+            shippingCost: shipping,
+            totalAmount: total,
+            userId: user?.id || null,
+          }),
+        });
+      } catch (apiErr) {
+        console.warn('/api/orders serverless notice:', apiErr);
+      }
+
+      // 3. Direct browser Telegram alert with safe HTML formatting (redundant failsafe)
       await notifyTelegramNewOrder({
         orderId: resolvedOrderId,
         customerName: name || 'عميل زائر',

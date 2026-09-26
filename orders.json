@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "orderId": "206876",
+    "customerName": "عميل المتجر",
+    "customerPhone": "طلب مؤكد من الموقع",
+    "shippingAddress": "giza - القاهرة (EG) - القاهرة (EG)",
+    "totalAmount": 10299,
+    "status": "pending",
+    "items": [
+      {
+        "name": "مستحضرات ROMA الطبيعية",
+        "quantity": 1,
+        "price": 10299
+      }
+    ],
+    "createdAt": "2026-09-26T13:20:00.000Z"
+  }
+]

@@ -17,34 +17,62 @@ export interface TelegramOrderDetails {
   totalAmount: number;
 }
 
+function escapeHtml(str: string): string {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
-  const itemsText = order.items
+  const itemsHtml = order.items
     .map(
       (item) =>
-        `• *${item.quantity}x* ${item.name} ${item.variantName ? `(${item.variantName})` : ''} — \`${item.price * item.quantity} ج.م\``
+        `• <b>${item.quantity}x</b> ${escapeHtml(item.name)} ${item.variantName ? `(${escapeHtml(item.variantName)})` : ''} — <code>${item.price * item.quantity} ج.م</code>`
     )
     .join('\n');
 
   const text =
-    `🛍️ *طلب شراء جديد تم استلامه في متجر ROMA!* \n` +
-    `🔖 رقم الطلب: \`#ROMA-${order.orderId}\`\n` +
+    `🛍️ <b>طلب شراء جديد تم استلامه في متجر ROMA!</b>\n` +
+    `🔖 رقم الطلب: <code>#ROMA-${order.orderId}</code>\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `👤 *العميل:* ${order.customerName || 'عميل المتجر'}\n` +
-    `📞 *رقم الهاتف:* \`${order.customerPhone}\`\n` +
-    `📍 *عنوان التوصيل:* ${order.shippingAddress}\n` +
-    `💳 *طريقة الدفع:* ${order.paymentMethod || 'الدفع عند الاستلام'}\n` +
+    `👤 <b>العميل:</b> ${escapeHtml(order.customerName || 'عميل المتجر')}\n` +
+    `📞 <b>رقم الهاتف:</b> <code>${escapeHtml(order.customerPhone)}</code>\n` +
+    `📍 <b>عنوان التوصيل:</b> ${escapeHtml(order.shippingAddress)}\n` +
+    `💳 <b>طريقة الدفع:</b> ${escapeHtml(order.paymentMethod || 'الدفع عند الاستلام')}\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `📦 *المنتجات المطلوبة:*\n${itemsText}\n\n` +
-    (order.shippingCost ? `🚚 *الشحن:* ${order.shippingCost} ج.م\n` : '') +
-    `💰 *الإجمالي النهائي:* *${order.totalAmount} ج.م*\n` +
+    `📦 <b>المنتجات المطلوبة:</b>\n${itemsHtml}\n\n` +
+    (order.shippingCost ? `🚚 <b>الشحن:</b> ${order.shippingCost} ج.م\n` : '') +
+    `💰 <b>الإجمالي النهائي:</b> <b>${order.totalAmount} ج.م</b>\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `الحالة: ⏳ *طلب جديد (قيد الانتظار)*`;
+    `الحالة: ⏳ <b>طلب جديد (قيد الانتظار)</b>`;
 
   const cleanPhone = (order.customerPhone || '').replace(/\D+/g, '');
-  const phoneUrl = cleanPhone ? `tel:${cleanPhone}` : 'https://roma-eg.my';
   const waPhone = cleanPhone.startsWith('0') ? `2${cleanPhone}` : cleanPhone.startsWith('2') ? cleanPhone : `20${cleanPhone}`;
-  const waUrl = cleanPhone ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${order.customerName}، بخصوص طلبكِ رقم #ROMA-${order.orderId} من متجر Roma:`)}` : 'https://roma-eg.my';
+  const waUrl = cleanPhone
+    ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${order.customerName}، بخصوص طلبكِ رقم #ROMA-${order.orderId} من متجر Roma:`)}`
+    : 'https://roma-eg.my';
 
+  const inlineKeyboard = [
+    [
+      { text: 'تجهيز الطلب 🛠️', callback_data: `ord_status_processing_${order.orderId}` },
+      { text: 'تم الشحن 🚚', callback_data: `ord_status_shipped_${order.orderId}` },
+    ],
+    [
+      { text: 'تم التسليم ✅', callback_data: `ord_status_completed_${order.orderId}` },
+      { text: 'إلغاء الطلب ❌', callback_data: `ord_status_cancelled_${order.orderId}` },
+    ],
+  ];
+
+  if (cleanPhone) {
+    inlineKeyboard.push([
+      { text: 'محادثة واتساب مباشرة 💬', url: waUrl },
+    ]);
+  }
+
+  // 1. First attempt: Safe HTML mode
   try {
     const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
@@ -52,27 +80,44 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
       body: JSON.stringify({
         chat_id: ADMIN_CHAT_ID,
         text,
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
         reply_markup: {
-          inline_keyboard: [
-            [
-              { text: 'تجهيز الطلب 🛠️', callback_data: `ord_status_processing_${order.orderId}` },
-              { text: 'تم الشحن 🚚', callback_data: `ord_status_shipped_${order.orderId}` },
-            ],
-            [
-              { text: 'تم التسليم ✅', callback_data: `ord_status_completed_${order.orderId}` },
-              { text: 'إلغاء الطلب ❌', callback_data: `ord_status_cancelled_${order.orderId}` },
-            ],
-            [
-              { text: 'محادثة واتساب 💬', url: waUrl },
-              { text: 'اتصال هاتفي 📞', url: phoneUrl },
-            ],
-          ],
+          inline_keyboard: inlineKeyboard,
+        },
+      }),
+    });
+    const data = await res.json();
+    if (data.ok) return data;
+    console.warn('Telegram HTML alert attempt note:', data);
+  } catch (err) {
+    console.warn('Telegram primary fetch notice:', err);
+  }
+
+  // 2. Failsafe attempt: Plain Text without HTML tags
+  try {
+    const plainText =
+      `🛍️ طلب شراء جديد في متجر ROMA!\n` +
+      `رقم الطلب: ROMA-${order.orderId}\n` +
+      `العميل: ${order.customerName}\n` +
+      `الهاتف: ${order.customerPhone}\n` +
+      `العنوان: ${order.shippingAddress}\n` +
+      `الدفع: ${order.paymentMethod}\n` +
+      `الإجمالي: ${order.totalAmount} ج.م\n` +
+      `الحالة: طلب جديد قيد الانتظار`;
+
+    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: ADMIN_CHAT_ID,
+        text: plainText,
+        reply_markup: {
+          inline_keyboard: inlineKeyboard,
         },
       }),
     });
     return await res.json();
-  } catch (err) {
-    console.error('Failed to send Telegram alert:', err);
+  } catch (fallbackErr) {
+    console.error('Telegram failsafe alert error:', fallbackErr);
   }
 }
