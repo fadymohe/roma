@@ -94,6 +94,7 @@
     color: #F9FAFB;
     overflow-x: hidden;
     max-width: 100vw;
+    touch-action: pan-x pan-y;
   }
   
   html[lang="ar"], html[dir="rtl"] {
@@ -114,6 +115,7 @@
     overflow-x: hidden;
     max-width: 100vw;
     width: 100%;
+    touch-action: pan-x pan-y;
   }
   
   button, a, input, select { -webkit-tap-highlight-color: transparent; }
