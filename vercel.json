@@ -1,7 +1,6 @@
 {
-  "framework": "vite",
   "outputDirectory": "dist",
-  "ignoreCommand": "exit 1",
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/products.json",

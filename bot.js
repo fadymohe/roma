@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,6 +11,10 @@ const __dirname = path.dirname(__filename);
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8358497211:AAF5Tr2e3VHXSt5K1BEvxqa-8bgIaHj-nwA';
 const ADMIN_CHAT_ID = String(process.env.TELEGRAM_ADMIN_CHAT_ID || '8940310160');
 const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://dsgrgbmvbvqwzizbbwxf.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzZ3JnYm12YnZxd3ppemJid3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzODE0MTMsImV4cCI6MjEwNTk1NzQxM30.kd8bIzK5UzbWIPP4eCHhkflhaRLQ7C1AKb-RhDnvbhM';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const PRODUCTS_JSON_PATH = path.join(__dirname, 'artifacts', 'roma-store', 'public', 'products.json');
 const DIST_PRODUCTS_JSON_PATH = path.join(__dirname, 'dist', 'products.json');
@@ -65,6 +70,41 @@ function getOrders() {
     console.error('Error reading orders:', e);
   }
   return [];
+}
+
+async function getAllOrdersCombined() {
+  const local = getOrders();
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && Array.isArray(data)) {
+      const sbOrders = data.map((row) => ({
+        orderId: row.id,
+        customerName: row.customer_name,
+        customerPhone: row.phone,
+        shippingAddress: row.shipping_address,
+        totalAmount: row.total_amount,
+        status: row.status || 'pending',
+        items: Array.isArray(row.items) ? row.items : [],
+        createdAt: row.created_at,
+      }));
+
+      // Combine and deduplicate
+      const combined = [...sbOrders];
+      local.forEach((loc) => {
+        if (!combined.some((c) => String(c.orderId) === String(loc.orderId))) {
+          combined.push(loc);
+        }
+      });
+      return combined;
+    }
+  } catch (err) {
+    console.warn('Supabase fetch orders in bot notice:', err?.message);
+  }
+  return local;
 }
 
 function saveOrders(orders) {
@@ -317,6 +357,13 @@ async function handleUpdate(update) {
       }
       saveOrders(orders);
 
+      // Also update Supabase
+      try {
+        await supabase.from('orders').update({ status: newStatusKey }).eq('id', orderId);
+      } catch (err) {
+        console.warn('Supabase status update error:', err?.message);
+      }
+
       await tg('answerCallbackQuery', {
         callback_query_id: cb.id,
         text: `تم تحديث الحالة: ${statusObj.label}`,
@@ -566,7 +613,7 @@ async function sendProductsList(chatId) {
 }
 
 async function sendOrdersList(chatId, filter = 'all') {
-  const orders = getOrders();
+  const orders = await getAllOrdersCombined();
 
   let filtered = orders;
   if (filter !== 'all') {
@@ -633,7 +680,7 @@ async function sendOrdersList(chatId, filter = 'all') {
 
 async function sendStoreStats(chatId) {
   const products = getProducts();
-  const orders = getOrders();
+  const orders = await getAllOrdersCombined();
 
   const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
   const pendingOrders = orders.filter((o) => !o.status || o.status === 'pending').length;
