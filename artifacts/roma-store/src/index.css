@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -47,47 +47,59 @@
 }
 
 :root {
-  /* Natural Care & Organic Luxury Sage Green Palette (Matches Design UI) */
-  --background: 135 15% 98.5%;
-  --foreground: 140 22% 14%;
-  --border: 138 15% 90%;
-  --input: 138 15% 90%;
-  --ring: 138 25% 42%;
-  --card: 0 0% 100%;
-  --card-foreground: 140 22% 14%;
-  --card-border: 138 15% 91%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 140 22% 14%;
-  --popover-border: 138 15% 90%;
+  /* ROMA Luxury Cosmetics & Feminine Accessories Palette */
+  /* Canvas & Background: #FDFBF7 (Warm Linen Ivory) */
+  --background: 40 60% 98%;
+  /* Typography & Titles: #1E1E1E (Deep Charcoal) */
+  --foreground: 0 0% 12%;
+  /* Border: Warm Linen Border */
+  --border: 36 22% 90%;
+  --input: 36 22% 90%;
   
-  /* Primary Sage Botanical Green */
-  --primary: 138 25% 42%;
+  /* Primary Brand: #4A1525 (Deep Plum / Burgundy) */
+  --primary: 342 56% 19%;
   --primary-foreground: 0 0% 100%;
+  --ring: 342 56% 19%;
   
-  /* Soft Sage Surface for Product Image Containers & Badges */
-  --secondary: 136 22% 93%;
-  --secondary-foreground: 140 32% 18%;
+  /* Accent / CTA: #D48B88 & #E8A598 (Soft Rose Gold / Blush) */
+  --accent: 3 49% 68%;
+  --accent-foreground: 342 56% 19%;
   
-  --muted: 136 16% 94%;
-  --muted-foreground: 138 10% 48%;
+  /* Soft Blush Ivory Surface for Badges and Secondary Cards */
+  --secondary: 4 45% 95%;
+  --secondary-foreground: 342 56% 19%;
   
-  --accent: 138 28% 34%;
-  --accent-foreground: 0 0% 100%;
+  /* Card: Pure White #FFFFFF */
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 12%;
+  --card-border: 36 20% 92%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 12%;
+  --popover-border: 36 22% 90%;
+  
+  /* Muted Grey: #6E6D7A */
+  --muted: 36 25% 95%;
+  --muted-foreground: 245 6% 45%;
   
   --destructive: 0 75% 50%;
   --destructive-foreground: 0 0% 100%;
   
-  --sidebar: 138 24% 18%;
-  --sidebar-foreground: 135 15% 98%;
-  --sidebar-border: 138 20% 25%;
-  --sidebar-primary: 138 25% 45%;
-  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar: 342 56% 14%;
+  --sidebar-foreground: 40 60% 98%;
+  --sidebar-border: 342 40% 22%;
+  --sidebar-primary: 3 49% 68%;
+  --sidebar-primary-foreground: 342 56% 19%;
   
-  /* Modern clean fonts */
-  --app-font-sans: 'Plus Jakarta Sans', 'Cairo', 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --app-font-serif: 'Outfit', 'Cairo', serif;
-  --app-font-mono: 'Space Mono', monospace;
-  --radius: 1.5rem;
+  /* Typography Variables */
+  --font-arabic-body: 'IBM Plex Sans Arabic', 'Cairo', sans-serif;
+  --font-arabic-display: 'Cairo', 'IBM Plex Sans Arabic', sans-serif;
+  --font-english-body: 'Plus Jakarta Sans', sans-serif;
+  --font-english-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  --app-font-sans: 'IBM Plex Sans Arabic', 'Plus Jakarta Sans', 'Cairo', sans-serif;
+  --app-font-serif: 'Cairo', 'Outfit', serif;
+  --app-font-mono: 'Outfit', 'Space Mono', monospace;
+  --radius: 1.25rem;
   
   --primary-border: hsl(var(--primary));
   --secondary-border: hsl(var(--secondary));
@@ -128,39 +140,59 @@
 @layer base {
   * { @apply border-border; }
   html { scroll-behavior: smooth; }
+  
+  html[lang="ar"], html[dir="rtl"] {
+    font-family: var(--font-arabic-body);
+  }
+  html[lang="en"], html[dir="ltr"] {
+    font-family: var(--font-english-body);
+  }
+
   body { 
-    font-family: var(--app-font-sans);
     @apply antialiased bg-background text-foreground; 
   }
   button, a, input, select { -webkit-tap-highlight-color: transparent; }
 }
 
 @layer utilities {
-  .font-display { font-family: var(--app-font-sans); }
-  .font-mono-brand { font-family: var(--app-font-mono); }
+  html[lang="ar"] .font-display, html[dir="rtl"] .font-display {
+    font-family: var(--font-arabic-display);
+  }
+  html[lang="en"] .font-display, html[dir="ltr"] .font-display {
+    font-family: var(--font-english-display);
+  }
+  
+  .font-mono-brand { 
+    font-family: var(--app-font-mono); 
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+  }
   .text-balance { text-wrap: balance; }
   .roma-container { width: min(100% - 2rem, 1280px); margin-inline: auto; }
   
-  /* Signature Glassmorphism Floating Dock */
+  /* Signature Luxury Glassmorphism Floating Dock */
   .floating-dock {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(253, 251, 247, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    box-shadow: 0 16px 36px -10px rgba(45, 83, 57, 0.14), 0 4px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(212, 139, 136, 0.22);
+    box-shadow: 0 16px 36px -10px rgba(74, 21, 37, 0.14), 0 4px 12px rgba(0, 0, 0, 0.03);
   }
 
-  /* Soft Sage Surface container for product cards */
+  /* Soft Rose Blush Surface container for product cards & badges */
+  .blush-surface {
+    background-color: #F8EBEA;
+  }
   .sage-surface {
-    background-color: #E8EFEA;
+    background-color: #F8EBEA;
   }
   
   /* Quantity Stepper Capsule */
   .stepper-capsule {
     background: #FFFFFF;
     border-radius: 9999px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    border: 1px solid #E2EBE5;
+    box-shadow: 0 2px 8px rgba(74, 21, 37, 0.06);
+    border: 1px solid #EFE8DE;
   }
 }
 

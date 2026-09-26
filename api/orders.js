@@ -12,14 +12,34 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+// In-memory sliding rate-limiter (Max 15 requests per IP per minute)
+const rateLimitMap = new Map();
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+  const maxReq = 15;
+  const record = rateLimitMap.get(ip) || { count: 0, resetTime: now + windowMs };
+  if (now > record.resetTime) {
+    record.count = 1;
+    record.resetTime = now + windowMs;
+  } else {
+    record.count += 1;
+  }
+  rateLimitMap.set(ip, record);
+  return record.count <= maxReq;
+}
+
 export default async function handler(req, res) {
+  const origin = req.headers.origin || '*';
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -27,13 +47,19 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    res.status(200).json({ ok: true, message: 'ROMA Orders & Telegram API is LIVE' });
+    res.status(200).json({ ok: true, message: 'ROMA Orders & Telegram API is LIVE (Protected)' });
     return;
   }
 
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
+  }
+
+  // Rate Limiting Protection
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
+  if (!checkRateLimit(clientIp)) {
+    return res.status(429).json({ success: false, error: 'Too many requests. Please try again in 1 minute.' });
   }
 
   try {

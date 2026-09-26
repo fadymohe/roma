@@ -8,7 +8,10 @@ import Home from '@/pages/home';
 import Shop from '@/pages/shop';
 import ProductPage from '@/pages/product';
 import CartPage from '@/pages/cart';
+import PoliciesPage from '@/pages/policies';
 import { CartProvider } from '@/hooks/use-cart';
+import { LanguageProvider } from '@/lib/language-context';
+import { AuthProvider } from '@/hooks/use-auth';
 import { StoreShell } from '@/components/store-shell';
 import {
   Route,
@@ -21,8 +24,6 @@ const queryClient = new QueryClient();
 
 function Router() {
   return (
-    // Keep a shared shell (sidebar, navbar) outside the boundary so it
-    // survives a page crash.
     <StoreShell>
       <RoutedErrorBoundary>
         <Switch>
@@ -30,6 +31,7 @@ function Router() {
           <Route path="/shop" component={Shop} />
           <Route path="/product/:slug" component={ProductPage} />
           <Route path="/cart" component={CartPage} />
+          <Route path="/policies" component={PoliciesPage} />
           <Route component={NotFound} />
         </Switch>
       </RoutedErrorBoundary>
@@ -42,19 +44,19 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
-import { AuthProvider } from '@/hooks/use-auth';
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <CartProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter>
-            <Toaster />
-          </CartProvider>
-        </AuthProvider>
-      </TooltipProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <AuthProvider>
+            <CartProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter>
+              <Toaster />
+            </CartProvider>
+          </AuthProvider>
+        </TooltipProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
