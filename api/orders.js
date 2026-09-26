@@ -109,25 +109,20 @@ export default async function handler(req, res) {
       ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، بخصوص طلبكِ رقم #ROMA-${orderId} من متجر Roma:`)}`
       : 'https://roma-eg.my';
 
-    const inlineKeyboard = [
+    const primaryKeyboard = [
       [
-        { text: 'تجهيز الطلب 🛠️', callback_data: `ord_status_processing_${orderId}` },
-        { text: 'تم الشحن 🚚', callback_data: `ord_status_shipped_${orderId}` },
+        { text: 'قبول الطلب ✅', callback_data: `accept_${orderId}` },
+        { text: 'إلغاء الطلب ❌', callback_data: `cancel_${orderId}` },
       ],
       [
-        { text: 'تم التسليم ✅', callback_data: `ord_status_completed_${orderId}` },
-        { text: 'إلغاء الطلب ❌', callback_data: `ord_status_cancelled_${orderId}` },
+        { text: 'الاتصال بالعميل 📞', url: `tel:${cleanPhone}` },
       ],
     ];
-
-    if (cleanPhone) {
-      inlineKeyboard.push([{ text: 'محادثة واتساب مباشرة 💬', url: waUrl }]);
-    }
 
     // 3. Send Telegram notification from Vercel Cloud Server
     let telegramResult = null;
     try {
-      const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      let tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -135,11 +130,37 @@ export default async function handler(req, res) {
           text,
           parse_mode: 'HTML',
           reply_markup: {
-            inline_keyboard: inlineKeyboard,
+            inline_keyboard: primaryKeyboard,
           },
         }),
       });
       telegramResult = await tgRes.json();
+
+      if (!telegramResult?.ok && telegramResult?.description?.includes('inline keyboard button URL')) {
+        console.warn('Retrying with safe link button in /api/orders...');
+        const fallbackKeyboard = [
+          [
+            { text: 'قبول الطلب ✅', callback_data: `accept_${orderId}` },
+            { text: 'إلغاء الطلب ❌', callback_data: `cancel_${orderId}` },
+          ],
+          [
+            { text: 'محادثة واتساب مباشرة 💬', url: waUrl },
+          ],
+        ];
+        tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: ADMIN_CHAT_ID,
+            text,
+            parse_mode: 'HTML',
+            reply_markup: {
+              inline_keyboard: fallbackKeyboard,
+            },
+          }),
+        });
+        telegramResult = await tgRes.json();
+      }
     } catch (tgErr) {
       console.error('Telegram dispatch error inside /api/orders:', tgErr);
     }

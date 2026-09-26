@@ -62,13 +62,14 @@ router.get("/logs", (_req: Request, res: Response) => {
 });
 
 /**
- * Send a Test Order Alert to Telegram
+ * Send a Test Order Alert to Telegram (GET or POST)
  */
-router.post("/test-order", async (req: Request, res: Response) => {
+const handleTestOrder = async (req: Request, res: Response) => {
+  const dummyId = Math.floor(1000 + Math.random() * 9000);
   const sampleOrder = {
-    orderId: req.body?.orderId || Math.floor(1000 + Math.random() * 9000),
-    orderNumber: `TEST-${Math.floor(1000 + Math.random() * 9000)}`,
-    customerName: req.body?.customerName || "نورا الشريف",
+    orderId: req.body?.orderId || dummyId,
+    orderNumber: `TEST-${dummyId}`,
+    customerName: req.body?.customerName || "نورا الشريف (طلب تجريبي)",
     customerPhone: req.body?.customerPhone || "01098765432",
     shippingAddress: req.body?.shippingAddress || "القاهرة، المعادي، شارع 9",
     paymentMethod: req.body?.paymentMethod || "الدفع عند الاستلام (COD)",
@@ -84,9 +85,14 @@ router.post("/test-order", async (req: Request, res: Response) => {
   res.json({
     success: true,
     message: "Test order alert dispatched!",
+    targetChatId: "8940310160",
     sampleOrder,
     dispatchResult,
   });
-});
+};
+
+router.get("/test-order", handleTestOrder);
+router.post("/test-order", handleTestOrder);
+router.get("/test-telegram", handleTestOrder);
 
 export default router;

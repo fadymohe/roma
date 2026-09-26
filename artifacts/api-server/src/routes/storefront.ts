@@ -231,47 +231,132 @@ router.post("/shipping/rates", (req: Request, res: Response): void => {
 });
 
 let nextOrderId = 1048;
-router.post("/orders", (req: Request, res: Response): void => {
-  const input = CreateOrderBody.parse(req.body);
-  const itemsDetailed = input.items.map((item) => {
-    const product = products.find((candidate) => candidate.id === item.productId);
-    const variant = product?.variants?.find((v) => v.id === item.variantId);
-    return {
-      name: product?.nameAr || "مستحضر طبيعي",
-      variantName: variant?.nameAr,
-      quantity: item.quantity,
-      price: product?.price ?? 0,
+
+router.get("/test-telegram", async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const dummyOrderId = Math.floor(100000 + Math.random() * 900000);
+    const dummyOrder = {
+      orderId: dummyOrderId,
+      orderNumber: `ROMA-TEST-${dummyOrderId}`,
+      customerName: "عميل تجريبي — اختبار الربط الفوري",
+      customerPhone: "01099887766",
+      shippingAddress: "القاهرة، المعادي، شارع النصر",
+      paymentMethod: "الدفع عند الاستلام (COD)",
+      items: [
+        { name: "سيروم النضارة الطبيعي الفاخر (50ml)", quantity: 2, price: 175, variantName: "50ml" },
+        { name: "كريم استعادة نضارة وترطيب الوجه", quantity: 1, price: 145 },
+      ],
+      shippingCost: 35,
+      totalAmount: 530,
     };
-  });
 
-  const totalAmount = itemsDetailed.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
+    const telegramResult = await notifyMerchantNewOrder(dummyOrder);
+    res.status(200).json({
+      success: true,
+      message: "Test order alert dispatched successfully to Telegram Chat ID 8940310160!",
+      targetChatId: "8940310160",
+      dummyOrder,
+      telegramResult,
+    });
+  } catch (err) {
+    console.error("Telegram dispatch error on /test-telegram:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to dispatch test Telegram notification",
+      error: String(err),
+    });
+  }
+});
 
-  const orderId = nextOrderId++;
-  const order = {
-    id: orderId,
-    status: "pending",
-    totalAmount,
-    createdAt: new Date().toISOString(),
-  };
+router.post("/notify-order", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const body = req.body || {};
+    const orderId = body.orderId || Math.floor(100000 + Math.random() * 900000);
+    const orderData = {
+      orderId,
+      orderNumber: body.orderNumber || `ROMA-${orderId}`,
+      customerName: body.customerName || body.name || "عميل زائر",
+      customerPhone: body.customerPhone || body.phone || "غير متوفر",
+      shippingAddress: body.shippingAddress || "غير محدد",
+      paymentMethod: body.paymentMethod || "الدفع عند الاستلام",
+      items: Array.isArray(body.items) ? body.items : [],
+      shippingCost: Number(body.shippingCost) || 0,
+      totalAmount: Number(body.totalAmount) || 0,
+    };
 
-  // Asynchronously push notification to Merchant Telegram Channel / Bot
-  notifyMerchantNewOrder({
-    orderId,
-    orderNumber: `ROMA-${orderId}`,
-    customerName: (req.body as any)?.customerName || (req.body as any)?.name || "عميل زائر",
-    customerPhone: (req.body as any)?.phone || (req.body as any)?.customerPhone || "01000000000",
-    shippingAddress: input.shippingAddress,
-    paymentMethod: (req.body as any)?.paymentMethod || "الدفع عند الاستلام (COD)",
-    items: itemsDetailed,
-    totalAmount,
-  }).catch((err) => {
-    console.error("Failed to notify merchant on Telegram:", err);
-  });
+    const telegramResult = await notifyMerchantNewOrder(orderData);
+    res.status(200).json({ success: true, orderId, telegramResult });
+  } catch (err) {
+    console.error("Telegram dispatch error on /notify-order:", err);
+    res.status(500).json({ success: false, error: String(err) });
+  }
+});
 
-  res.status(201).json(CreateOrderResponse.parse(order));
+router.post("/orders", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const body = req.body || {};
+    const orderId = body.orderId || nextOrderId++;
+    const customerName = body.customerName || body.name || "عميل زائر";
+    const customerPhone = body.customerPhone || body.phone || "غير متوفر";
+    const shippingAddress = body.shippingAddress || "غير محدد";
+    const paymentMethod = body.paymentMethod || "الدفع عند الاستلام";
+    const shippingCost = Number(body.shippingCost) || 0;
+
+    let itemsDetailed: any[] = [];
+    if (Array.isArray(body.items)) {
+      itemsDetailed = body.items.map((item: any) => {
+        if (item.name) {
+          return {
+            name: item.name,
+            variantName: item.variantName || item.variant,
+            quantity: Number(item.quantity) || 1,
+            price: Number(item.price) || 0,
+          };
+        }
+        const product = products.find((candidate) => candidate.id === item.productId);
+        const variant = product?.variants?.find((v) => v.id === item.variantId);
+        return {
+          name: product?.nameAr || "مستحضر طبيعي",
+          variantName: variant?.nameAr,
+          quantity: Number(item.quantity) || 1,
+          price: product?.price ?? 0,
+        };
+      });
+    }
+
+    const totalAmount = body.totalAmount
+      ? Number(body.totalAmount)
+      : itemsDetailed.reduce((sum, it) => sum + it.price * it.quantity, 0);
+
+    const orderData = {
+      orderId,
+      orderNumber: body.orderNumber || `ROMA-${orderId}`,
+      customerName,
+      customerPhone,
+      shippingAddress,
+      paymentMethod,
+      items: itemsDetailed,
+      shippingCost,
+      totalAmount,
+    };
+
+    // Asynchronously push notification to Merchant Telegram Channel / Bot
+    const telegramResult = await notifyMerchantNewOrder(orderData).catch((err) => {
+      console.error("Telegram dispatch error:", err);
+      return { ok: false, error: err };
+    });
+
+    res.status(201).json({
+      id: orderId,
+      status: "pending",
+      totalAmount,
+      createdAt: new Date().toISOString(),
+      telegramResult,
+    });
+  } catch (err) {
+    console.error("Telegram dispatch error on /orders:", err);
+    res.status(500).json({ error: String(err) });
+  }
 });
 
 export default router;

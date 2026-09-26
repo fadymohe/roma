@@ -229,9 +229,40 @@ const STATUS_MAP = {
   cancelled: { label: 'ملغي ❌', badge: '❌ ملغي' },
 };
 
+const ADMINS_FILE = path.join(__dirname, 'admins.json');
+
+function getKnownAdmins() {
+  const set = new Set([ADMIN_CHAT_ID]);
+  try {
+    if (fs.existsSync(ADMINS_FILE)) {
+      const arr = JSON.parse(fs.readFileSync(ADMINS_FILE, 'utf8'));
+      arr.forEach((id) => set.add(String(id)));
+    }
+  } catch (_) {}
+  return Array.from(set);
+}
+
+function registerAdmin(chatId) {
+  if (!chatId) return;
+  const current = getKnownAdmins();
+  if (!current.includes(String(chatId))) {
+    current.push(String(chatId));
+    try {
+      fs.writeFileSync(ADMINS_FILE, JSON.stringify(current, null, 2), 'utf8');
+      console.log(`[BOT] Registered new admin chat ID: ${chatId}`);
+    } catch (_) {}
+  }
+}
+
 // ----------------- Update & Interaction Handler -----------------
 
 async function handleUpdate(update) {
+  const incomingChatId = update.message?.chat?.id || update.callback_query?.message?.chat?.id;
+  if (incomingChatId) {
+    registerAdmin(incomingChatId);
+    console.log(`[BOT UPDATE] Chat ID: ${incomingChatId}, from: ${update.message?.from?.username || update.callback_query?.from?.username || 'user'}`);
+  }
+
   // 1. Callback query handling
   if (update.callback_query) {
     const cb = update.callback_query;

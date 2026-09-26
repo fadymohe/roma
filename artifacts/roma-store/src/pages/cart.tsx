@@ -120,30 +120,40 @@ export default function CartPage() {
         console.warn('Supabase order upload notice:', e);
       }
 
-      // 2. Cloud Serverless Dispatch via /api/orders (guaranteed delivery from Vercel Cloud)
+      const orderPayload = {
+        orderId: resolvedOrderId,
+        orderNumber: `ROMA-${resolvedOrderId}`,
+        customerName: name || 'عميل المتجر',
+        customerPhone: phone || '',
+        shippingAddress: fullAddress,
+        paymentMethod: paymentLabel,
+        items: lines.map((line) => ({
+          name: line?.product?.nameAr || 'مستحضر عناية',
+          quantity: Number(line?.quantity) || 1,
+          price: Number(line?.product?.price) || 0,
+          variantName: line?.variant?.nameAr,
+        })),
+        shippingCost: shipping,
+        totalAmount: total,
+        userId: user?.id || null,
+      };
+
+      // 2. Dispatch to Backend API endpoints (/api/notify-order & /api/orders)
       try {
-        await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            orderId: resolvedOrderId,
-            customerName: name || 'عميل روما',
-            customerPhone: phone || '',
-            shippingAddress: fullAddress,
-            paymentMethod: paymentLabel,
-            items: lines.map((line) => ({
-              name: line?.product?.nameAr || 'مستحضر عناية',
-              quantity: Number(line?.quantity) || 1,
-              price: Number(line?.product?.price) || 0,
-              variantName: line?.variant?.nameAr,
-            })),
-            shippingCost: shipping,
-            totalAmount: total,
-            userId: user?.id || null,
+        await Promise.allSettled([
+          fetch('/api/notify-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderPayload),
           }),
-        });
+          fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderPayload),
+          }),
+        ]);
       } catch (apiErr) {
-        console.warn('/api/orders serverless notice:', apiErr);
+        console.warn('Backend API notification dispatch notice:', apiErr);
       }
 
       // 3. Direct browser Telegram alert with safe HTML formatting (redundant failsafe)

@@ -55,26 +55,29 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
     ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${order.customerName}، بخصوص طلبكِ رقم #ROMA-${order.orderId} من متجر Roma:`)}`
     : 'https://roma-eg.my';
 
-  const inlineKeyboard = [
+  const primaryKeyboard = [
     [
-      { text: 'تجهيز الطلب 🛠️', callback_data: `ord_status_processing_${order.orderId}` },
-      { text: 'تم الشحن 🚚', callback_data: `ord_status_shipped_${order.orderId}` },
+      { text: 'قبول الطلب ✅', callback_data: `accept_${order.orderId}` },
+      { text: 'إلغاء الطلب ❌', callback_data: `cancel_${order.orderId}` },
     ],
     [
-      { text: 'تم التسليم ✅', callback_data: `ord_status_completed_${order.orderId}` },
-      { text: 'إلغاء الطلب ❌', callback_data: `ord_status_cancelled_${order.orderId}` },
+      { text: 'الاتصال بالعميل 📞', url: `tel:${cleanPhone}` },
     ],
   ];
 
-  if (cleanPhone) {
-    inlineKeyboard.push([
+  const fallbackKeyboard = [
+    [
+      { text: 'قبول الطلب ✅', callback_data: `accept_${order.orderId}` },
+      { text: 'إلغاء الطلب ❌', callback_data: `cancel_${order.orderId}` },
+    ],
+    [
       { text: 'محادثة واتساب مباشرة 💬', url: waUrl },
-    ]);
-  }
+    ],
+  ];
 
   // 1. First attempt: Safe HTML mode via /api/tg cloud proxy (bypasses ISP blocks in Egypt)
   try {
-    const res = await fetch(`/api/tg/bot${BOT_TOKEN}/sendMessage`, {
+    let res = await fetch(`/api/tg/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -82,16 +85,15 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
         text,
         parse_mode: 'HTML',
         reply_markup: {
-          inline_keyboard: inlineKeyboard,
+          inline_keyboard: primaryKeyboard,
         },
       }),
     });
-    const data = await res.json();
+    let data = await res.json();
     if (data.ok) return data;
-  } catch (err) {
-    // try direct endpoint if proxy not reachable
-    try {
-      const directRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+
+    if (!data.ok && data.description?.includes('inline keyboard button URL')) {
+      res = await fetch(`/api/tg/bot${BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -99,13 +101,50 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
           text,
           parse_mode: 'HTML',
           reply_markup: {
-            inline_keyboard: inlineKeyboard,
+            inline_keyboard: fallbackKeyboard,
           },
         }),
       });
-      const data = await directRes.json();
+      data = await res.json();
       if (data.ok) return data;
-    } catch (_) {}
+    }
+  } catch (err) {
+    // try direct endpoint if proxy not reachable
+    try {
+      let directRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: ADMIN_CHAT_ID,
+          text,
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: primaryKeyboard,
+          },
+        }),
+      });
+      let data = await directRes.json();
+      if (data.ok) return data;
+
+      if (!data.ok && data.description?.includes('inline keyboard button URL')) {
+        directRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: ADMIN_CHAT_ID,
+            text,
+            parse_mode: 'HTML',
+            reply_markup: {
+              inline_keyboard: fallbackKeyboard,
+            },
+          }),
+        });
+        data = await directRes.json();
+        if (data.ok) return data;
+      }
+    } catch (directErr) {
+      console.error('Telegram direct fetch error:', directErr);
+    }
   }
 
   // 2. Failsafe attempt: Plain Text without HTML tags
@@ -127,7 +166,7 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
         chat_id: ADMIN_CHAT_ID,
         text: plainText,
         reply_markup: {
-          inline_keyboard: inlineKeyboard,
+          inline_keyboard: fallbackKeyboard,
         },
       }),
     });
