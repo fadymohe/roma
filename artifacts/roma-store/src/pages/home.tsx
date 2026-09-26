@@ -59,34 +59,34 @@ export default function Home() {
     { id: 'moisturizers', label: t('nav.moisturizers') },
     { id: 'face', label: t('nav.face') },
     { id: 'skincare', label: t('nav.skincare') },
-    { id: 'accessories', label: t('nav.accessories') },
+    { id: 'accessories', label: isAr ? 'إكسسوارات' : 'Accessories' },
   ];
 
   return (
-    <div dir={dir} className="space-y-12 md:space-y-20 py-4 md:py-8">
+    <div dir={dir} className="space-y-12 md:space-y-20 py-4 md:py-8 text-[#F9FAFB]">
       {/* Luxury Hero Section */}
       <section className="roma-container">
-        <div className="relative overflow-hidden rounded-[36px] border border-[#EFE8DE] bg-gradient-to-br from-[#4A1525] via-[#38101C] to-[#260B13] text-[#FDFBF7] p-8 md:p-16 shadow-2xl">
-          {/* Subtle Ambient Decorative Circles */}
-          <div className="absolute -top-24 -right-24 size-96 rounded-full bg-[#D48B88]/15 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 size-96 rounded-full bg-[#E8A598]/10 blur-3xl pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#141414] via-[#101010] to-[#0A0A0A] p-8 md:p-16 shadow-2xl">
+          {/* Subtle Ambient Decorative Circles in Dusty Rose */}
+          <div className="absolute -top-24 -right-24 size-96 rounded-full bg-[#D4A5A5]/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 size-96 rounded-full bg-[#C89595]/10 blur-3xl pointer-events-none" />
 
           <div className="relative z-10 grid gap-10 md:grid-cols-12 items-center">
             {/* Left/Main Column: Copy & Actions */}
             <div className="md:col-span-7 space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3.5 py-1 text-xs font-bold text-[#E8A598] border border-white/15">
+              <span className="inline-flex items-center gap-2 rounded-full bg-[#D4A5A5]/15 border border-[#D4A5A5]/30 px-3.5 py-1 text-xs font-bold text-[#D4A5A5]">
                 <Sparkles className="size-3.5" />
                 {t('hero.badge')}
               </span>
 
-              <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold leading-[1.15] tracking-tight">
+              <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold leading-[1.15] tracking-tight text-white">
                 {t('hero.title_part1')}{' '}
-                <span className="text-[#E8A598] underline decoration-[#D48B88]/40 decoration-wavy">
+                <span className="text-[#D4A5A5] underline decoration-[#D4A5A5]/40 decoration-wavy">
                   {t('hero.title_highlight')}
                 </span>
               </h1>
 
-              <p className="text-sm md:text-base leading-relaxed text-white/80 max-w-xl">
+              <p className="text-sm md:text-base leading-relaxed text-[#A1A1AA] max-w-xl">
                 {t('hero.description')}
               </p>
 
@@ -94,38 +94,38 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
                   href="/shop"
-                  className="rounded-full bg-[#D48B88] hover:bg-[#E8A598] px-7 py-3.5 text-xs md:text-sm font-bold text-[#4A1525] shadow-lg shadow-[#D48B88]/30 transition-all hover:scale-105 active:scale-95"
+                  className="rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] px-7 py-3.5 text-xs md:text-sm font-bold text-[#0A0A0A] shadow-lg shadow-[#D4A5A5]/20 transition-all hover:scale-105 active:scale-95"
                 >
                   {t('hero.cta_shop')}
                 </Link>
 
                 <Link
-                  href="/policies"
-                  className="rounded-full border border-white/30 bg-white/5 hover:bg-white/10 px-6 py-3.5 text-xs md:text-sm font-bold text-white transition"
+                  href="/categories"
+                  className="rounded-xl border border-white/10 bg-[#1A1A1A] hover:bg-white/5 px-6 py-3.5 text-xs md:text-sm font-bold text-white transition"
                 >
-                  {t('nav.policies')}
+                  {isAr ? 'استكشاف الأقسام' : 'Browse Categories'}
                 </Link>
               </div>
 
               {/* Stats Counters */}
-              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/15">
+              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/10">
                 <div>
-                  <strong className="block text-xl md:text-2xl font-extrabold text-[#E8A598] font-mono-brand">
+                  <strong className="block text-xl md:text-2xl font-extrabold text-[#D4A5A5] font-mono-brand">
                     100%
                   </strong>
-                  <span className="text-[11px] text-white/70">{t('hero.stat_natural')}</span>
+                  <span className="text-[11px] text-[#A1A1AA]">{t('hero.stat_natural')}</span>
                 </div>
                 <div>
-                  <strong className="block text-xl md:text-2xl font-extrabold text-[#E8A598] font-mono-brand">
+                  <strong className="block text-xl md:text-2xl font-extrabold text-[#D4A5A5] font-mono-brand">
                     24-48h
                   </strong>
-                  <span className="text-[11px] text-white/70">{t('hero.stat_delivery')}</span>
+                  <span className="text-[11px] text-[#A1A1AA]">{t('hero.stat_delivery')}</span>
                 </div>
                 <div>
-                  <strong className="block text-xl md:text-2xl font-extrabold text-[#E8A598] font-mono-brand">
+                  <strong className="block text-xl md:text-2xl font-extrabold text-[#D4A5A5] font-mono-brand">
                     +15,000
                   </strong>
-                  <span className="text-[11px] text-white/70">{t('hero.stat_customers')}</span>
+                  <span className="text-[11px] text-[#A1A1AA]">{t('hero.stat_customers')}</span>
                 </div>
               </div>
             </div>
@@ -133,14 +133,14 @@ export default function Home() {
             {/* Right Column: Featured Hero Product Spotlight */}
             {heroProduct && (
               <div className="md:col-span-5">
-                <div className="relative rounded-[32px] border border-white/20 bg-white/10 backdrop-blur-xl p-5 shadow-xl space-y-4">
-                  <div className="relative aspect-square rounded-[24px] overflow-hidden bg-white/95 p-4 flex items-center justify-center">
+                <div className="relative rounded-3xl border border-white/10 bg-[#141414] p-5 shadow-2xl space-y-4">
+                  <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#1A1A1A] p-4 flex items-center justify-center">
                     <img
                       src={heroProduct.imageUrl}
                       alt={isAr ? heroProduct.nameAr : (heroProduct.nameEn || heroProduct.nameAr)}
-                      className="h-full w-full object-contain mix-blend-multiply transition-transform duration-700 hover:scale-105"
+                      className="h-full w-full object-cover rounded-xl transition-transform duration-700 hover:scale-105"
                     />
-                    <span className="absolute top-3 right-3 rounded-full bg-[#4A1525] px-2.5 py-1 text-[10px] font-bold text-white">
+                    <span className="absolute top-3 right-3 rounded-full bg-[#D4A5A5] px-2.5 py-1 text-[10px] font-bold text-[#0A0A0A] shadow-md">
                       {isAr ? heroProduct.badge : (heroProduct.badgeEn || heroProduct.badge)}
                     </span>
                   </div>
@@ -150,7 +150,7 @@ export default function Home() {
                       <h3 className="font-bold text-sm text-white line-clamp-1">
                         {isAr ? heroProduct.nameAr : (heroProduct.nameEn || heroProduct.nameAr)}
                       </h3>
-                      <p className="text-xs text-[#E8A598] font-bold font-mono-brand">
+                      <p className="text-xs text-[#D4A5A5] font-bold font-mono-brand mt-0.5">
                         {formatPrice(heroProduct.price)}
                       </p>
                     </div>
@@ -158,7 +158,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={handleHeroAdd}
-                      className="flex items-center gap-1.5 rounded-full bg-[#D48B88] hover:bg-[#E8A598] px-4 py-2 text-xs font-bold text-[#4A1525] shadow-xs transition active:scale-95"
+                      className="flex items-center gap-1.5 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] px-4 py-2 text-xs font-bold text-[#0A0A0A] shadow-md transition active:scale-95"
                     >
                       {heroAdded ? (
                         <>
@@ -183,50 +183,50 @@ export default function Home() {
       {/* Trust & Value Pillars */}
       <section className="roma-container">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-[28px] border border-[#EFE8DE] bg-white p-5 shadow-xs space-y-2 transition-all hover:border-[#D48B88]/50 hover:shadow-md">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-[#F8EBEA] text-[#4A1525]">
-              <Sparkles className="size-5 text-[#D48B88]" />
+          <div className="rounded-3xl border border-white/10 bg-[#141414] p-5 shadow-sm space-y-2 transition-all hover:border-[#D4A5A5]/30">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-[#D4A5A5]/15 text-[#D4A5A5]">
+              <Sparkles className="size-5" />
             </div>
-            <h3 className="font-display font-bold text-sm text-foreground">
+            <h3 className="font-display font-bold text-sm text-white">
               {t('trust.organic_title')}
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-[#A1A1AA] leading-relaxed">
               {t('trust.organic_desc')}
             </p>
           </div>
 
-          <div className="rounded-[28px] border border-[#EFE8DE] bg-white p-5 shadow-xs space-y-2 transition-all hover:border-[#D48B88]/50 hover:shadow-md">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-[#F8EBEA] text-[#4A1525]">
-              <Truck className="size-5 text-[#D48B88]" />
+          <div className="rounded-3xl border border-white/10 bg-[#141414] p-5 shadow-sm space-y-2 transition-all hover:border-[#D4A5A5]/30">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-[#D4A5A5]/15 text-[#D4A5A5]">
+              <Truck className="size-5" />
             </div>
-            <h3 className="font-display font-bold text-sm text-foreground">
+            <h3 className="font-display font-bold text-sm text-white">
               {t('trust.fast_shipping_title')}
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-[#A1A1AA] leading-relaxed">
               {t('trust.fast_shipping_desc')}
             </p>
           </div>
 
-          <div className="rounded-[28px] border border-[#EFE8DE] bg-white p-5 shadow-xs space-y-2 transition-all hover:border-[#D48B88]/50 hover:shadow-md">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-[#F8EBEA] text-[#4A1525]">
-              <HeartHandshake className="size-5 text-[#D48B88]" />
+          <div className="rounded-3xl border border-white/10 bg-[#141414] p-5 shadow-sm space-y-2 transition-all hover:border-[#D4A5A5]/30">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-[#D4A5A5]/15 text-[#D4A5A5]">
+              <HeartHandshake className="size-5" />
             </div>
-            <h3 className="font-display font-bold text-sm text-foreground">
+            <h3 className="font-display font-bold text-sm text-white">
               {t('trust.cod_title')}
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-[#A1A1AA] leading-relaxed">
               {t('trust.cod_desc')}
             </p>
           </div>
 
-          <div className="rounded-[28px] border border-[#EFE8DE] bg-white p-5 shadow-xs space-y-2 transition-all hover:border-[#D48B88]/50 hover:shadow-md">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-[#F8EBEA] text-[#4A1525]">
-              <ShieldCheck className="size-5 text-[#D48B88]" />
+          <div className="rounded-3xl border border-white/10 bg-[#141414] p-5 shadow-sm space-y-2 transition-all hover:border-[#D4A5A5]/30">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-[#D4A5A5]/15 text-[#D4A5A5]">
+              <ShieldCheck className="size-5" />
             </div>
-            <h3 className="font-display font-bold text-sm text-foreground">
+            <h3 className="font-display font-bold text-sm text-white">
               {t('trust.moh_title')}
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-[#A1A1AA] leading-relaxed">
               {t('trust.moh_desc')}
             </p>
           </div>
@@ -237,14 +237,14 @@ export default function Home() {
       <section className="roma-container">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <span className="font-mono-brand text-xs font-bold text-[#D48B88] tracking-widest uppercase">
+            <span className="font-mono-brand text-xs font-bold text-[#D4A5A5] tracking-widest uppercase">
               {isAr ? 'الأقسام والمجموعات' : 'Royal Collections'}
             </span>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-white">
               {t('section.categories_title')}
             </h2>
           </div>
-          <Link href="/shop" className="text-xs font-bold text-[#4A1525] hover:underline">
+          <Link href="/categories" className="text-xs font-bold text-[#D4A5A5] hover:underline">
             {isAr ? 'تصفح الكل' : 'View All'}
           </Link>
         </div>
@@ -254,16 +254,16 @@ export default function Home() {
             <Link
               key={cat.id}
               href={`/shop?category=${cat.slug}`}
-              className="group relative overflow-hidden rounded-[24px] border border-[#EFE8DE] bg-white p-3 shadow-2xs hover:shadow-md transition text-center"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-xs hover:border-[#D4A5A5]/40 transition text-center"
             >
-              <div className="aspect-square w-full rounded-2xl overflow-hidden mb-2 bg-[#F8EBEA]">
+              <div className="aspect-square w-full rounded-xl overflow-hidden mb-2 bg-[#1A1A1A]">
                 <img
                   src={cat.imageUrl}
                   alt={isAr ? cat.nameAr : cat.nameEn}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
-              <h3 className="text-xs font-bold text-foreground line-clamp-1 group-hover:text-[#4A1525] transition">
+              <h3 className="text-xs font-bold text-white line-clamp-1 group-hover:text-[#D4A5A5] transition">
                 {isAr ? cat.nameAr : cat.nameEn}
               </h3>
             </Link>
@@ -275,10 +275,10 @@ export default function Home() {
       <section className="roma-container">
         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <span className="font-mono-brand text-xs font-bold text-[#D48B88] tracking-widest uppercase">
+            <span className="font-mono-brand text-xs font-bold text-[#D4A5A5] tracking-widest uppercase">
               {isAr ? 'المختارات الأكثر تألقاً' : 'Most Coveted Bestsellers'}
             </span>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-white">
               {t('section.bestsellers_title')}
             </h2>
           </div>
@@ -290,10 +290,10 @@ export default function Home() {
                 key={pill.id}
                 type="button"
                 onClick={() => setActiveCategory(pill.id)}
-                className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-bold transition-all shadow-xs ${
+                className={`whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-bold transition-all shadow-xs ${
                   activeCategory === pill.id
-                    ? 'bg-[#4A1525] text-white shadow-xs'
-                    : 'bg-white border border-[#EFE8DE] text-foreground/75 hover:border-[#D48B88]'
+                    ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md'
+                    : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white'
                 }`}
               >
                 {pill.label}
@@ -312,12 +312,12 @@ export default function Home() {
 
       {/* Client Testimonials & Social Proof */}
       <section className="roma-container">
-        <div className="rounded-[36px] border border-[#EFE8DE] bg-[#F8EBEA]/50 p-8 md:p-14">
+        <div className="rounded-3xl border border-white/10 bg-[#141414] p-8 md:p-14">
           <div className="text-center max-w-xl mx-auto mb-10">
-            <span className="text-xs font-bold text-[#D48B88] uppercase tracking-widest">
+            <span className="text-xs font-bold text-[#D4A5A5] uppercase tracking-widest">
               {isAr ? 'شهادات عميلاتنا الموثقة' : 'Client Testimonials'}
             </span>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mt-1">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-white mt-1">
               {isAr ? 'ماذا تقول جميلات ROMA عنا؟' : 'Cherished Experiences'}
             </h2>
           </div>
@@ -326,23 +326,23 @@ export default function Home() {
             {TESTIMONIALS.map((tItem) => (
               <div
                 key={tItem.id}
-                className="rounded-[28px] border border-[#EFE8DE] bg-white p-6 shadow-xs space-y-3"
+                className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-6 shadow-sm space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex text-amber-500">
+                  <div className="flex text-amber-400">
                     {Array.from({ length: tItem.rating }).map((_, i) => (
                       <Star key={i} className="size-3.5 fill-current" />
                     ))}
                   </div>
-                  <span className="text-[10px] text-emerald-800 bg-emerald-100 font-bold px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] text-emerald-300 bg-emerald-950/40 border border-emerald-800/40 font-bold px-2 py-0.5 rounded-full">
                     {isAr ? '✓ مشترية مؤكدة' : '✓ Verified Buyer'}
                   </span>
                 </div>
-                <p className="text-xs md:text-sm text-foreground/85 leading-relaxed italic">
+                <p className="text-xs md:text-sm text-[#A1A1AA] leading-relaxed italic">
                   "{isAr ? tItem.quoteAr : tItem.quoteEn}"
                 </p>
-                <div className="pt-2 border-t border-[#EFE8DE]">
-                  <strong className="text-xs font-bold text-foreground block">
+                <div className="pt-2 border-t border-white/5">
+                  <strong className="text-xs font-bold text-white block">
                     {isAr ? tItem.nameAr : tItem.nameEn}
                   </strong>
                 </div>

@@ -6,8 +6,10 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import Home from '@/pages/home';
 import Shop from '@/pages/shop';
+import CategoriesPage from '@/pages/categories';
 import ProductPage from '@/pages/product';
 import CartPage from '@/pages/cart';
+import AccountPage from '@/pages/account';
 import PoliciesPage from '@/pages/policies';
 import { CartProvider } from '@/hooks/use-cart';
 import { LanguageProvider } from '@/lib/language-context';
@@ -20,7 +22,14 @@ import {
   Router as WouterRouter,
 } from 'wouter';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function Router() {
   return (
@@ -29,8 +38,10 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/shop" component={Shop} />
+          <Route path="/categories" component={CategoriesPage} />
           <Route path="/product/:slug" component={ProductPage} />
           <Route path="/cart" component={CartPage} />
+          <Route path="/account" component={AccountPage} />
           <Route path="/policies" component={PoliciesPage} />
           <Route component={NotFound} />
         </Switch>
@@ -51,7 +62,9 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <CartProvider>
-              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+                <Router />
+              </WouterRouter>
               <Toaster />
             </CartProvider>
           </AuthProvider>

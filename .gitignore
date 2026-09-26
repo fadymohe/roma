@@ -14,6 +14,7 @@ artifacts/roma-store/dist
 .expo-shared
 .env
 .env.*
+!.env.example
 
 # dependencies
 node_modules

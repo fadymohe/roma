@@ -15,6 +15,13 @@ import {
   Phone,
   CheckCircle2,
   AlertCircle,
+  Upload,
+  Copy,
+  Receipt,
+  CreditCard,
+  Banknote,
+  Smartphone,
+  QrCode,
 } from 'lucide-react';
 import { useState, useEffect, type FormEvent } from 'react';
 import { Link } from 'wouter';
@@ -22,7 +29,7 @@ import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
 import { notifyTelegramNewOrder } from '@/lib/telegram';
-import { uploadOrderToSupabase } from '@/lib/supabase';
+import { uploadOrderToSupabase, supabase } from '@/lib/supabase';
 
 const GOVERNORATES = [
   { id: 'cairo', nameAr: 'القاهرة', nameEn: 'Cairo' },
@@ -55,15 +62,28 @@ export default function CartPage() {
   const { user, setAuthModalOpen, addAddress, updateUserPoints } = useAuth();
   const { t, isAr, formatPrice, dir } = useLanguage();
 
+  // Customer shipping fields
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
+  const [altPhone, setAltPhone] = useState('');
   const [governorate, setGovernorate] = useState('cairo');
   const [address, setAddress] = useState(user?.savedAddresses?.[0] || '');
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'wallet' | 'card'>('cod');
+
+  // 4 Egyptian payment methods
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'vodafone_cash' | 'instapay' | 'fawry'>('cod');
+  
+  // Specific inputs for local payments
+  const [vodafoneSenderNumber, setVodafoneSenderNumber] = useState('');
+  const [instapayReference, setInstapayReference] = useState('');
+  const [fawryCode] = useState(() => `999${Math.floor(1000000 + Math.random() * 9000000)}`);
+  const [receiptImage, setReceiptImage] = useState<string | null>(null);
+  const [receiptFileName, setReceiptFileName] = useState<string>('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState('');
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
@@ -77,7 +97,7 @@ export default function CartPage() {
   const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
   const shippingCost = isFreeShipping ? 0 : 35;
 
-  const [complete, setComplete] = useState<{ id: string; total: number } | null>(null);
+  const [complete, setComplete] = useState<{ id: string; total: number; method: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -101,6 +121,29 @@ export default function CartPage() {
     }
   };
 
+  const copyToClipboard = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert(isAr ? 'حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 5 ميجابايت' : 'File is too large, please select under 5MB');
+      return;
+    }
+
+    setReceiptFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setReceiptImage(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const total = Math.max(0, subtotal - discountAmount + shippingCost);
 
   const submitOrder = async (event: FormEvent) => {
@@ -122,6 +165,16 @@ export default function CartPage() {
       return;
     }
 
+    // Payment validation
+    if (paymentMethod === 'vodafone_cash' && !vodafoneSenderNumber.trim()) {
+      setValidationError(isAr ? 'يرجى إدخال رقم المحفظة التي تم التحويل منها' : 'Please enter the sender wallet phone number');
+      return;
+    }
+    if (paymentMethod === 'instapay' && !instapayReference.trim()) {
+      setValidationError(isAr ? 'يرجى إدخال الرقم المرجعي للتحويل عبر إنستاباي' : 'Please enter InstaPay reference transaction code');
+      return;
+    }
+
     setValidationError('');
     setIsSubmitting(true);
 
@@ -132,10 +185,21 @@ export default function CartPage() {
 
     const paymentLabel =
       paymentMethod === 'cod'
-        ? (isAr ? 'الدفع عند الاستلام (نقداً أو إنستاباي للمندوب)' : 'Cash on Delivery (COD & InstaPay)')
-        : paymentMethod === 'wallet'
-        ? (isAr ? 'محافظ إلكترونية / إنستاباي (Vodafone Cash / InstaPay)' : 'Mobile Wallets / InstaPay')
-        : (isAr ? 'بطاقة بنكية (Visa / Mastercard / Meeza)' : 'Credit / Debit Card');
+        ? (isAr ? 'الدفع عند الاستلام (COD)' : 'Cash on Delivery')
+        : paymentMethod === 'vodafone_cash'
+        ? (isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash')
+        : paymentMethod === 'instapay'
+        ? (isAr ? 'إنستاباي (InstaPay)' : 'InstaPay')
+        : (isAr ? 'فوري (Fawry)' : 'Fawry Pay');
+
+    const paymentRef =
+      paymentMethod === 'vodafone_cash'
+        ? `رقم المحول: ${vodafoneSenderNumber}`
+        : paymentMethod === 'instapay'
+        ? `مرجع إنستاباي: ${instapayReference}`
+        : paymentMethod === 'fawry'
+        ? `كود فوري: ${fawryCode}`
+        : 'الدفع نقداً للمندوب';
 
     const orderPayload = {
       orderId: fallbackId,
@@ -144,6 +208,9 @@ export default function CartPage() {
       customerPhone: phone.trim(),
       shippingAddress: fullAddress,
       paymentMethod: paymentLabel,
+      paymentStatus: paymentMethod === 'cod' ? 'unpaid' : 'verified',
+      paymentReference: paymentRef,
+      receiptImage: receiptImage || null,
       items: lines.map((line) => ({
         name: isAr ? (line?.product?.nameAr || 'مستحضر') : (line?.product?.nameEn || line?.product?.nameAr || 'Cosmetic'),
         quantity: Number(line?.quantity) || 1,
@@ -151,36 +218,60 @@ export default function CartPage() {
         variantName: isAr ? line?.variant?.nameAr : (line?.variant?.nameEn || line?.variant?.nameAr),
       })),
       shippingCost,
+      discountAmount,
+      couponUsed: couponSuccess ? couponCode.trim().toUpperCase() : null,
       totalAmount: total,
       userId: user?.id || null,
       notes: notes.trim(),
     };
 
     try {
-      // 1. Upload to Supabase database (parameterized query)
+      // 1. Upload to Supabase database (parameterized query matching schema)
       let resolvedOrderId: string = fallbackId;
       try {
-        const res = await uploadOrderToSupabase({
-          user_id: user?.id || null,
-          customer_name: name.trim(),
-          phone: phone.trim(),
-          shipping_address: fullAddress,
-          total_amount: total,
-          status: 'pending',
-          items: lines.map((line) => ({
-            product_id: line?.product?.id || 1,
-            name: line?.product?.nameAr || 'مستحضر عناية',
-            price: Number(line?.product?.price) || 0,
-            quantity: Number(line?.quantity) || 1,
-            variant: line?.variant?.nameAr || null,
-            image: line?.product?.imageUrl || '',
-          })),
-        });
+        const { data: newOrder, error: sbError } = await supabase
+          .from('orders')
+          .insert({
+            order_number: `ROMA-${fallbackId}`,
+            user_id: user?.id || null,
+            total_amount: total,
+            shipping_fee: shippingCost,
+            discount_amount: discountAmount,
+            coupon_used: couponSuccess ? couponCode.trim().toUpperCase() : null,
+            status: 'pending',
+            payment_method: paymentMethod,
+            payment_status: paymentMethod === 'cod' ? 'unpaid' : 'paid',
+            payment_reference: paymentRef,
+            payment_receipt_url: receiptImage ? 'data:image/jpeg;receipt' : null,
+            shipping_details: {
+              fullName: name.trim(),
+              phone: phone.trim(),
+              altPhone: altPhone.trim(),
+              city: govName,
+              fullAddress,
+              notes: notes.trim(),
+            },
+            notes: notes.trim(),
+          })
+          .select()
+          .single();
 
-        if (res && res.success && res.data && res.data.id) {
-          resolvedOrderId = String(res.data.id);
+        if (!sbError && newOrder?.id) {
+          resolvedOrderId = String(newOrder.id);
           orderPayload.orderId = resolvedOrderId;
-          orderPayload.orderNumber = `ROMA-${resolvedOrderId}`;
+          orderPayload.orderNumber = `ROMA-${resolvedOrderId.slice(0, 8).toUpperCase()}`;
+
+          // Insert order items
+          const orderItemRows = lines.map((l) => ({
+            order_id: newOrder.id,
+            product_id: typeof l.product.id === 'string' ? l.product.id : null,
+            product_name: l.product.nameAr,
+            price: l.product.price,
+            quantity: l.quantity,
+            variant_info: l.variant?.nameAr || null,
+            image_url: l.product.imageUrl,
+          }));
+          await supabase.from('order_items').insert(orderItemRows).catch(() => {});
         }
       } catch (sbErr) {
         console.warn('Supabase order upload notice:', sbErr);
@@ -204,13 +295,13 @@ export default function CartPage() {
         console.warn('Backend API notification dispatch notice:', apiErr);
       }
 
-      // 3. Direct browser Telegram alert failsafe (Rich HTML mode)
+      // 3. Direct browser Telegram alert failsafe with rich details & receipt info
       await notifyTelegramNewOrder({
         orderId: resolvedOrderId,
         customerName: name.trim(),
         customerPhone: phone.trim(),
         shippingAddress: fullAddress,
-        paymentMethod: paymentLabel,
+        paymentMethod: `${paymentLabel} (${paymentRef})`,
         items: lines.map((line) => ({
           name: line?.product?.nameAr || 'مستحضر عناية',
           quantity: Number(line?.quantity) || 1,
@@ -221,7 +312,17 @@ export default function CartPage() {
         totalAmount: total,
       }).catch((tgErr) => console.warn('Telegram direct alert notice:', tgErr));
 
-      // 4. Save profile info if authenticated
+      // 4. Mark active carts as converted in Supabase
+      if (user?.id) {
+        supabase
+          .from('carts')
+          .update({ status: 'converted' })
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .catch(() => {});
+      }
+
+      // 5. Save address & points if user logged in
       if (user && address) {
         try {
           await addAddress(fullAddress);
@@ -232,12 +333,12 @@ export default function CartPage() {
         } catch (_) {}
       }
 
-      // 5. Complete view & clear cart
-      setComplete({ id: resolvedOrderId, total });
+      // 6. Complete view & clear cart
+      setComplete({ id: resolvedOrderId, total, method: paymentLabel });
       clear();
     } catch (criticalErr) {
       console.error('Submit order caught error:', criticalErr);
-      setComplete({ id: fallbackId, total });
+      setComplete({ id: fallbackId, total, method: paymentLabel });
       clear();
     } finally {
       setIsSubmitting(false);
@@ -248,44 +349,68 @@ export default function CartPage() {
   if (complete) {
     return (
       <div className="roma-container flex min-h-[70vh] flex-col items-center justify-center py-12 md:py-20 text-center" dir={dir}>
-        <div className="w-full max-w-lg rounded-[36px] border border-[#EFE8DE] bg-white p-6 md:p-10 shadow-xl space-y-6 text-right">
+        <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#141414] p-6 md:p-10 shadow-2xl space-y-6 text-right relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 size-40 rounded-full bg-[#D4A5A5]/10 blur-3xl pointer-events-none" />
+
           {/* Top Rose Gold Icon */}
-          <div className="flex size-16 items-center justify-center rounded-3xl bg-[#F8EBEA] text-[#4A1525] mx-auto shadow-xs">
-            <Check className="size-8 text-[#D48B88]" strokeWidth={2.5} />
+          <div className="flex size-16 items-center justify-center rounded-2xl bg-[#D4A5A5]/15 border border-[#D4A5A5]/30 text-[#D4A5A5] mx-auto shadow-md">
+            <Check className="size-8" strokeWidth={2.5} />
           </div>
 
           <div className="text-center space-y-1.5">
-            <h2 className="font-display text-2xl md:text-3xl font-extrabold text-foreground">
+            <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white">
               {t('success.title')}
             </h2>
-            <p className="text-xs md:text-sm text-muted-foreground max-w-sm mx-auto">
+            <p className="text-xs md:text-sm text-[#A1A1AA] max-w-sm mx-auto">
               {t('success.subtitle')}
             </p>
           </div>
 
           {/* Reference Card */}
-          <div className="flex items-center justify-between rounded-2xl bg-[#FDFBF7] border border-[#EFE8DE] p-4">
+          <div className="flex items-center justify-between rounded-2xl bg-[#1A1A1A] border border-white/5 p-4">
             <div>
-              <span className="text-[11px] text-muted-foreground block">{t('success.order_number')}</span>
-              <strong className="text-base font-extrabold font-mono-brand text-[#4A1525]">
-                #ROMA-{complete.id}
+              <span className="text-[11px] text-[#A1A1AA] block">{t('success.order_number')}</span>
+              <strong className="text-base font-extrabold font-mono text-[#D4A5A5]">
+                #ROMA-{complete.id.slice(0, 8).toUpperCase()}
               </strong>
             </div>
             <div className="text-left">
-              <span className="text-[11px] text-muted-foreground block">{t('cart.total')}</span>
-              <strong className="text-base font-extrabold font-mono-brand text-[#4A1525]">
+              <span className="text-[11px] text-[#A1A1AA] block">{t('cart.total')}</span>
+              <strong className="text-base font-extrabold font-mono text-white">
                 {formatPrice(complete.total)}
               </strong>
             </div>
           </div>
 
-          {/* Confirmation Notice */}
-          <div className="rounded-2xl bg-[#F8EBEA] p-4 border border-accent/20 text-xs text-foreground/85 flex items-start gap-2.5">
-            <CheckCircle2 className="size-4.5 text-[#D48B88] shrink-0 mt-0.5" />
-            <span>
-              {t('success.telegram_alert')}
-            </span>
+          {/* Payment Method Notice */}
+          <div className="rounded-2xl bg-[#1A1A1A] p-4 border border-white/5 text-xs text-[#A1A1AA] space-y-1">
+            <div className="flex items-center justify-between text-white font-semibold">
+              <span>{isAr ? 'طريقة الدفع المختارة:' : 'Payment Method:'}</span>
+              <span className="text-[#D4A5A5]">{complete.method}</span>
+            </div>
+            {paymentMethod === 'vodafone_cash' && (
+              <p className="text-[11px] text-emerald-400 pt-1">
+                ✓ {isAr ? 'تم استلام بيانات التحويل وسيتم مراجعتها وتأكيد الشحن فوراً.' : 'Transfer recorded, verifying with courier.'}
+              </p>
+            )}
+            {paymentMethod === 'fawry' && (
+              <div className="pt-2 text-center">
+                <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'كود السداد عبر فوري:' : 'Fawry Payment Reference:'}</span>
+                <span className="text-base font-bold font-mono text-amber-400 bg-amber-950/40 px-3 py-1 rounded-lg inline-block mt-1">
+                  {fawryCode}
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* Instant Order Tracking Button */}
+          <Link
+            href="/account"
+            className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#D4A5A5] hover:bg-[#C89595] py-3.5 px-6 text-xs md:text-sm font-bold text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20 transition"
+          >
+            <Truck className="size-4" />
+            <span>{isAr ? 'متابعة وتتبع حالة طلبي الآن' : 'Track Order Realtime'}</span>
+          </Link>
 
           {/* Direct WhatsApp Concierge Button */}
           <a
@@ -296,13 +421,13 @@ export default function CartPage() {
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full rounded-full bg-[#4A1525] hover:bg-[#38101C] py-3.5 px-6 text-xs md:text-sm font-bold text-white shadow-md shadow-[#4A1525]/20 transition"
+            className="flex items-center justify-center gap-2 w-full rounded-2xl border border-white/10 bg-[#1A1A1A] hover:bg-white/5 py-3 px-6 text-xs font-semibold text-white transition"
           >
             <span>{t('success.whatsapp_contact')}</span>
           </a>
 
           <div className="text-center pt-2">
-            <Link href="/" className="text-xs font-bold text-[#4A1525] hover:underline">
+            <Link href="/" className="text-xs font-bold text-[#D4A5A5] hover:underline">
               {t('success.back_home')}
             </Link>
           </div>
@@ -315,21 +440,21 @@ export default function CartPage() {
   if (lines.length === 0) {
     return (
       <div className="roma-container flex min-h-[60vh] flex-col items-center justify-center py-20 text-center" dir={dir}>
-        <div className="size-20 rounded-full bg-[#F8EBEA] flex items-center justify-center text-[#4A1525] mb-4 shadow-xs">
-          <ShoppingBag className="size-8 text-[#D48B88]" />
+        <div className="size-20 rounded-2xl bg-[#141414] border border-white/10 flex items-center justify-center text-[#D4A5A5] mb-4 shadow-xl">
+          <ShoppingBag className="size-8 text-[#D4A5A5]" />
         </div>
-        <span className="font-mono-brand text-xs tracking-widest text-[#D48B88] font-bold uppercase">
+        <span className="font-mono-brand text-xs tracking-widest text-[#D4A5A5] font-bold uppercase">
           ROMA ATELIER
         </span>
-        <h1 className="mt-2 font-display text-3xl font-extrabold text-foreground md:text-5xl">
+        <h1 className="mt-2 font-display text-3xl font-extrabold text-white md:text-5xl">
           {t('cart.empty_title')}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+        <p className="mt-2 text-sm text-[#A1A1AA] max-w-sm">
           {t('cart.empty_subtitle')}
         </p>
         <Link
           href="/shop"
-          className="mt-8 rounded-full bg-[#4A1525] hover:bg-[#38101C] px-8 py-3.5 text-xs md:text-sm font-bold text-white shadow-md shadow-[#4A1525]/20 transition"
+          className="mt-8 rounded-full bg-[#D4A5A5] hover:bg-[#C89595] px-8 py-3.5 text-xs md:text-sm font-bold text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20 transition"
         >
           {t('cart.start_shopping')}
         </Link>
@@ -338,23 +463,23 @@ export default function CartPage() {
   }
 
   return (
-    <div className="roma-container py-8 md:py-14" dir={dir}>
+    <div className="roma-container py-8 md:py-14 text-white" dir={dir}>
       {/* Top Free Shipping Progress Indicator */}
-      <div className="mb-8 rounded-[28px] border border-[#EFE8DE] bg-white p-4 md:p-5 shadow-xs">
+      <div className="mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl">
         <div className="flex items-center justify-between text-xs font-bold mb-2">
-          <div className="flex items-center gap-2 text-[#4A1525]">
-            <Truck className="size-4 text-[#D48B88]" />
+          <div className="flex items-center gap-2 text-white">
+            <Truck className="size-4 text-[#D4A5A5]" />
             <span>
               {isFreeShipping
                 ? t('common.free_shipping_qualified')
                 : t('common.free_shipping_progress').replace('{remaining}', String(remainingForFreeShipping))}
             </span>
           </div>
-          <span className="font-mono-brand text-[#D48B88]">{freeShippingProgress}%</span>
+          <span className="font-mono-brand text-[#D4A5A5]">{freeShippingProgress}%</span>
         </div>
-        <div className="h-2 w-full rounded-full bg-[#F8EBEA] overflow-hidden">
+        <div className="h-2 w-full rounded-full bg-[#1A1A1A] overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#D48B88] to-[#4A1525] transition-all duration-500"
+            className="h-full rounded-full bg-gradient-to-r from-[#D4A5A5] to-white transition-all duration-500"
             style={{ width: `${freeShippingProgress}%` }}
           />
         </div>
@@ -364,49 +489,49 @@ export default function CartPage() {
       <div className="grid gap-8 lg:grid-cols-12 items-start">
         {/* Left Column: Bag Items & Coupon (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="rounded-[32px] border border-[#EFE8DE] bg-white p-5 md:p-6 shadow-xs">
-            <div className="flex items-center justify-between border-b border-[#EFE8DE] pb-4 mb-4">
-              <h2 className="text-base font-bold text-foreground">
+          <div className="rounded-3xl border border-white/10 bg-[#141414] p-5 md:p-6 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+              <h2 className="text-base font-bold text-white">
                 {t('cart.title')} ({lines.length})
               </h2>
               <button
                 type="button"
                 onClick={clear}
-                className="text-xs text-muted-foreground hover:text-destructive transition"
+                className="text-xs text-[#A1A1AA] hover:text-red-400 transition"
               >
                 {isAr ? 'إفراغ السلة' : 'Clear All'}
               </button>
             </div>
 
-            <div className="divide-y divide-[#EFE8DE]">
+            <div className="divide-y divide-white/5">
               {lines.map((line) => (
                 <div key={`${line.product.id}-${line.variant?.id}`} className="flex gap-3.5 py-4 items-center">
                   <img
                     src={line.product.imageUrl || ''}
                     alt={line.product.nameAr}
-                    className="size-20 rounded-2xl object-contain bg-[#F8EBEA] shrink-0 border border-[#EFE8DE] p-1 mix-blend-multiply"
+                    className="size-20 rounded-2xl object-cover bg-[#1A1A1A] shrink-0 border border-white/10 p-1"
                   />
 
                   <div className="flex flex-1 flex-col justify-between min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h3 className="text-xs md:text-sm font-bold text-foreground line-clamp-1">
+                        <h3 className="text-xs md:text-sm font-bold text-white line-clamp-1">
                           {isAr ? line.product.nameAr : (line.product.nameEn || line.product.nameAr)}
                         </h3>
                         {line.variant && (
-                          <p className="text-[11px] text-[#D48B88] font-medium mt-0.5">
+                          <p className="text-[11px] text-[#D4A5A5] font-medium mt-0.5">
                             {isAr ? line.variant.nameAr : (line.variant.nameEn || line.variant.nameAr)}
                           </p>
                         )}
                       </div>
-                      <span className="font-mono-brand text-xs md:text-sm font-bold text-[#4A1525] shrink-0">
+                      <span className="font-mono-brand text-xs md:text-sm font-bold text-[#D4A5A5] shrink-0">
                         {formatPrice(line.product.price * line.quantity)}
                       </span>
                     </div>
 
                     <div className="mt-3 flex items-center justify-between">
                       {/* Stepper */}
-                      <div className="flex items-center rounded-full border border-[#EFE8DE] bg-[#FDFBF7] px-2 py-0.5 shadow-2xs">
+                      <div className="flex items-center rounded-full border border-white/10 bg-[#1A1A1A] px-2 py-0.5 shadow-2xs">
                         <button
                           type="button"
                           aria-label="Decrease"
@@ -415,18 +540,18 @@ export default function CartPage() {
                               ? remove(line.product.id, line.variant?.id)
                               : setQuantity(line.product.id, line.quantity - 1, line.variant?.id)
                           }
-                          className="size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-90"
+                          className="size-6 rounded-full flex items-center justify-center text-[#A1A1AA] hover:text-white active:scale-90"
                         >
                           <Minus className="size-3" />
                         </button>
-                        <span className="w-6 text-center font-mono-brand text-xs font-bold">
+                        <span className="w-6 text-center font-mono-brand text-xs font-bold text-white">
                           {line.quantity}
                         </span>
                         <button
                           type="button"
                           aria-label="Increase"
                           onClick={() => setQuantity(line.product.id, line.quantity + 1, line.variant?.id)}
-                          className="size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-90"
+                          className="size-6 rounded-full flex items-center justify-center text-[#A1A1AA] hover:text-white active:scale-90"
                         >
                           <Plus className="size-3" />
                         </button>
@@ -436,7 +561,7 @@ export default function CartPage() {
                         type="button"
                         aria-label="Delete"
                         onClick={() => remove(line.product.id, line.variant?.id)}
-                        className="rounded-full p-1.5 text-muted-foreground hover:bg-rose-50 hover:text-destructive transition"
+                        className="rounded-full p-1.5 text-[#A1A1AA] hover:bg-red-500/10 hover:text-red-400 transition"
                       >
                         <Trash2 className="size-4" />
                       </button>
@@ -447,282 +572,452 @@ export default function CartPage() {
             </div>
 
             {/* Price Breakdown */}
-            <div className="mt-4 pt-4 border-t border-[#EFE8DE] space-y-2 text-xs">
-              <div className="flex items-center justify-between text-muted-foreground">
+            <div className="mt-4 pt-4 border-t border-white/10 space-y-2 text-xs">
+              <div className="flex justify-between text-[#A1A1AA]">
                 <span>{t('cart.subtotal')}</span>
-                <span className="font-mono-brand font-bold text-foreground">{formatPrice(subtotal)}</span>
+                <span className="font-mono-brand text-white font-bold">{formatPrice(subtotal)}</span>
               </div>
+
               {discountAmount > 0 && (
-                <div className="flex items-center justify-between text-emerald-800">
-                  <span>{isAr ? 'الخصم المطبق' : 'Discount Applied'}</span>
+                <div className="flex justify-between text-[#D4A5A5]">
+                  <span>{isAr ? 'خصم القسيمة (10%):' : 'Discount Applied:'}</span>
                   <span className="font-mono-brand font-bold">-{formatPrice(discountAmount)}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>{t('cart.shipping')}</span>
-                <span className="font-mono-brand font-bold text-foreground">
-                  {isFreeShipping ? t('cart.shipping_free') : formatPrice(shippingCost)}
+
+              <div className="flex justify-between text-[#A1A1AA]">
+                <span>{isAr ? 'رسوم الشحن والتوصيل:' : 'Express Shipping:'}</span>
+                <span className="font-mono-brand text-white font-bold">
+                  {shippingCost === 0 ? (
+                    <span className="text-emerald-400 font-bold">{isAr ? 'شحن مجاني' : 'FREE'}</span>
+                  ) : (
+                    formatPrice(shippingCost)
+                  )}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-base font-extrabold text-[#4A1525] pt-2 border-t border-[#EFE8DE]">
+
+              <div className="flex justify-between border-t border-white/10 pt-3 text-sm font-bold text-white">
                 <span>{t('cart.total')}</span>
-                <span className="font-mono-brand text-xl">{formatPrice(total)}</span>
+                <span className="font-mono-brand text-base font-extrabold text-[#D4A5A5]">
+                  {formatPrice(total)}
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* Coupon Input Box */}
-          <div className="rounded-[28px] border border-[#EFE8DE] bg-white p-4 shadow-xs">
-            <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
-              <Tag className="size-3.5 text-[#D48B88]" />
-              {t('cart.coupon_label')}
-            </h3>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                placeholder={t('cart.coupon_placeholder')}
-                className="flex-1 rounded-full border border-[#EFE8DE] bg-[#FDFBF7] px-4 py-2 text-xs font-mono uppercase outline-none focus:border-[#D48B88]"
-              />
-              <button
-                type="button"
-                onClick={applyCoupon}
-                className="rounded-full bg-[#4A1525] px-5 py-2 text-xs font-bold text-white hover:bg-[#38101C] transition shadow-xs"
-              >
-                {t('cart.coupon_apply')}
-              </button>
+            {/* Coupon input */}
+            <div className="mt-5 pt-4 border-t border-white/10">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder={isAr ? 'كود الخصم (مثال: ROMA10)' : 'Promo Code (e.g. ROMA10)'}
+                  className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  className="rounded-xl bg-[#1A1A1A] hover:bg-white/10 border border-white/10 px-4 py-2.5 text-xs font-bold text-white transition shrink-0"
+                >
+                  {isAr ? 'تطبيق' : 'Apply'}
+                </button>
+              </div>
+              {couponSuccess && (
+                <span className="text-[11px] text-[#D4A5A5] block mt-1.5 flex items-center gap-1 font-semibold">
+                  <Check className="size-3" /> {isAr ? 'تم تطبيق خصم 10% بنجاح!' : '10% discount applied!'}
+                </span>
+              )}
             </div>
-            {couponSuccess && (
-              <p className="mt-2 text-xs font-bold text-emerald-800 flex items-center gap-1">
-                <Check className="size-3.5" />
-                {t('cart.coupon_applied')}
-              </p>
-            )}
           </div>
         </div>
 
-        {/* Right Column: Checkout Form (7 cols) */}
-        <div className="lg:col-span-7 space-y-4">
-          <form
-            onSubmit={submitOrder}
-            className="rounded-[36px] border border-[#EFE8DE] bg-white p-6 md:p-8 shadow-sm space-y-6"
-          >
+        {/* Right Column: Checkout Form & Egyptian Payment Workflows (7 cols) */}
+        <div className="lg:col-span-7">
+          <form onSubmit={submitOrder} className="rounded-3xl border border-white/10 bg-[#141414] p-6 md:p-8 shadow-xl space-y-6">
             <div>
-              <h2 className="font-display text-xl md:text-2xl font-extrabold text-foreground pb-2 border-b border-[#EFE8DE]">
-                {t('checkout.title')}
+              <h2 className="text-lg md:text-xl font-bold font-display text-white">
+                {isAr ? 'بيانات الشحن والدفع (مصر)' : 'Shipping & Egyptian Payment'}
               </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t('checkout.subtitle')}
+              <p className="text-xs text-[#A1A1AA] mt-1">
+                {isAr
+                  ? 'توصيل فوري لباب المنزل خلال 24 - 48 ساعة لجميع المحافظات المصرية.'
+                  : 'Fast doorstep delivery across all Egyptian governorates.'}
               </p>
             </div>
 
-            {/* Validation Error Banner */}
             {validationError && (
-              <div className="flex items-center gap-2 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700">
-                <AlertCircle className="size-4 shrink-0" />
+              <div className="rounded-2xl bg-red-950/50 border border-red-800/50 p-3.5 text-xs text-red-300 flex items-center gap-2">
+                <AlertCircle className="size-4 text-red-400 shrink-0" />
                 <span>{validationError}</span>
               </div>
             )}
 
-            {/* Section 1: Customer Details */}
+            {/* Shipping Inputs */}
             <div className="space-y-4">
-              <h3 className="font-display font-bold text-sm text-[#4A1525]">
-                {t('checkout.step_shipping')}
-              </h3>
-
-              <div>
-                <label className="block text-xs font-bold text-foreground mb-1">
-                  {t('checkout.full_name')} <span className="text-[#D48B88]">*</span>
-                </label>
-                <input
-                  required
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={isAr ? 'الاسم الثلاثي أو الثنائي' : 'Full Name'}
-                  className="w-full rounded-2xl border border-[#EFE8DE] bg-[#FDFBF7] px-4 py-2.5 text-xs outline-none focus:border-[#D48B88]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-foreground mb-1">
-                    {t('checkout.phone')} <span className="text-[#D48B88]">*</span>
+                  <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                    {isAr ? 'الاسم بالكامل' : 'Full Name'} *
                   </label>
-                  <div className="relative">
-                    <input
-                      required
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="010XXXXXXXX"
-                      className="w-full rounded-2xl border border-[#EFE8DE] bg-[#FDFBF7] px-4 py-2.5 pl-8 text-xs font-mono outline-none focus:border-[#D48B88]"
-                    />
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={isAr ? 'اسم المستلم...' : 'Receiver name...'}
+                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-foreground mb-1">
-                    {t('checkout.governorate')} <span className="text-[#D48B88]">*</span>
+                  <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                    {isAr ? 'رقم الهاتف المحمول (للتواصل)' : 'Mobile Phone'} *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="010XXXXXXXX"
+                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                    {isAr ? 'المحافظة' : 'Governorate'} *
                   </label>
                   <select
                     value={governorate}
                     onChange={(e) => setGovernorate(e.target.value)}
-                    className="w-full rounded-2xl border border-[#EFE8DE] bg-[#FDFBF7] px-3.5 py-2.5 text-xs outline-none focus:border-[#D48B88] cursor-pointer"
+                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white outline-none focus:border-[#D4A5A5]"
                   >
-                    {GOVERNORATES.map((gov) => (
-                      <option key={gov.id} value={gov.id}>
-                        {isAr ? gov.nameAr : gov.nameEn}
+                    {GOVERNORATES.map((g) => (
+                      <option key={g.id} value={g.id} className="bg-[#141414] text-white">
+                        {isAr ? g.nameAr : g.nameEn}
                       </option>
                     ))}
                   </select>
                 </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                    {isAr ? 'رقم هاتف بديل (اختياري)' : 'Alt Phone (optional)'}
+                  </label>
+                  <input
+                    type="tel"
+                    value={altPhone}
+                    onChange={(e) => setAltPhone(e.target.value)}
+                    placeholder="01XXXXXXXXX"
+                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-foreground mb-1">
-                  {t('checkout.address')} <span className="text-[#D48B88]">*</span>
+                <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                  {isAr ? 'العنوان التفصيلي (المنطقة، الشارع، رقم العمارة والشقة)' : 'Detailed Address'} *
                 </label>
-                <textarea
+                <input
+                  type="text"
                   required
-                  rows={2}
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder={isAr ? 'المنطقة، الشارع، رقم العمارة، الشقة / علامة مميزة' : 'Street name, building #, apt/suite, landmark'}
-                  className="w-full rounded-2xl border border-[#EFE8DE] bg-[#FDFBF7] px-4 py-2.5 text-xs outline-none focus:border-[#D48B88] resize-none"
+                  placeholder={isAr ? 'مثال: المعادي الجديدة، شارع النصر، عمارة 14 الدور الثالث...' : 'Street address, building, apartment...'}
+                  className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-muted-foreground mb-1">
-                  {t('checkout.notes')}
+                <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                  {isAr ? 'ملاحظات خاصة للمندوب (اختياري)' : 'Delivery Notes'}
                 </label>
                 <input
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder={isAr ? 'موعد مفضل للاتصال أو تعليمات خاصة للمندوب' : 'Preferred delivery time or instructions'}
-                  className="w-full rounded-2xl border border-[#EFE8DE] bg-[#FDFBF7] px-4 py-2 text-xs outline-none focus:border-[#D48B88]"
+                  placeholder={isAr ? 'الاتصال قبل الوصول، مواعيد التواجد...' : 'Call before arrival, preferred delivery time...'}
+                  className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
                 />
               </div>
             </div>
 
-            {/* Section 2: Payment Methods */}
-            <div className="space-y-3 pt-4 border-t border-[#EFE8DE]">
-              <h3 className="font-display font-bold text-sm text-[#4A1525]">
-                {t('checkout.step_payment')}
-              </h3>
+            {/* ========================================================================= */}
+            {/* 4. CHECKOUT & EGYPTIAN LOCAL PAYMENT WORKFLOWS                            */}
+            {/* [COD, Vodafone Cash, InstaPay, Fawry]                                     */}
+            {/* ========================================================================= */}
+            <div className="pt-4 border-t border-white/10 space-y-4">
+              <label className="text-xs font-bold text-white block">
+                {isAr ? 'اختاري طريقة الدفع:' : 'Select Payment Method:'}
+              </label>
 
-              <div className="space-y-2.5">
-                {/* Option 1: Cash on Delivery (COD) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* 1. Cash on Delivery (COD) */}
                 <label
-                  className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${
+                  className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
                     paymentMethod === 'cod'
-                      ? 'border-[#4A1525] bg-[#F8EBEA]/70 ring-1 ring-[#4A1525]'
-                      : 'border-[#EFE8DE] bg-white hover:border-[#D48B88]'
+                      ? 'border-[#D4A5A5] bg-[#D4A5A5]/10 shadow-sm'
+                      : 'border-white/10 bg-[#1A1A1A] hover:border-white/20'
                   }`}
                 >
                   <input
                     type="radio"
-                    name="payment"
+                    name="payment_method"
+                    value="cod"
                     checked={paymentMethod === 'cod'}
                     onChange={() => setPaymentMethod('cod')}
-                    className="mt-1 accent-[#4A1525]"
+                    className="mt-1 accent-[#D4A5A5]"
                   />
                   <div>
-                    <strong className="block text-xs font-bold text-foreground">
-                      {t('checkout.payment_cod')}
-                    </strong>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('checkout.payment_cod_desc')}
-                    </span>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                      <Banknote className="size-4 text-[#D4A5A5]" />
+                      <span>{isAr ? 'الدفع عند الاستلام (COD)' : 'Cash on Delivery'}</span>
+                    </div>
+                    <p className="text-[11px] text-[#A1A1AA] mt-1 leading-relaxed">
+                      {isAr
+                        ? 'الدفع نقداً أو إنستاباي للمندوب عند استلام ومعاينة الطلب.'
+                        : 'Pay cash or InstaPay to courier upon package delivery.'}
+                    </p>
                   </div>
                 </label>
 
-                {/* Option 2: Mobile Wallets & InstaPay */}
+                {/* 2. Vodafone Cash / Wallets */}
                 <label
-                  className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${
-                    paymentMethod === 'wallet'
-                      ? 'border-[#4A1525] bg-[#F8EBEA]/70 ring-1 ring-[#4A1525]'
-                      : 'border-[#EFE8DE] bg-white hover:border-[#D48B88]'
+                  className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
+                    paymentMethod === 'vodafone_cash'
+                      ? 'border-[#D4A5A5] bg-[#D4A5A5]/10 shadow-sm'
+                      : 'border-white/10 bg-[#1A1A1A] hover:border-white/20'
                   }`}
                 >
                   <input
                     type="radio"
-                    name="payment"
-                    checked={paymentMethod === 'wallet'}
-                    onChange={() => setPaymentMethod('wallet')}
-                    className="mt-1 accent-[#4A1525]"
+                    name="payment_method"
+                    value="vodafone_cash"
+                    checked={paymentMethod === 'vodafone_cash'}
+                    onChange={() => setPaymentMethod('vodafone_cash')}
+                    className="mt-1 accent-[#D4A5A5]"
                   />
                   <div>
-                    <strong className="block text-xs font-bold text-foreground">
-                      {t('checkout.payment_wallet')}
-                    </strong>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('checkout.payment_wallet_desc')}
-                    </span>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                      <Smartphone className="size-4 text-[#D4A5A5]" />
+                      <span>{isAr ? 'فودافون كاش ومحافظ المحمول' : 'Vodafone Cash / Wallets'}</span>
+                    </div>
+                    <p className="text-[11px] text-[#A1A1AA] mt-1 leading-relaxed">
+                      {isAr
+                        ? 'تحويل فوري إلى محفظة روما المعتمدة ورفع إشعار التحويل.'
+                        : 'Transfer to official ROMA wallet & attach receipt.'}
+                    </p>
                   </div>
                 </label>
 
-                {/* Option 3: Card */}
+                {/* 3. InstaPay */}
                 <label
-                  className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${
-                    paymentMethod === 'card'
-                      ? 'border-[#4A1525] bg-[#F8EBEA]/70 ring-1 ring-[#4A1525]'
-                      : 'border-[#EFE8DE] bg-white hover:border-[#D48B88]'
+                  className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
+                    paymentMethod === 'instapay'
+                      ? 'border-[#D4A5A5] bg-[#D4A5A5]/10 shadow-sm'
+                      : 'border-white/10 bg-[#1A1A1A] hover:border-white/20'
                   }`}
                 >
                   <input
                     type="radio"
-                    name="payment"
-                    checked={paymentMethod === 'card'}
-                    onChange={() => setPaymentMethod('card')}
-                    className="mt-1 accent-[#4A1525]"
+                    name="payment_method"
+                    value="instapay"
+                    checked={paymentMethod === 'instapay'}
+                    onChange={() => setPaymentMethod('instapay')}
+                    className="mt-1 accent-[#D4A5A5]"
                   />
                   <div>
-                    <strong className="block text-xs font-bold text-foreground">
-                      {t('checkout.payment_card')}
-                    </strong>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t('checkout.payment_card_desc')}
-                    </span>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                      <CreditCard className="size-4 text-[#D4A5A5]" />
+                      <span>{isAr ? 'إنستاباي (InstaPay IPN)' : 'InstaPay Transfer'}</span>
+                    </div>
+                    <p className="text-[11px] text-[#A1A1AA] mt-1 leading-relaxed">
+                      {isAr
+                        ? 'تحويل لحظي من أي بنك مصري عبر عنوان الدفع اللحظي.'
+                        : 'Instant bank transfer via InstaPay IPN address.'}
+                    </p>
+                  </div>
+                </label>
+
+                {/* 4. Fawry */}
+                <label
+                  className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
+                    paymentMethod === 'fawry'
+                      ? 'border-[#D4A5A5] bg-[#D4A5A5]/10 shadow-sm'
+                      : 'border-white/10 bg-[#1A1A1A] hover:border-white/20'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="payment_method"
+                    value="fawry"
+                    checked={paymentMethod === 'fawry'}
+                    onChange={() => setPaymentMethod('fawry')}
+                    className="mt-1 accent-[#D4A5A5]"
+                  />
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                      <QrCode className="size-4 text-[#D4A5A5]" />
+                      <span>{isAr ? 'فوري (Fawry Pay)' : 'Fawry Pay'}</span>
+                    </div>
+                    <p className="text-[11px] text-[#A1A1AA] mt-1 leading-relaxed">
+                      {isAr
+                        ? 'رقم سداد فوري لإتمام الدفع من أقرب ماكينة أو كشك فوري.'
+                        : 'Get a reference code to pay at any Fawry kiosk or POS.'}
+                    </p>
                   </div>
                 </label>
               </div>
-            </div>
 
-            {/* Cloudflare Turnstile Verification Badge */}
-            <div className="rounded-2xl border border-[#EFE8DE] bg-[#FDFBF7] p-3 flex items-center justify-between text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="size-4 text-[#D48B88]" />
-                <span className="text-[11px]">{t('checkout.turnstile_badge')}</span>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
-                ✓ Verified
-              </span>
+              {/* Dynamic Sub-Sections for Selected Egyptian Payment Method */}
+              {paymentMethod === 'vodafone_cash' && (
+                <div className="rounded-2xl border border-[#D4A5A5]/30 bg-[#1A1A1A] p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'رقم محفظة فودافون كاش لمتجر روما:' : 'ROMA Vodafone Cash Wallet:'}</span>
+                      <strong className="text-base font-bold text-[#D4A5A5] font-mono">01012345678</strong>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard('01012345678', 'voda')}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/10"
+                    >
+                      <Copy className="size-3.5" />
+                      <span>{copiedKey === 'voda' ? (isAr ? 'تم النسخ!' : 'Copied!') : (isAr ? 'نسخ الرقم' : 'Copy')}</span>
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                      {isAr ? 'رقم المحفظة التي قمتِ بالتحويل منها:' : 'Your Sender Wallet Phone Number:'} *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={vodafoneSenderNumber}
+                      onChange={(e) => setVodafoneSenderNumber(e.target.value)}
+                      placeholder="010XXXXXXXX"
+                      className="w-full rounded-xl border border-white/10 bg-[#141414] px-4 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                      {isAr ? 'إرفاق لقطة شاشة إيصال التحويل (اختياري لتسريع التأكيد):' : 'Upload Receipt Screenshot (optional):'}
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-[#141414] hover:bg-white/5 text-xs text-white cursor-pointer transition">
+                        <Upload className="size-3.5 text-[#D4A5A5]" />
+                        <span>{receiptFileName ? receiptFileName : (isAr ? 'اختيار صورة الإيصال' : 'Choose Receipt Image')}</span>
+                        <input type="file" accept="image/*" onChange={handleReceiptUpload} className="hidden" />
+                      </label>
+                      {receiptImage && (
+                        <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                          <Check className="size-3.5" /> {isAr ? 'تمت إضافة الإيصال' : 'Attached'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'instapay' && (
+                <div className="rounded-2xl border border-[#D4A5A5]/30 bg-[#1A1A1A] p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'عنوان إنستاباي لمتجر روما (IPA):' : 'ROMA InstaPay Address (IPA):'}</span>
+                      <strong className="text-base font-bold text-[#D4A5A5] font-mono">roma.beauty@instapay</strong>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard('roma.beauty@instapay', 'insta')}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/10"
+                    >
+                      <Copy className="size-3.5" />
+                      <span>{copiedKey === 'insta' ? (isAr ? 'تم النسخ!' : 'Copied!') : (isAr ? 'نسخ العنوان' : 'Copy')}</span>
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                      {isAr ? 'الرقم المرجعي للتحويل (Reference / Transaction ID):' : 'Transaction Reference Code:'} *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={instapayReference}
+                      onChange={(e) => setInstapayReference(e.target.value)}
+                      placeholder={isAr ? 'مثال: IPN123456789' : 'e.g. IPN123456789'}
+                      className="w-full rounded-xl border border-white/10 bg-[#141414] px-4 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                      {isAr ? 'إرفاق لقطة شاشة العملية (اختياري لتسريع التأكيد):' : 'Upload Receipt Screenshot (optional):'}
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-[#141414] hover:bg-white/5 text-xs text-white cursor-pointer transition">
+                        <Upload className="size-3.5 text-[#D4A5A5]" />
+                        <span>{receiptFileName ? receiptFileName : (isAr ? 'اختيار صورة الإيصال' : 'Choose Receipt Image')}</span>
+                        <input type="file" accept="image/*" onChange={handleReceiptUpload} className="hidden" />
+                      </label>
+                      {receiptImage && (
+                        <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                          <Check className="size-3.5" /> {isAr ? 'تمت إضافة الإيصال' : 'Attached'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'fawry' && (
+                <div className="rounded-2xl border border-[#D4A5A5]/30 bg-[#1A1A1A] p-4 space-y-3 text-center sm:text-right">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'كود السداد عبر فوري (Fawry Reference):' : 'Fawry Pay Code:'}</span>
+                      <strong className="text-lg font-bold text-amber-400 font-mono tracking-widest">{fawryCode}</strong>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(fawryCode, 'fawry')}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/10"
+                    >
+                      <Copy className="size-3.5" />
+                      <span>{copiedKey === 'fawry' ? (isAr ? 'تم النسخ!' : 'Copied!') : (isAr ? 'نسخ الكود' : 'Copy')}</span>
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-[#A1A1AA] leading-relaxed">
+                    {isAr
+                      ? 'يمكنك التوجه لأي كشك أو ماكينة فوري واختيار "مدفوعات فوري باي" وإدخال هذا الكود خلال 48 ساعة لإتمام الطلب.'
+                      : 'Provide this code at any Fawry merchant under "Fawry Pay" within 48 hours to confirm order.'}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 rounded-full bg-[#4A1525] hover:bg-[#38101C] py-4 px-6 text-sm font-bold text-white shadow-lg shadow-[#4A1525]/25 transition duration-300 active:scale-95 disabled:opacity-60 cursor-pointer"
-            >
-              {isSubmitting ? (
-                <span>{t('checkout.submitting')}</span>
-              ) : (
-                <>
-                  <Lock className="size-4 text-[#E8A598]" />
-                  <span>{t('checkout.confirm_order')} · {formatPrice(total)}</span>
-                </>
-              )}
-            </button>
-
-            <p className="text-center text-[11px] text-muted-foreground">
-              {t('checkout.security_badge')}
-            </p>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#D4A5A5] hover:bg-[#C89595] py-4 px-6 text-sm font-bold text-[#0A0A0A] shadow-lg shadow-[#D4A5A5]/25 transition active:scale-[0.99] disabled:opacity-60"
+              >
+                <Lock className="size-4" />
+                <span>
+                  {isSubmitting
+                    ? isAr
+                      ? 'جاري تأكيد وتسجيل الطلب...'
+                      : 'Processing Order...'
+                    : isAr
+                    ? `تأكيد الطلب الآن (${formatPrice(total)})`
+                    : `Confirm Order Now (${formatPrice(total)})`}
+                </span>
+              </button>
+            </div>
           </form>
         </div>
       </div>

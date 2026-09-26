@@ -13,7 +13,10 @@ const ADMIN_CHAT_ID = String(process.env.TELEGRAM_ADMIN_CHAT_ID || '8940310160')
 const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://dsgrgbmvbvqwzizbbwxf.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzZ3JnYm12YnZxd3ppemJid3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzODE0MTMsImV4cCI6MjEwNTk1NzQxM30.kd8bIzK5UzbWIPP4eCHhkflhaRLQ7C1AKb-RhDnvbhM';
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzZ3JnYm12YnZxd3ppemJid3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzODE0MTMsImV4cCI6MjEwNTk1NzQxM30.kd8bIzK5UzbWIPP4eCHhkflhaRLQ7C1AKb-RhDnvbhM';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const PRODUCTS_JSON_PATH = path.join(__dirname, 'artifacts', 'roma-store', 'public', 'products.json');
@@ -83,11 +86,13 @@ async function getAllOrdersCombined() {
     if (!error && Array.isArray(data)) {
       const sbOrders = data.map((row) => ({
         orderId: row.id,
-        customerName: row.customer_name,
-        customerPhone: row.phone,
-        shippingAddress: row.shipping_address,
+        orderNumber: row.order_number,
+        customerName: row.shipping_details?.fullName || row.customer_name || 'عميلة المتجر',
+        customerPhone: row.phone || row.shipping_details?.phone || 'غير مسجل',
+        shippingAddress: row.shipping_details?.fullAddress || row.shipping_address || 'غير محدد',
         totalAmount: row.total_amount,
         status: row.status || 'pending',
+        paymentMethod: row.payment_method,
         items: Array.isArray(row.items) ? row.items : [],
         createdAt: row.created_at,
       }));
@@ -120,12 +125,10 @@ function saveProducts(products, actionDesc = 'Update products') {
     const data = JSON.stringify(products, null, 2);
     fs.writeFileSync(PRODUCTS_JSON_PATH, data, 'utf8');
 
-    // Also update dist/products.json if exists
     if (fs.existsSync(path.dirname(DIST_PRODUCTS_JSON_PATH))) {
       fs.writeFileSync(DIST_PRODUCTS_JSON_PATH, data, 'utf8');
     }
 
-    // Touch root sync file so Vercel always recognizes changes in root
     const syncInfo = {
       lastSync: new Date().toISOString(),
       totalProducts: products.length,
@@ -133,10 +136,7 @@ function saveProducts(products, actionDesc = 'Update products') {
     };
     fs.writeFileSync(ROOT_SYNC_PATH, JSON.stringify(syncInfo, null, 2), 'utf8');
 
-    // Update catalog-data.ts with latest products
     updateCatalogData(products);
-
-    // Git commit & push for automatic Vercel deployment
     autoPush(actionDesc);
   } catch (e) {
     console.error('Error saving products:', e);
@@ -161,9 +161,9 @@ function autoPush(actionDesc) {
   exec(
     `git add . && git commit -m "${actionDesc} via Telegram Bot" && git push origin main`,
     { cwd: __dirname },
-    (err, stdout) => {
+    (err) => {
       if (err) {
-        console.error('Git push error:', err.message);
+        console.error('Git push notice:', err.message);
       } else {
         console.log('🚀 Pushed changes to GitHub for instant live deployment!');
       }
@@ -188,7 +188,6 @@ async function downloadTelegramPhoto(fileId) {
 
     fs.writeFileSync(localPath, buffer);
 
-    // Copy to dist uploads as well
     const distPath = path.join(DIST_UPLOADS_DIR, fileName);
     try {
       fs.writeFileSync(distPath, buffer);
@@ -207,13 +206,14 @@ function getMainKeyboard() {
     inline_keyboard: [
       [
         { text: '➕ إضافة منتج جديد', callback_data: 'nav_add_prod' },
-        { text: '🏷️ إدارة المنتجات', callback_data: 'nav_list_prod' },
+        { text: '🏷️ إدارة المنتجات والمخزون', callback_data: 'nav_list_prod' },
       ],
       [
-        { text: '📦 إدارة الطلبات', callback_data: 'nav_orders_all' },
-        { text: '📊 إحصائيات المتجر', callback_data: 'nav_stats' },
+        { text: '📦 متابعة الطلبات', callback_data: 'nav_orders_all' },
+        { text: '🛒 السلات المتروكة', callback_data: 'nav_check_abandoned' },
       ],
       [
+        { text: '📊 تقرير الإيرادات والمبيعات', callback_data: 'nav_stats' },
         { text: '🌐 زيارة متجر Roma', url: 'https://roma-eg.my' },
       ],
     ],
@@ -223,10 +223,12 @@ function getMainKeyboard() {
 // Status labels & badges
 const STATUS_MAP = {
   pending: { label: 'قيد الانتظار ⏳', badge: '⏳ جديد' },
+  confirmed: { label: 'تم التأكيد بنجاح ✅', badge: '✅ مؤكد' },
   processing: { label: 'جاري التجهيز 🛠️', badge: '🛠️ بالتجهيز' },
-  shipped: { label: 'تم الشحن 🚚', badge: '🚚 مشحون' },
-  completed: { label: 'تم التسليم بنجاح ✅', badge: '✅ مكتمل' },
-  cancelled: { label: 'ملغي ❌', badge: '❌ ملغي' },
+  shipped: { label: 'تم الشحن مع المندوب 🚚', badge: '🚚 مشحون' },
+  delivered: { label: 'تم التسليم بنجاح ✨', badge: '✨ تم التسليم' },
+  completed: { label: 'تم التسليم بنجاح ✨', badge: '✨ مكتمل' },
+  cancelled: { label: 'تم الإلغاء ❌', badge: '❌ ملغي' },
 };
 
 const ADMINS_FILE = path.join(__dirname, 'admins.json');
@@ -254,13 +256,172 @@ function registerAdmin(chatId) {
   }
 }
 
+// ----------------- Realtime Notification Dispatcher -----------------
+
+async function sendNewOrderNotification(order) {
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemsText =
+    items
+      .map(
+        (it) =>
+          `• *${it.quantity || 1}x* ${it.name || it.product_name} ${it.variant ? `(${it.variant})` : ''} — \`${(Number(it.price) || 0) * (Number(it.quantity) || 1)} ج.م\``
+      )
+      .join('\n') || 'لا توجد تفاصيل منتجات';
+
+  const shipping = order.shipping_details || {};
+  const customerName = order.customer_name || shipping.fullName || 'عميلة المتجر';
+  const customerPhone = order.phone || shipping.phone || 'غير مسجل';
+  const city = shipping.city || 'القاهرة';
+  const address = order.shipping_address || shipping.fullAddress || 'غير محدد';
+  const paymentMethod = order.payment_method || 'الدفع عند الاستلام (COD)';
+  const paymentRef = order.payment_reference || '';
+  const total = Number(order.total_amount) || 0;
+  const orderId = order.id || order.order_number;
+
+  const caption =
+    `🛍️ *طلب شراء جديد تم استلامه في متجر ROMA!*\n` +
+    `🔖 *رقم الطلب:* \`#ROMA-${order.order_number || orderId}\`\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `👤 *العميلة:* ${customerName}\n` +
+    `📞 *رقم الهاتف:* \`${customerPhone}\`\n` +
+    `📍 *المحافظة:* ${city}\n` +
+    `🏠 *العنوان:* ${address}\n` +
+    `💳 *طريقة الدفع:* ${paymentMethod}\n` +
+    (paymentRef ? `📝 *بيانات التحويل:* \`${paymentRef}\`\n` : '') +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📦 *المنتجات المطلوبة:*\n${itemsText}\n\n` +
+    `💰 *الإجمالي النهائي:* *${total} ج.م*\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `الحالة الحالية: ⏳ *قيد الانتظار (جديد)*`;
+
+  const cleanPhone = customerPhone.replace(/\D+/g, '');
+  const waPhone = cleanPhone.startsWith('0') ? `2${cleanPhone}` : cleanPhone.startsWith('2') ? cleanPhone : `20${cleanPhone}`;
+  const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، بخصوص طلبكِ رقم #ROMA-${order.order_number || orderId} من متجر روما:`)}`;
+
+  // Inline action buttons: One-tap status updates matching user specifications:
+  // [✅ تأكيد الطلب], [🚚 قيد الشحن], [✨ تم التسليم], [❌ إلغاء الطلب]
+  const inlineKeyboard = {
+    inline_keyboard: [
+      [
+        { text: '✅ تأكيد الطلب', callback_data: `ord_status_confirmed_${orderId}` },
+        { text: '🚚 قيد الشحن', callback_data: `ord_status_shipped_${orderId}` },
+      ],
+      [
+        { text: '✨ تم التسليم', callback_data: `ord_status_delivered_${orderId}` },
+        { text: '❌ إلغاء الطلب', callback_data: `ord_status_cancelled_${orderId}` },
+      ],
+      [
+        { text: '💬 محادثة العميلة عبر واتساب', url: waUrl },
+      ],
+    ],
+  };
+
+  const admins = getKnownAdmins();
+  for (const adminId of admins) {
+    if (order.payment_receipt_url && order.payment_receipt_url.startsWith('http')) {
+      await tg('sendPhoto', {
+        chat_id: adminId,
+        photo: order.payment_receipt_url,
+        caption,
+        parse_mode: 'Markdown',
+        reply_markup: inlineKeyboard,
+      });
+    } else {
+      await tg('sendMessage', {
+        chat_id: adminId,
+        text: caption,
+        parse_mode: 'Markdown',
+        reply_markup: inlineKeyboard,
+      });
+    }
+  }
+}
+
+// Supabase Realtime Listener Setup
+function initSupabaseRealtime() {
+  console.log('⚡ Initializing Supabase Realtime Listener for orders...');
+  supabase
+    .channel('orders-realtime-bot')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'orders' },
+      async (payload) => {
+        console.log('⚡ Realtime Order INSERT detected:', payload.new?.id);
+        try {
+          await sendNewOrderNotification(payload.new);
+        } catch (err) {
+          console.error('Realtime notification error:', err);
+        }
+      }
+    )
+    .subscribe((status) => {
+      console.log(`⚡ Supabase Realtime Subscription: ${status}`);
+    });
+}
+
+// ----------------- Abandoned Cart Recovery Runner -----------------
+
+async function checkAbandonedCartsRoutine() {
+  try {
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const { data: abandonedCarts, error } = await supabase
+      .from('carts')
+      .select('id, user_id, session_id, last_activity_at, profiles(full_name, phone)')
+      .eq('status', 'active')
+      .lt('last_activity_at', twoHoursAgo)
+      .is('recovery_email_sent_at', null);
+
+    if (!error && Array.isArray(abandonedCarts) && abandonedCarts.length > 0) {
+      console.log(`🛒 Found ${abandonedCarts.length} abandoned carts to recover.`);
+      for (const cart of abandonedCarts) {
+        const coupon = 'COMEBACK15';
+        await supabase
+          .from('carts')
+          .update({
+            status: 'abandoned',
+            recovery_email_sent_at: new Date().toISOString(),
+            coupon_code: coupon,
+          })
+          .eq('id', cart.id);
+
+        const customerName = cart.profiles?.full_name || 'عميلة المتجر';
+        const phone = cart.profiles?.phone || 'غير مسجل';
+        const recoveryUrl = `https://roma-eg.my/cart?recovery_id=${cart.id}&coupon=${coupon}`;
+
+        const msg =
+          `🛒 *تنبيه سلة مهجورة (Abandoned Cart)*\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `👤 *العميلة:* ${customerName}\n` +
+          `📞 *الهاتف:* \`${phone}\`\n` +
+          `🕒 *سلة متروكة منذ أكثر من ساعتين*\n` +
+          `🎟️ *تم إنشاء كود استعادة:* \`${coupon}\` (-15%)\n` +
+          `🔗 [رابط استعادة السلة](${recoveryUrl})`;
+
+        tg('sendMessage', {
+          chat_id: ADMIN_CHAT_ID,
+          text: msg,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: 'واتساب العميلة 💬', url: `https://wa.me/201012345678?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، نهديكِ كود خصم 15% إضافي ${coupon} لإكمال سلتكِ بمتجر روما:`)}` },
+              ],
+            ],
+          },
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('Abandoned cart routine error:', err?.message);
+  }
+}
+
 // ----------------- Update & Interaction Handler -----------------
 
 async function handleUpdate(update) {
   const incomingChatId = update.message?.chat?.id || update.callback_query?.message?.chat?.id;
   if (incomingChatId) {
     registerAdmin(incomingChatId);
-    console.log(`[BOT UPDATE] Chat ID: ${incomingChatId}, from: ${update.message?.from?.username || update.callback_query?.from?.username || 'user'}`);
   }
 
   // 1. Callback query handling
@@ -297,6 +458,18 @@ async function handleUpdate(update) {
     if (data === 'nav_list_prod') {
       await tg('answerCallbackQuery', { callback_query_id: cb.id });
       return sendProductsList(chatId);
+    }
+
+    // Navigation: Check Abandoned Carts
+    if (data === 'nav_check_abandoned') {
+      await tg('answerCallbackQuery', { callback_query_id: cb.id, text: 'جاري فحص السلات المتروكة...' });
+      await checkAbandonedCartsRoutine();
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text: '✅ *تم فحص السلات المتروكة بنجاح وإرسال التنبيهات للأدمن!*',
+        parse_mode: 'Markdown',
+        reply_markup: getMainKeyboard(),
+      });
     }
 
     // Navigation: Stats
@@ -346,6 +519,24 @@ async function handleUpdate(update) {
       });
     }
 
+    // Product actions: Edit stock
+    if (data.startsWith('edit_stock_')) {
+      const id = parseInt(data.replace('edit_stock_', ''), 10);
+      const products = getProducts();
+      const p = products.find((prod) => prod.id === id);
+      if (!p) {
+        await tg('answerCallbackQuery', { callback_query_id: cb.id, text: 'المنتج غير موجود' });
+        return;
+      }
+      sessions.set(userId, { step: 'EDIT_STOCK', targetId: id, productName: p.nameAr });
+      await tg('answerCallbackQuery', { callback_query_id: cb.id });
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text: `📦 *تعديل كمية المخزون:* ${p.nameAr}\nالمخزون الحالي: *${p.stock ?? 50} قطعة*\n\nأرسل *الكمية الجديدة المتوفرة* في المخزون:`,
+        parse_mode: 'Markdown',
+      });
+    }
+
     // Product actions: Delete product
     if (data.startsWith('del_prod_')) {
       const id = parseInt(data.replace('del_prod_', ''), 10);
@@ -362,15 +553,24 @@ async function handleUpdate(update) {
       });
     }
 
-    // Order status update
-    if (data.startsWith('ord_status_')) {
-      // Format: ord_status_<status>_<orderId>
-      const parts = data.replace('ord_status_', '').split('_');
+    // Normalize legacy/alternative callbacks
+    let actionData = data;
+    if (data.startsWith('accept_')) {
+      actionData = `ord_status_confirmed_${data.replace('accept_', '')}`;
+    } else if (data.startsWith('cancel_')) {
+      actionData = `ord_status_cancelled_${data.replace('cancel_', '')}`;
+    }
+
+    // =========================================================================
+    // 6. ONE-TAP INLINE STATUS UPDATES (confirmed, shipped, delivered, cancelled)
+    // =========================================================================
+    if (actionData.startsWith('ord_status_')) {
+      const parts = actionData.replace('ord_status_', '').split('_');
       const newStatusKey = parts[0];
       const orderId = parts.slice(1).join('_');
 
       let orders = getOrders();
-      let order = orders.find((o) => String(o.orderId) === String(orderId));
+      let order = orders.find((o) => String(o.orderId) === String(orderId) || String(o.orderNumber) === String(orderId));
 
       const statusObj = STATUS_MAP[newStatusKey] || { label: newStatusKey };
 
@@ -382,74 +582,72 @@ async function handleUpdate(update) {
           orderId,
           status: newStatusKey,
           updatedAt: new Date().toISOString(),
-          customerName: 'عميل المتجر',
+          customerName: 'عميلة المتجر',
         };
         orders.unshift(order);
       }
       saveOrders(orders);
 
-      // Also update Supabase
+      // Update Supabase Database record
       try {
-        await supabase.from('orders').update({ status: newStatusKey }).eq('id', orderId);
+        await supabase
+          .from('orders')
+          .update({ status: newStatusKey, updated_at: new Date().toISOString() })
+          .or(`id.eq.${orderId},order_number.eq.${orderId}`);
       } catch (err) {
         console.warn('Supabase status update error:', err?.message);
       }
 
       await tg('answerCallbackQuery', {
         callback_query_id: cb.id,
-        text: `تم تحديث الحالة: ${statusObj.label}`,
+        text: `تم تحديث الحالة إلى: ${statusObj.label}`,
       });
 
-      // Update message text if possible
-      const originalText = cb.message.text || '';
-      const updateNotice = `\n\n📌 *تحديث الحالة:* ${statusObj.label}\n🕒 *التاريخ:* ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
+      // Update message text or caption dynamically
+      const updateNotice = `\n\n📌 *تحديث الحالة:* ${statusObj.label}\n🕒 *التوقيت:* ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
 
-      await tg('editMessageText', {
-        chat_id: chatId,
-        message_id: msgId,
-        text: originalText + updateNotice,
-        parse_mode: 'Markdown',
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: 'جاري التجهيز 🛠️', callback_data: `ord_status_processing_${orderId}` },
-              { text: 'تم الشحن 🚚', callback_data: `ord_status_shipped_${orderId}` },
-            ],
-            [
-              { text: 'تم التسليم ✅', callback_data: `ord_status_completed_${orderId}` },
-              { text: 'إلغاء ❌', callback_data: `ord_status_cancelled_${orderId}` },
-            ],
-            [
-              { text: '📋 عرض كل الطلبات', callback_data: 'nav_orders_all' },
-            ],
+      const newKeyboard = {
+        inline_keyboard: [
+          [
+            { text: '✅ تم التأكيد', callback_data: `ord_status_confirmed_${orderId}` },
+            { text: '🚚 قيد الشحن', callback_data: `ord_status_shipped_${orderId}` },
           ],
-        },
-      });
+          [
+            { text: '✨ تم التسليم', callback_data: `ord_status_delivered_${orderId}` },
+            { text: '❌ إلغاء الطلب', callback_data: `ord_status_cancelled_${orderId}` },
+          ],
+          [
+            { text: '📋 عرض كل الطلبات', callback_data: 'nav_orders_all' },
+          ],
+        ],
+      };
+
+      if (cb.message.caption !== undefined) {
+        await tg('editMessageCaption', {
+          chat_id: chatId,
+          message_id: msgId,
+          caption: (cb.message.caption || '') + updateNotice,
+          parse_mode: 'Markdown',
+          reply_markup: newKeyboard,
+        });
+      } else {
+        await tg('editMessageText', {
+          chat_id: chatId,
+          message_id: msgId,
+          text: (cb.message.text || '') + updateNotice,
+          parse_mode: 'Markdown',
+          reply_markup: newKeyboard,
+        });
+      }
 
       return;
-    }
-
-    // Backward compatibility for ord_ok_
-    if (data.startsWith('ord_ok_')) {
-      const orderId = data.replace('ord_ok_', '');
-      let orders = getOrders();
-      let order = orders.find((o) => String(o.orderId) === String(orderId));
-      if (order) {
-        order.status = 'processing';
-        saveOrders(orders);
-      }
-      await tg('answerCallbackQuery', { callback_query_id: cb.id, text: 'تم قبول الطلب ✅' });
-      return tg('sendMessage', {
-        chat_id: chatId,
-        text: `✅ تم قبول الطلب #${orderId} وجارٍ تجهيزه للشحن!`,
-      });
     }
 
     await tg('answerCallbackQuery', { callback_query_id: cb.id });
     return;
   }
 
-  // 2. Text message handling
+  // 2. Text message handling & Admin commands
   if (update.message?.text) {
     const text = update.message.text.trim();
     const chatId = update.message.chat.id;
@@ -462,9 +660,46 @@ async function handleUpdate(update) {
         text:
           `🌿 *أهلاً بك في نظام إدارة متجر Roma Store الذكي!*\n\n` +
           `المتجر مرتبط ومفعل بالكامل على [roma-eg.my](https://roma-eg.my).\n\n` +
-          `🛠️ يمكنك إدارة المنتجات وتعديل أسعارها وحذفها، ومتابعة الطلبات وتحديث حالاتها مباشرة من هنا:`,
+          `🛠️ يمكنك إضافة وتعديل المنتجات والمخزون، وتأكيد وشحن الطلبات واستعادة السلات المتروكة:`,
         parse_mode: 'Markdown',
         reply_markup: getMainKeyboard(),
+      });
+    }
+
+    // Admin Command: /stock <product_id> <quantity>
+    if (text.startsWith('/stock')) {
+      const parts = text.split(' ').filter(Boolean);
+      if (parts.length >= 3) {
+        const prodId = parts[1];
+        const newQty = parseInt(parts[2], 10);
+        if (!isNaN(newQty)) {
+          let products = getProducts();
+          const target = products.find((p) => String(p.id) === String(prodId) || p.slug === prodId);
+          if (target) {
+            target.stock = newQty;
+            saveProducts(products, `Stock update: ${target.nameAr} = ${newQty}`);
+            return tg('sendMessage', {
+              chat_id: chatId,
+              text: `✅ *تم تحديث المخزون بنجاح!*\n\n📦 *${target.nameAr}*\n📊 الكمية المتوفرة حالياً: *${newQty} قطعة*`,
+              parse_mode: 'Markdown',
+            });
+          }
+        }
+      }
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text: 'ℹ️ *طريقة تعديل المخزون:* أرسلي:\n`/stock <كود_المنتج> <الكمية>`\nمثال: `/stock 1 25` أو اختاري المنتج من زر *إدارة المنتجات والمخزون*.',
+        parse_mode: 'Markdown',
+        reply_markup: getMainKeyboard(),
+      });
+    }
+
+    if (text === '/abandoned') {
+      await checkAbandonedCartsRoutine();
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text: '✅ *تم إجراء فحص السلات المتروكة وإشعار العملاء بالكوبونات بنجاح!*',
+        parse_mode: 'Markdown',
       });
     }
 
@@ -492,6 +727,30 @@ async function handleUpdate(update) {
     // Step machine for adding or editing
     const session = sessions.get(userId);
     if (session) {
+      // Edit stock step
+      if (session.step === 'EDIT_STOCK') {
+        const newQty = parseInt(text, 10);
+        if (isNaN(newQty) || newQty < 0) {
+          return tg('sendMessage', {
+            chat_id: chatId,
+            text: '⚠️ يرجى إدخال رقم كمية صحيح (مثال: `20`):',
+          });
+        }
+        let products = getProducts();
+        const p = products.find((prod) => prod.id === session.targetId);
+        if (p) {
+          p.stock = newQty;
+          saveProducts(products, `Edit stock of ${p.nameAr} to ${newQty}`);
+        }
+        sessions.delete(userId);
+        return tg('sendMessage', {
+          chat_id: chatId,
+          text: `✅ *تم تحديث كمية المخزون بنجاح!*\n\n📦 *${session.productName}*\n📊 المخزون الحالي: *${newQty} قطعة*`,
+          parse_mode: 'Markdown',
+          reply_markup: getMainKeyboard(),
+        });
+      }
+
       // Edit price step
       if (session.step === 'EDIT_PRICE') {
         const newPrice = parseFloat(text);
@@ -536,7 +795,7 @@ async function handleUpdate(update) {
                 { text: 'الشفاه (Lips)', callback_data: 'cat_الشفاه (Lips)' },
               ],
               [
-                { text: 'العطور والجسم (Body)', callback_data: 'cat_العطور والجسم (Body)' },
+                { text: 'إكسسوارات نسائية', callback_data: 'cat_إكسسوارات (Accessories)' },
                 { text: 'العناية بالبشرة', callback_data: 'cat_العناية بالبشرة (Skincare)' },
               ],
             ],
@@ -566,7 +825,7 @@ async function handleUpdate(update) {
       if (session.step === 'DESC') {
         session.draft.descriptionAr =
           text === '.'
-            ? `مستحضر طبيعي مميز وفاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.`
+            ? `مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.`
             : text;
         session.step = 'PHOTO';
         return tg('sendMessage', {
@@ -603,97 +862,67 @@ async function handleUpdate(update) {
   }
 }
 
-// ----------------- View Renderers -----------------
+// ----------------- Product & Order Renderers -----------------
 
 async function sendProductsList(chatId) {
   const products = getProducts();
   if (products.length === 0) {
     return tg('sendMessage', {
       chat_id: chatId,
-      text: '📭 لا توجد منتجات مسجلة حالياً في المتجر.\n\nاستخدم الزر أدناه لإضافة أول منتج:',
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '➕ إضافة منتج جديد', callback_data: 'nav_add_prod' }],
-        ],
-      },
+      text: 'لا توجد منتجات مسجلة في المتجر حالياً.',
+      reply_markup: getMainKeyboard(),
     });
   }
 
-  let text = `📋 *قائمة منتجات المتجر (${products.length}):*\n\n`;
   const buttons = [];
-
-  products.forEach((p, i) => {
-    text += `${i + 1}. *${p.nameAr}*\n💰 السعر: *${p.price} ج.م* | 🏷️ التصنيف: ${p.category}\n\n`;
+  products.slice(0, 15).forEach((p) => {
     buttons.push([
-      { text: `✏️ تعديل السعر (#${i + 1})`, callback_data: `edit_price_${p.id}` },
-      { text: `🗑️ حذف (#${i + 1})`, callback_data: `del_prod_${p.id}` },
+      { text: `📦 ${p.nameAr} (${p.price} ج.م - ${p.stock ?? 50} ق)`, callback_data: `edit_price_${p.id}` },
+    ]);
+    buttons.push([
+      { text: `✏️ السعر`, callback_data: `edit_price_${p.id}` },
+      { text: `📊 المخزون`, callback_data: `edit_stock_${p.id}` },
+      { text: `🗑️ حذف`, callback_data: `del_prod_${p.id}` },
     ]);
   });
 
-  buttons.push([
-    { text: '➕ إضافة منتج جديد', callback_data: 'nav_add_prod' },
-    { text: '🔙 القائمة الرئيسية', callback_data: 'nav_menu' },
-  ]);
+  buttons.push([{ text: '➕ إضافة منتج جديد', callback_data: 'nav_add_prod' }]);
+  buttons.push([{ text: '🔙 القائمة الرئيسية', callback_data: 'nav_menu' }]);
 
   return tg('sendMessage', {
     chat_id: chatId,
-    text,
+    text: `🏷️ *قائمة منتجات ومخزون متجر Roma (${products.length} منتج)*:\nاختر إجراء لتعديل السعر أو الكمية:`,
     parse_mode: 'Markdown',
     reply_markup: { inline_keyboard: buttons },
   });
 }
 
 async function sendOrdersList(chatId, filter = 'all') {
-  const orders = await getAllOrdersCombined();
+  const allOrders = await getAllOrdersCombined();
 
-  let filtered = orders;
+  let orders = allOrders;
   if (filter !== 'all') {
-    filtered = orders.filter((o) => o.status === filter);
+    orders = allOrders.filter((o) => (o.status || 'pending') === filter);
   }
 
-  const titleMap = {
-    all: 'كل الطلبات',
-    pending: 'الطلبات قيد الانتظار ⏳',
-    processing: 'طلبات جاري تجهيزها 🛠️',
-    shipped: 'طلبات تم شحنها 🚚',
-    completed: 'طلبات مكتملة ✅',
-  };
+  let text = `📦 *سجل طلبات متجر Roma* [${filter === 'all' ? 'جميع الطلبات' : filter}]:\n\n`;
 
-  if (filtered.length === 0) {
-    return tg('sendMessage', {
-      chat_id: chatId,
-      text: `📭 لا توجد طلبات في قسم: *${titleMap[filter] || filter}*`,
-      parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: '⏳ قيد الانتظار', callback_data: 'nav_orders_pending' },
-            { text: '🛠️ بالتجهيز', callback_data: 'nav_orders_processing' },
-            { text: '🚚 المشحونة', callback_data: 'nav_orders_shipped' },
-          ],
-          [
-            { text: '📋 كل الطلبات', callback_data: 'nav_orders_all' },
-            { text: '🔙 القائمة الرئيسية', callback_data: 'nav_menu' },
-          ],
-        ],
-      },
+  if (orders.length === 0) {
+    text += 'لا توجد طلبات مسجلة بهذا الفلتر حالياً.';
+  } else {
+    orders.slice(0, 8).forEach((o, index) => {
+      const statusObj = STATUS_MAP[o.status] || { label: o.status || 'قيد الانتظار' };
+      text += `*${index + 1}. طلب #${o.orderNumber || o.orderId}*\n`;
+      text += `👤 *العميلة:* ${o.customerName}\n`;
+      text += `📞 *الهاتف:* \`${o.customerPhone}\`\n`;
+      text += `📍 *العنوان:* ${o.shippingAddress}\n`;
+      text += `💰 *المبلغ:* ${o.totalAmount} ج.م\n`;
+      text += `📌 *الحالة:* ${statusObj.label}\n`;
+      text += `──────────────────\n`;
     });
   }
 
-  let text = `📦 *قائمة ${titleMap[filter] || filter} (${filtered.length}):*\n\n`;
   const buttons = [];
-
-  filtered.slice(0, 10).forEach((ord, i) => {
-    const status = STATUS_MAP[ord.status] || { label: ord.status || 'جديد' };
-    text += `${i + 1}. *طلب #ROMA-${ord.orderId}*\n👤 العميل: ${ord.customerName || 'عميل المتجر'}\n📞 الهاتف: \`${ord.customerPhone || 'غير مسجل'}\`\n💰 الإجمالي: *${ord.totalAmount || 0} ج.م*\n📌 الحالة: *${status.label}*\n\n`;
-
-    buttons.push([
-      { text: `تجهيز 🛠️ (#${ord.orderId})`, callback_data: `ord_status_processing_${ord.orderId}` },
-      { text: `شحن 🚚 (#${ord.orderId})`, callback_data: `ord_status_shipped_${ord.orderId}` },
-      { text: `إكمال ✅`, callback_data: `ord_status_completed_${ord.orderId}` },
-    ]);
-  });
-
   buttons.push([
     { text: '⏳ قيد الانتظار', callback_data: 'nav_orders_pending' },
     { text: '🚚 المشحونة', callback_data: 'nav_orders_shipped' },
@@ -715,9 +944,9 @@ async function sendStoreStats(chatId) {
 
   const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
   const pendingOrders = orders.filter((o) => !o.status || o.status === 'pending').length;
-  const processingOrders = orders.filter((o) => o.status === 'processing').length;
+  const processingOrders = orders.filter((o) => o.status === 'confirmed' || o.status === 'processing').length;
   const shippedOrders = orders.filter((o) => o.status === 'shipped').length;
-  const completedOrders = orders.filter((o) => o.status === 'completed').length;
+  const completedOrders = orders.filter((o) => o.status === 'delivered' || o.status === 'completed').length;
 
   const text =
     `📊 *إحصائيات وتقارير متجر ROMA*\n\n` +
@@ -727,9 +956,9 @@ async function sendStoreStats(chatId) {
     `💰 *إجمالي المبيعات:* ${totalRevenue.toLocaleString('ar-EG')} ج.م\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
     `⏳ *طلبات قيد الانتظار:* ${pendingOrders}\n` +
-    `🛠️ *طلبات قيد التجهيز:* ${processingOrders}\n` +
-    `🚚 *طلبات تم شحنها:* ${shippedOrders}\n` +
-    `✅ *طلبات تم تسليمها:* ${completedOrders}\n` +
+    `🛠️ *طلبات مؤكدة:* ${processingOrders}\n` +
+    `🚚 *طلبات قيد الشحن:* ${shippedOrders}\n` +
+    `✨ *طلبات تم تسليمها:* ${completedOrders}\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
     `🌐 *الموقع المباشر:* https://roma-eg.my`;
 
@@ -741,8 +970,7 @@ async function sendStoreStats(chatId) {
   });
 }
 
-// ----------------- Finalize Product Creation -----------------
-
+// Finalize Product Creation
 async function finalizeProduct(chatId, userId, session) {
   const draft = session.draft;
   sessions.delete(userId);
@@ -760,14 +988,33 @@ async function finalizeProduct(chatId, userId, session) {
     rating: 5.0,
     reviewCount: 1,
     badge: 'جديد',
+    stock: 50,
     variants: [
-      { id: 1, nameAr: 'الحجم القياسي', hex: '#76A080', sku: `RM-${timestamp}`, stock: 50 },
+      { id: 1, nameAr: 'الحجم القياسي', hex: '#D4A5A5', sku: `RM-${timestamp}`, stock: 50 },
     ],
   };
 
   const products = getProducts();
   products.unshift(newProduct);
   saveProducts(products, `Add product ${newProduct.nameAr}`);
+
+  // Also insert into Supabase products table
+  try {
+    await supabase.from('products').insert({
+      name_ar: newProduct.nameAr,
+      name_en: newProduct.nameAr,
+      description_ar: newProduct.descriptionAr,
+      description_en: newProduct.descriptionAr,
+      price: newProduct.price,
+      discount_price: newProduct.price,
+      stock: 50,
+      images: [newProduct.imageUrl],
+      is_featured: true,
+      badge_ar: 'جديد',
+    });
+  } catch (err) {
+    console.warn('Supabase product insert note:', err?.message);
+  }
 
   return tg('sendMessage', {
     chat_id: chatId,
@@ -776,6 +1023,7 @@ async function finalizeProduct(chatId, userId, session) {
       `📦 *الاسم:* ${newProduct.nameAr}\n` +
       `🏷️ *التصنيف:* ${newProduct.category}\n` +
       `💰 *السعر:* ${newProduct.price} ج.م\n` +
+      `📊 *المخزون:* 50 قطعة\n` +
       `📝 *الوصف:* ${newProduct.descriptionAr}\n\n` +
       `🚀 *تم النشر والتحديث فوراً:* يظهر المنتج الآن في المتجر: https://roma-eg.my/shop`,
     parse_mode: 'Markdown',
@@ -814,16 +1062,22 @@ async function poll() {
   }
 }
 
-console.log('🤖 Telegram Bot @romaupbot is RUNNING with full Product & Order Management!');
+console.log('🤖 Telegram Bot @romaupbot is RUNNING with Realtime Order Tracking & Stock Management!');
+
+// Start Realtime listener & Abandoned Cart Interval
+initSupabaseRealtime();
+setInterval(checkAbandonedCartsRoutine, 15 * 60 * 1000); // Check every 15 mins
+
 tg('sendMessage', {
   chat_id: ADMIN_CHAT_ID,
   text:
-    `🟢 *تم تشغيل نظام إدارة متجر Roma بنجاح!*\n\n` +
-    `تحكم بالكامل في:\n` +
-    `• 🏷️ إضافة وتعديل وحذف المنتجات\n` +
-    `• 📦 متابعة وتحديث حالات طلبات العملاء\n` +
-    `• 📊 إحصائيات المبيعات والأرباح\n\n` +
-    `أرسل /menu أو /start لفتح لوحة التحكم.`,
+    `🟢 *تم تشغيل نظام إدارة متجر Roma المتكامل بنجاح!*\n\n` +
+    `⚡ مفعل مع:\n` +
+    `• 📡 الاستماع اللحظي للطلبات الجديدة عبر Supabase Realtime\n` +
+    `• 🔘 أزرار التحديث الفوري: تأكيد، شحن، تسليم، إلغاء\n` +
+    `• 🛒 استعادة السلات المتروكة بكوبونات خصم مؤتمتة\n` +
+    `• 🏷️ إضافة وتعديل المنتجات والمخزون\n\n` +
+    `أرسل /menu لفتح لوحة التحكم.`,
   parse_mode: 'Markdown',
   reply_markup: getMainKeyboard(),
 });

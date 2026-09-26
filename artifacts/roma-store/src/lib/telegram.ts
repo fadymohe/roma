@@ -55,13 +55,28 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
     ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${order.customerName}، بخصوص طلبكِ رقم #ROMA-${order.orderId} من متجر Roma:`)}`
     : 'https://roma-eg.my';
 
-  const keyboard = [
+  const primaryKeyboard = [
     [
-      { text: 'قبول الطلب ✅', callback_data: `accept_${order.orderId}` },
-      { text: 'إلغاء الطلب ❌', callback_data: `cancel_${order.orderId}` },
+      { text: '✅ تأكيد الطلب', callback_data: `ord_status_confirmed_${order.orderId}` },
+      { text: '🚚 قيد الشحن', callback_data: `ord_status_shipped_${order.orderId}` },
     ],
     [
-      { text: 'محادثة العميل عبر واتساب 💬', url: waUrl },
+      { text: '✨ تم التسليم', callback_data: `ord_status_delivered_${order.orderId}` },
+      { text: '❌ إلغاء الطلب', callback_data: `ord_status_cancelled_${order.orderId}` },
+    ],
+    [
+      { text: '💬 محادثة العميلة عبر واتساب', url: waUrl },
+    ],
+  ];
+
+  const fallbackKeyboard = [
+    [
+      { text: '✅ تأكيد الطلب', callback_data: `ord_status_confirmed_${order.orderId}` },
+      { text: '🚚 قيد الشحن', callback_data: `ord_status_shipped_${order.orderId}` },
+    ],
+    [
+      { text: '✨ تم التسليم', callback_data: `ord_status_delivered_${order.orderId}` },
+      { text: '❌ إلغاء الطلب', callback_data: `ord_status_cancelled_${order.orderId}` },
     ],
   ];
 
@@ -75,7 +90,7 @@ export async function notifyTelegramNewOrder(order: TelegramOrderDetails) {
         text,
         parse_mode: 'HTML',
         reply_markup: {
-          inline_keyboard: keyboard,
+          inline_keyboard: primaryKeyboard,
         },
       }),
     });

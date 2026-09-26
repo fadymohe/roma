@@ -91,20 +91,20 @@ export default function Shop() {
     { id: 'skincare', label: t('nav.skincare') },
     { id: 'moisturizers', label: t('nav.moisturizers') },
     { id: 'lips', label: t('nav.lips') },
-    { id: 'accessories', label: t('nav.accessories') },
+    { id: 'accessories', label: isAr ? 'إكسسوارات' : 'Accessories' },
   ];
 
   return (
-    <div className="roma-container py-8 md:py-12" dir={dir}>
+    <div className="roma-container py-8 md:py-12 text-[#F9FAFB]" dir={dir}>
       {/* Header & Subtitle */}
       <div className="mb-8">
-        <span className="font-mono-brand text-xs font-bold text-[#D48B88] tracking-widest uppercase">
+        <span className="font-mono-brand text-xs font-bold text-[#D4A5A5] tracking-widest uppercase">
           ROMA COLLECTION 2026
         </span>
-        <h1 className="font-display text-3xl md:text-5xl font-extrabold text-foreground mt-1">
+        <h1 className="font-display text-3xl md:text-5xl font-extrabold text-white mt-1">
           {t('nav.shop')}
         </h1>
-        <p className="mt-2 text-xs md:text-sm text-muted-foreground max-w-xl">
+        <p className="mt-2 text-xs md:text-sm text-[#A1A1AA] max-w-xl">
           {isAr
             ? 'تصفحي جميع مستحضراتنا الطبيعية الفاخرة وإكسسواراتنا الحصرية المعززة بأنقى الخلاصات.'
             : 'Explore our complete atelier of pure botanical formulations and handcrafted women\'s accessories.'}
@@ -112,7 +112,7 @@ export default function Shop() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-[#EFE8DE] pb-6">
+      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-white/10 pb-6">
         {/* Category Filter Pills */}
         <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
           {categoryFilters.map((f) => {
@@ -122,10 +122,10 @@ export default function Shop() {
                 type="button"
                 key={f.id}
                 onClick={() => setCategory(f.id)}
-                className={`rounded-full px-4 py-2 text-xs font-bold transition-all shadow-2xs ${
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm ${
                   active
-                    ? 'bg-[#4A1525] text-white shadow-xs'
-                    : 'bg-white border border-[#EFE8DE] text-foreground/75 hover:border-[#D48B88]'
+                    ? 'bg-[#D4A5A5] text-[#0A0A0A]'
+                    : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white'
                 }`}
               >
                 {f.label}
@@ -142,91 +142,66 @@ export default function Shop() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder={t('nav.search_placeholder')}
-              className="w-full rounded-full border border-[#EFE8DE] bg-white py-2 pl-9 pr-4 text-xs outline-none focus:border-[#D48B88] shadow-2xs"
+              className="w-full rounded-xl border border-white/10 bg-[#141414] py-2 pl-9 pr-4 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
             />
-            <button
-              type="submit"
-              aria-label="Search"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <Search className="size-3.5" />
-            </button>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[#A1A1AA]" />
             {searchInput && (
               <button
                 type="button"
                 onClick={handleClearSearch}
-                aria-label="Clear Search"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A1A1AA] hover:text-white"
               >
                 <X className="size-3.5" />
               </button>
             )}
           </form>
 
-          {/* Sort Dropdown */}
-          <div className="relative shrink-0">
+          {/* Sort dropdown */}
+          <div className="relative">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="appearance-none rounded-full border border-[#EFE8DE] bg-white py-2 px-4 pr-8 text-xs font-bold text-foreground outline-none focus:border-[#D48B88] shadow-2xs cursor-pointer"
+              onChange={(e: any) => setSortBy(e.target.value)}
+              className="appearance-none rounded-xl border border-white/10 bg-[#141414] py-2 pl-8 pr-4 text-xs font-semibold text-white outline-none focus:border-[#D4A5A5] cursor-pointer"
             >
-              <option value="featured">{isAr ? 'المميز والأحدث' : 'Featured'}</option>
-              <option value="price-low">{isAr ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
-              <option value="price-high">{isAr ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
-              <option value="rating">{isAr ? 'الأعلى تقييماً' : 'Highest Rated'}</option>
+              <option value="featured" className="bg-[#141414] text-white">{isAr ? 'الأكثر تميزاً' : 'Featured'}</option>
+              <option value="price-low" className="bg-[#141414] text-white">{isAr ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
+              <option value="price-high" className="bg-[#141414] text-white">{isAr ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
+              <option value="rating" className="bg-[#141414] text-white">{isAr ? 'الأعلى تقييماً' : 'Highest Rated'}</option>
             </select>
-            <ArrowUpDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
+            <ArrowUpDown className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-[#A1A1AA]" />
           </div>
         </div>
       </div>
 
-      {/* Results Count & Active Filter Indicator */}
-      <div className="mb-6 flex items-center justify-between text-xs text-muted-foreground">
-        <span>
-          {isAr ? `عرض ${products.length} مستحضر` : `Showing ${products.length} products`}
-        </span>
-        {(category || search) && (
-          <button
-            type="button"
-            onClick={() => {
-              setCategory('');
-              handleClearSearch();
-            }}
-            className="text-[#4A1525] font-bold underline hover:text-[#D48B88]"
-          >
-            {isAr ? 'إعادة ضبط الفلاتر' : 'Reset Filters'}
-          </button>
-        )}
-      </div>
-
-      {/* Products Grid */}
-      {products.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-          {products.map((p, i) => (
-            <ProductCard key={p.id} product={p} index={i} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-[32px] border border-[#EFE8DE] bg-white p-12 text-center max-w-md mx-auto my-12 space-y-4">
-          <div className="size-16 rounded-full bg-[#F8EBEA] text-[#4A1525] flex items-center justify-center mx-auto text-2xl">
-            🌸
+      {/* Product Results Grid */}
+      {products.length === 0 ? (
+        <div className="py-20 text-center space-y-3">
+          <div className="size-16 rounded-2xl bg-[#141414] border border-white/10 flex items-center justify-center mx-auto text-[#A1A1AA]">
+            <Search className="size-6" />
           </div>
-          <h3 className="font-display text-lg font-bold text-foreground">
-            {isAr ? 'لم نجد منتجات تطابق بحثكِ' : 'No Products Found'}
+          <h3 className="font-display font-bold text-lg text-white">
+            {isAr ? 'لم نعثر على أي مستحضرات مطابقة' : 'No matching items found'}
           </h3>
-          <p className="text-xs text-muted-foreground">
-            {isAr ? 'جربي البحث بكلمة أخرى أو تصفح جميع الأقسام' : 'Try adjusting your search terms or explore all categories'}
+          <p className="text-xs text-[#A1A1AA]">
+            {isAr ? 'جربي البحث بكلمات مختلفة أو إزالة الفلتر الحالي' : 'Try adjusting your search criteria or resetting filters'}
           </p>
           <button
             type="button"
             onClick={() => {
               setCategory('');
-              handleClearSearch();
+              setSearch('');
+              setSearchInput('');
             }}
-            className="rounded-full bg-[#4A1525] px-6 py-2.5 text-xs font-bold text-white shadow-xs"
+            className="mt-3 inline-flex items-center rounded-xl bg-[#D4A5A5] px-5 py-2.5 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition"
           >
-            {isAr ? 'عرض جميع المنتجات' : 'View All Products'}
+            {isAr ? 'إعادة ضبط كل الفلاتر' : 'Reset All Filters'}
           </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          {products.map((product, index) => (
+            <ProductCard key={product.id} product={product} index={index} />
+          ))}
         </div>
       )}
     </div>
