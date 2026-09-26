@@ -42,6 +42,28 @@ export const CATEGORIES: Category[] = [
 // Live products synced from Telegram bot
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790381386460,
+    "nameAr": "بلحة مصري",
+    "slug": "prod-1790381386460",
+    "descriptionAr": "ز",
+    "price": 15,
+    "compareAtPrice": 19,
+    "category": "العناية بالبشرة (Skincare)",
+    "imageUrl": "/uploads/prod_1790381386243.jpg",
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#76A080",
+        "sku": "RM-1790381386460",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790381268368,
     "nameAr": "قلقيلقفاقفا",
     "slug": "prod-1790381268368",
