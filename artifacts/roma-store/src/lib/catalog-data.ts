@@ -87,50 +87,120 @@ export const PRODUCTS: Product[] = [
   }
 ];
 
+function decodeBase64Utf8(base64: string): string {
+  try {
+    const cleanB64 = base64.replace(/\s/g, '');
+    const binary = atob(cleanB64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new TextDecoder('utf-8').decode(bytes);
+  } catch (err) {
+    console.error('Failed to decode base64 utf-8:', err);
+    return '';
+  }
+}
+
 /**
- * Hook to load dynamic products updated via Telegram Bot
+ * Hook to load dynamic products updated via Telegram Bot with instant real-time synchronization
  */
 export function useLiveProducts(): Product[] {
-  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  // Initialize from localStorage cache if available, otherwise static PRODUCTS
+  const [products, setProducts] = useState<Product[]>(() => {
+    try {
+      const cached = localStorage.getItem('roma_live_products');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    return PRODUCTS;
+  });
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadProducts() {
-      // 1. Try local products.json first
+      let candidateList: Product[] | null = null;
+
+      // 1. Fetch directly from GitHub Contents API (Instant 0-sec sync right after bot commit)
       try {
-        const localRes = await fetch(`/products.json?t=${Date.now()}`);
-        if (localRes.ok) {
-          const data = await localRes.json();
-          if (Array.isArray(data) && data.length > 0) {
-            if (isMounted) setProducts(data);
-            return;
+        const ghApiRes = await fetch(
+          `https://api.github.com/repos/fadymohe/roma/contents/artifacts/roma-store/public/products.json?ref=main&_t=${Date.now()}`,
+          { cache: 'no-store' }
+        );
+        if (ghApiRes.ok) {
+          const ghApiData = await ghApiRes.json();
+          if (ghApiData && ghApiData.content && ghApiData.encoding === 'base64') {
+            const decodedStr = decodeBase64Utf8(ghApiData.content);
+            const parsed = JSON.parse(decodedStr);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              candidateList = parsed;
+            }
           }
         }
-      } catch (err) {
-        console.warn('Could not fetch local products.json:', err);
+      } catch (e) {
+        // Quiet fallback
       }
 
-      // 2. Fallback to GitHub raw for instantaneous updates right after bot push
-      try {
-        const ghRes = await fetch(
-          `https://raw.githubusercontent.com/fadymohe/roma/main/artifacts/roma-store/public/products.json?t=${Date.now()}`
-        );
-        if (ghRes.ok) {
-          const ghData = await ghRes.json();
-          if (Array.isArray(ghData) && ghData.length > 0) {
-            if (isMounted) setProducts(ghData);
+      // 2. Fetch from GitHub Raw if API was rate-limited or failed
+      if (!candidateList) {
+        try {
+          const ghRawRes = await fetch(
+            `https://raw.githubusercontent.com/fadymohe/roma/main/artifacts/roma-store/public/products.json?v=${Date.now()}`,
+            { cache: 'no-store' }
+          );
+          if (ghRawRes.ok) {
+            const rawData = await ghRawRes.json();
+            if (Array.isArray(rawData) && rawData.length > 0) {
+              candidateList = rawData;
+            }
           }
+        } catch (_) {}
+      }
+
+      // 3. Fetch from local /products.json as standard fallback
+      if (!candidateList) {
+        try {
+          const localRes = await fetch(`/products.json?t=${Date.now()}`, { cache: 'no-store' });
+          if (localRes.ok) {
+            const data = await localRes.json();
+            if (Array.isArray(data) && data.length > 0) {
+              candidateList = data;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (isMounted && candidateList && candidateList.length > 0) {
+        const jsonStr = JSON.stringify(candidateList);
+        const currentStr = JSON.stringify(products);
+        if (jsonStr !== currentStr) {
+          setProducts(candidateList);
+          try {
+            localStorage.setItem('roma_live_products', jsonStr);
+          } catch (_) {}
         }
-      } catch (err) {
-        console.warn('Could not fetch GitHub raw products.json:', err);
       }
     }
 
+    // Load immediately on mount
     loadProducts();
+
+    // Re-check immediately when the admin switches tabs back from Telegram to the website
+    const onFocus = () => loadProducts();
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('visibilitychange', onFocus);
+
+    // Also poll every 6 seconds in background for real-time live updates
+    const interval = setInterval(loadProducts, 6000);
 
     return () => {
       isMounted = false;
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('visibilitychange', onFocus);
+      clearInterval(interval);
     };
   }, []);
 

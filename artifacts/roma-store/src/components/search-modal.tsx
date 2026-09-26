@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Search, X, ArrowLeft, Sparkles } from 'lucide-react';
-import { PRODUCTS } from '@/lib/catalog-data';
+import { PRODUCTS, useLiveProducts } from '@/lib/catalog-data';
 import { Link } from 'wouter';
 
 interface SearchModalProps {
@@ -11,9 +11,11 @@ interface SearchModalProps {
 export function SearchModal({ open, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const liveProducts = useLiveProducts();
 
   const filtered = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    const list = liveProducts.length > 0 ? liveProducts : PRODUCTS;
+    return list.filter((product) => {
       const matchesText =
         !query.trim() ||
         `${product.nameAr} ${product.descriptionAr} ${product.slug}`
@@ -25,7 +27,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 
       return matchesText && matchesCat;
     });
-  }, [query, selectedCategory]);
+  }, [query, selectedCategory, liveProducts]);
 
   if (!open) return null;
 

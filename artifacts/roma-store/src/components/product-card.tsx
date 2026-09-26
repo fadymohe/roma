@@ -62,6 +62,12 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               src={product.imageUrl}
               alt={product.nameAr}
               loading="lazy"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (product.imageUrl?.startsWith('/uploads/') && !target.src.includes('raw.githubusercontent.com')) {
+                  target.src = `https://raw.githubusercontent.com/fadymohe/roma/main/artifacts/roma-store/public${product.imageUrl}`;
+                }
+              }}
               className="roma-image h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-700 group-hover:scale-105"
             />
           ) : (

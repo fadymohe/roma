@@ -4,12 +4,13 @@ import { Link, useParams } from 'wouter';
 import { useGetProduct } from '@workspace/api-client-react';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
-import { PRODUCTS } from '@/lib/catalog-data';
+import { PRODUCTS, useLiveProducts } from '@/lib/catalog-data';
 import { ProductCard } from '@/components/product-card';
 
 export default function ProductPage() {
   const { slug = '' } = useParams<{ slug: string }>();
   const query = useGetProduct(slug);
+  const liveProducts = useLiveProducts();
   const { add } = useCart();
   const { isWishlisted, toggleWishlist } = useAuth();
 
@@ -17,10 +18,10 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [addedNotice, setAddedNotice] = useState(false);
 
-  // Fallback to local catalog if API query fails or is loading
+  // Match product from live dynamic list or API
   const product = (query.data && typeof query.data === 'object' && 'id' in query.data && 'nameAr' in query.data)
     ? query.data
-    : (PRODUCTS.find((p) => p.slug === slug) || PRODUCTS[0]);
+    : (liveProducts.find((p) => p.slug === slug) || liveProducts[0] || PRODUCTS[0]);
   const variant = product.variants?.[selectedVariant];
   const favorited = isWishlisted(product.id);
 
@@ -87,6 +88,12 @@ export default function ProductPage() {
               <img
                 src={product.imageUrl}
                 alt={product.nameAr}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (product.imageUrl?.startsWith('/uploads/') && !target.src.includes('raw.githubusercontent.com')) {
+                    target.src = `https://raw.githubusercontent.com/fadymohe/roma/main/artifacts/roma-store/public${product.imageUrl}`;
+                  }
+                }}
                 className="h-full w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-700 hover:scale-105"
               />
             ) : (
