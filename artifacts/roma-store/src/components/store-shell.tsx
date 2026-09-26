@@ -57,13 +57,13 @@ export function StoreShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-[100dvh] bg-[#0A0A0A] text-[#F9FAFB] pb-24 md:pb-12" dir={dir}>
       {/* Top Luxury Announcement Bar - Pitch Charcoal & Rose Gold */}
-      <div className="bg-[#121212] text-[#F9FAFB] px-4 py-2 text-center text-[12px] font-medium tracking-wide border-b border-white/5">
-        <div className="roma-container flex items-center justify-between md:justify-center gap-3">
-          <div className="flex items-center gap-2 mx-auto">
-            <Sparkles className="size-3.5 text-[#D4A5A5] animate-pulse" />
-            <span className="text-[#A1A1AA]">
+      <div className="bg-[#121212] text-[#F9FAFB] px-3 py-1.5 text-center text-[10px] sm:text-[12px] font-medium tracking-wide border-b border-white/5">
+        <div className="roma-container flex items-center justify-between md:justify-center gap-2">
+          <div className="flex items-center gap-1.5 mx-auto">
+            <Sparkles className="size-3 text-[#D4A5A5] animate-pulse shrink-0" />
+            <span className="text-[#A1A1AA] truncate">
               {t('common.free_shipping_notice')}{' '}
-              <strong className="rounded-full bg-[#D4A5A5]/15 border border-[#D4A5A5]/30 px-2 py-0.5 font-mono text-[#D4A5A5] text-[11px]">
+              <strong className="rounded-full bg-[#D4A5A5]/15 border border-[#D4A5A5]/30 px-1.5 py-0.5 font-mono text-[#D4A5A5] text-[10px]">
                 ROMA10 (-10%)
               </strong>
             </span>
@@ -83,73 +83,73 @@ export function StoreShell({ children }: { children: ReactNode }) {
       </div>
 
       {/* Main Sticky Header */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0A0A0A]/90 backdrop-blur-md transition-all">
-        <div className="roma-container flex h-[72px] md:h-[84px] items-center justify-between gap-3 md:gap-4">
-          {/* Left section: User avatar + Notification bell + Language switch */}
-          <div className="flex items-center gap-2 md:gap-2.5">
-            {/* User Profile Avatar / Login */}
-            {user ? (
-              <Link
-                href="/account"
-                aria-label={t('nav.account')}
-                data-testid="button-user-profile"
-                className="group flex size-10 items-center justify-center overflow-hidden rounded-full border-2 border-[#D4A5A5] p-0.5 transition hover:scale-105 shadow-md shadow-[#D4A5A5]/10"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
-                  alt={user.name}
-                  className="h-full w-full rounded-full object-cover"
-                />
-              </Link>
-            ) : (
-              <button
-                type="button"
-                aria-label={t('nav.login')}
-                data-testid="button-login"
-                onClick={() => setAuthModalOpen(true)}
-                className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#F9FAFB] shadow-xs hover:border-[#D4A5A5] hover:text-[#D4A5A5] transition"
-              >
-                <User className="size-4 text-[#A1A1AA]" strokeWidth={1.5} />
-              </button>
-            )}
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0A0A0A]/95 backdrop-blur-md transition-all">
+        {/* ========================================================================= */}
+        {/* MOBILE TOP BAR (< md): Clean, Luxury, Never Overflows Screen Width        */}
+        {/* ========================================================================= */}
+        <div className="flex md:hidden items-center justify-between h-14 px-4 w-full">
+          {/* Brand Logo */}
+          <Link
+            href="/"
+            data-testid="link-logo-mobile"
+            className="flex flex-col py-0.5 active:scale-95 transition"
+          >
+            <span className="font-display text-xl font-extrabold tracking-widest text-[#F9FAFB] leading-none">
+              ROMA
+            </span>
+            <span className="text-[7.5px] uppercase tracking-[0.25em] text-[#D4A5A5] font-semibold mt-0.5">
+              Cosmetics & Jewelry
+            </span>
+          </Link>
 
-            {/* Notification Bell */}
-            <button
-              type="button"
-              aria-label="Notifications"
-              onClick={() => alert(isAr ? 'لديكِ إشعاران: خصم 10% عبر كود ROMA10 وشحن مجاني للطلبات فوق 500 ج.م!' : '2 Notifications: 10% OFF with code ROMA10 & Free Express Delivery over 500 EGP!')}
-              className="relative hidden sm:flex size-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] shadow-xs hover:border-[#D4A5A5] hover:text-[#F9FAFB] transition"
-            >
-              <Bell className="size-4" strokeWidth={1.5} />
-              <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#D4A5A5] text-[9px] font-bold text-[#0A0A0A] shadow-xs">
-                2
-              </span>
-            </button>
-
-            {/* Bilingual Toggle Button in Navbar */}
+          {/* Mobile Right Controls: Language Switch + Search + Wishlist */}
+          <div className="flex items-center gap-1.5">
+            {/* Quick Language Switch */}
             <button
               type="button"
               onClick={toggleLang}
               aria-label="Toggle Language"
-              className="flex items-center gap-1.5 h-10 px-3 rounded-full border border-white/10 bg-[#141414] text-xs font-bold text-white hover:border-[#D4A5A5] hover:bg-white/5 transition shadow-xs"
+              className="flex items-center gap-1 h-8 px-2.5 rounded-full border border-white/10 bg-[#141414] text-[11px] font-bold text-white hover:border-[#D4A5A5] active:scale-95 transition"
             >
-              <Globe className="size-3.5 text-[#D4A5A5]" strokeWidth={1.5} />
+              <Globe className="size-3 text-[#D4A5A5]" strokeWidth={1.5} />
               <span>{isAr ? 'EN' : 'عربي'}</span>
             </button>
 
-            {/* Menu icon for mobile */}
+            {/* Circular Search Button */}
             <button
               type="button"
-              aria-label="Open Menu"
-              data-testid="button-open-menu"
-              onClick={() => setMenuOpen(true)}
-              className="flex xl:hidden size-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] shadow-xs hover:border-[#D4A5A5] hover:text-white transition"
+              aria-label={t('nav.search_placeholder')}
+              onClick={() => setSearchOpen(true)}
+              className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] hover:text-[#F9FAFB] active:scale-95 transition"
             >
-              <LayoutGrid className="size-4" strokeWidth={1.5} />
+              <Search className="size-3.5" strokeWidth={1.75} />
+            </button>
+
+            {/* Wishlist Button with Counter */}
+            <button
+              type="button"
+              aria-label={t('nav.wishlist')}
+              onClick={() => setWishlistDrawerOpen(true)}
+              className="relative flex size-8 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] hover:text-[#F9FAFB] active:scale-95 transition"
+            >
+              <Heart
+                className={`size-3.5 ${wishlist.length > 0 ? 'fill-[#D4A5A5] text-[#D4A5A5]' : ''}`}
+                strokeWidth={1.75}
+              />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex size-3.5 items-center justify-center rounded-full bg-[#D4A5A5] text-[8px] font-bold text-[#0A0A0A]">
+                  {wishlist.length}
+                </span>
+              )}
             </button>
           </div>
+        </div>
 
-          {/* Centered Brand Logo */}
+        {/* ========================================================================= */}
+        {/* DESKTOP TOP BAR (>= md): Full Navigation with All Links and Buttons       */}
+        {/* ========================================================================= */}
+        <div className="hidden md:flex roma-container h-[80px] items-center justify-between gap-4">
+          {/* Centered Brand Logo on Desktop */}
           <Link
             href="/"
             data-testid="link-logo"
@@ -166,8 +166,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden items-center gap-5 text-[13px] font-semibold text-[#A1A1AA] xl:flex">
-            {nav.slice(0, 7).map((item) => (
+          <nav className="flex items-center gap-5 text-[13px] font-semibold text-[#A1A1AA]">
+            {nav.slice(0, 6).map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -180,8 +180,19 @@ export function StoreShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          {/* Right section: Search + Wishlist + Cart button */}
-          <div className="flex items-center gap-2 md:gap-2.5">
+          {/* Right section on Desktop: Language + Search + Wishlist + Cart + Profile */}
+          <div className="flex items-center gap-2.5">
+            {/* Language Switch */}
+            <button
+              type="button"
+              onClick={toggleLang}
+              aria-label="Toggle Language"
+              className="flex items-center gap-1.5 h-10 px-3 rounded-full border border-white/10 bg-[#141414] text-xs font-bold text-white hover:border-[#D4A5A5] hover:bg-white/5 transition shadow-xs"
+            >
+              <Globe className="size-3.5 text-[#D4A5A5]" strokeWidth={1.5} />
+              <span>{isAr ? 'EN' : 'عربي'}</span>
+            </button>
+
             {/* Circular Search Button */}
             <button
               type="button"
@@ -212,14 +223,40 @@ export function StoreShell({ children }: { children: ReactNode }) {
               )}
             </button>
 
+            {/* User Profile Avatar / Login */}
+            {user ? (
+              <Link
+                href="/account"
+                aria-label={t('nav.account')}
+                data-testid="button-user-profile"
+                className="group flex size-10 items-center justify-center overflow-hidden rounded-full border-2 border-[#D4A5A5] p-0.5 transition hover:scale-105 shadow-md shadow-[#D4A5A5]/10"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
+                  alt={user.name}
+                  className="h-full w-full rounded-full object-cover"
+                />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                aria-label={t('nav.login')}
+                data-testid="button-login"
+                onClick={() => setAuthModalOpen(true)}
+                className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#F9FAFB] shadow-xs hover:border-[#D4A5A5] hover:text-[#D4A5A5] transition"
+              >
+                <User className="size-4 text-[#A1A1AA]" strokeWidth={1.5} />
+              </button>
+            )}
+
             {/* Shopping Cart Button */}
             <Link
               href="/cart"
               data-testid="link-cart"
-              className="relative flex items-center gap-2 rounded-full bg-[#D4A5A5] hover:bg-[#C89595] px-3.5 md:px-4 py-2 text-xs font-bold text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20 transition active:scale-95"
+              className="relative flex items-center gap-2 rounded-full bg-[#D4A5A5] hover:bg-[#C89595] px-4 py-2.5 text-xs font-bold text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20 transition active:scale-95"
             >
               <ShoppingBag className="size-4 text-[#0A0A0A]" strokeWidth={1.5} />
-              <span className="hidden sm:inline">{t('nav.cart')}</span>
+              <span>{t('nav.cart')}</span>
               {count > 0 && (
                 <span className="flex size-5 items-center justify-center rounded-full bg-[#0A0A0A] font-mono-brand text-[10px] font-bold text-[#D4A5A5] shadow-xs">
                   {count}
@@ -302,16 +339,20 @@ export function StoreShell({ children }: { children: ReactNode }) {
       {/* 1. BRAND AESTHETICS & MOBILE-FIRST UX: STICKY MOBILE BOTTOM NAVIGATION    */}
       {/* Destinations: [Store / Shop, Categories, Cart with counter, My Account]   */}
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* 1. BRAND AESTHETICS & MOBILE-FIRST UX: STICKY MOBILE BOTTOM NAVIGATION    */}
+      {/* Destinations: [Store / Shop, Categories, Cart with counter, My Account]   */}
+      {/* ========================================================================= */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-4 py-2 shadow-2xl"
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 shadow-2xl safe-area-pb"
       >
-        <div className="flex items-center justify-around">
+        <div className="grid grid-cols-4 items-center max-w-md mx-auto">
           {/* Destination 1: Store / Shop */}
           <Link
             href="/shop"
-            aria-label={t('nav.shop')}
-            className={`flex flex-col items-center gap-1 py-1 transition ${
+            aria-label={isAr ? 'المتجر' : 'Shop'}
+            className={`flex flex-col items-center justify-center py-1 transition ${
               location === '/shop' || location === '/'
                 ? 'text-[#D4A5A5]'
                 : 'text-[#A1A1AA] hover:text-white'
@@ -320,14 +361,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
             <div className={`p-1 rounded-full ${location === '/shop' || location === '/' ? 'bg-[#D4A5A5]/15' : ''}`}>
               <HomeIcon className="size-5" strokeWidth={1.75} />
             </div>
-            <span className="text-[10px] font-semibold">{t('nav.shop')}</span>
+            <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'المتجر' : 'Shop'}</span>
           </Link>
 
           {/* Destination 2: Categories */}
           <Link
             href="/categories"
             aria-label={isAr ? 'الأقسام' : 'Categories'}
-            className={`flex flex-col items-center gap-1 py-1 transition ${
+            className={`flex flex-col items-center justify-center py-1 transition ${
               location === '/categories'
                 ? 'text-[#D4A5A5]'
                 : 'text-[#A1A1AA] hover:text-white'
@@ -336,14 +377,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
             <div className={`p-1 rounded-full ${location === '/categories' ? 'bg-[#D4A5A5]/15' : ''}`}>
               <LayoutGrid className="size-5" strokeWidth={1.75} />
             </div>
-            <span className="text-[10px] font-semibold">{isAr ? 'الأقسام' : 'Categories'}</span>
+            <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'الأقسام' : 'Categories'}</span>
           </Link>
 
           {/* Destination 3: Cart with Dynamic Counter Badge */}
           <Link
             href="/cart"
-            aria-label={t('nav.cart')}
-            className={`relative flex flex-col items-center gap-1 py-1 transition ${
+            aria-label={isAr ? 'السلة' : 'Cart'}
+            className={`relative flex flex-col items-center justify-center py-1 transition ${
               location === '/cart'
                 ? 'text-[#D4A5A5]'
                 : 'text-[#A1A1AA] hover:text-white'
@@ -357,14 +398,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 </span>
               )}
             </div>
-            <span className="text-[10px] font-semibold">{t('nav.cart')}</span>
+            <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'السلة' : 'Cart'}</span>
           </Link>
 
           {/* Destination 4: My Account */}
           <Link
             href="/account"
-            aria-label={isAr ? 'حسابي' : 'My Account'}
-            className={`flex flex-col items-center gap-1 py-1 transition ${
+            aria-label={isAr ? 'حسابي' : 'Account'}
+            className={`flex flex-col items-center justify-center py-1 transition ${
               location === '/account'
                 ? 'text-[#D4A5A5]'
                 : 'text-[#A1A1AA] hover:text-white'
@@ -373,7 +414,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
             <div className={`p-1 rounded-full ${location === '/account' ? 'bg-[#D4A5A5]/15' : ''}`}>
               <User className="size-5" strokeWidth={1.75} />
             </div>
-            <span className="text-[10px] font-semibold">{isAr ? 'حسابي' : 'Account'}</span>
+            <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'حسابي' : 'Account'}</span>
           </Link>
         </div>
       </nav>
