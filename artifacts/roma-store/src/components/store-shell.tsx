@@ -56,7 +56,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
   ];
 
   return (
-    <div className="min-h-[100dvh] bg-[#0A0A0A] text-[#F9FAFB] pb-24 md:pb-12" dir={dir}>
+    <div className="min-h-[100dvh] bg-[#0A0A0A] text-[#F9FAFB] flex flex-col justify-between" dir={dir}>
       {/* Top Luxury Announcement Bar - Pitch Charcoal & Rose Gold */}
       <div className="bg-[#121212] text-[#F9FAFB] px-3 py-1.5 text-center text-[10px] sm:text-[12px] font-medium tracking-wide border-b border-white/5">
         <div className="roma-container flex items-center justify-between md:justify-center gap-2">
@@ -573,7 +573,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
         </div>
 
         {/* Bottom copyright bar */}
-        <div className="border-t border-white/10 py-5">
+        <div className="border-t border-white/10 py-5 pb-20 md:pb-5">
           <div className="roma-container flex flex-col items-center justify-between gap-3 text-xs text-zinc-400 md:flex-row">
             <span>© 2026 ROMA Luxury Cosmetics & Accessories · {isAr ? 'جميع الحقوق محفوظة' : 'All Rights Reserved'}</span>
             <div className="flex items-center gap-4">
