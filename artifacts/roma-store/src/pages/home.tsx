@@ -1,4 +1,4 @@
-import { Star } from 'lucide-react';
+import { Star, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { ProductCard } from '@/components/product-card';
@@ -77,7 +77,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Bestsellers & Featured Products Section */}
+      {/* Bestsellers & Featured Products Section - Smooth Horizontal Slider */}
       <section className="roma-container">
         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -108,17 +108,37 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Product Cards Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        {/* Product Cards Smooth Slider / Flow - Eliminates awkward empty trailing card gaps */}
+        <div className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x scroll-smooth">
           {displayedProducts.map((p, i) => (
-            <ProductCard key={p.id} product={p} index={i} />
+            <div key={p.id} className="w-[240px] sm:w-[270px] md:w-[290px] shrink-0 snap-start">
+              <ProductCard product={p} index={i} />
+            </div>
           ))}
+
+          {/* Discover More Card in Slider */}
+          <div className="w-[200px] sm:w-[240px] shrink-0 snap-start flex items-stretch">
+            <Link
+              href="/shop"
+              className="flex flex-col items-center justify-center text-center p-6 w-full rounded-3xl border border-dashed border-white/15 hover:border-[#D4A5A5] bg-[#141414]/50 hover:bg-[#141414] transition group"
+            >
+              <div className="size-12 rounded-full bg-[#D4A5A5]/10 text-[#D4A5A5] flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                <ShoppingBag className="size-5" />
+              </div>
+              <span className="text-xs font-bold text-white group-hover:text-[#D4A5A5] transition">
+                {isAr ? 'عرض جميع المنتجات' : 'View All Products'}
+              </span>
+              <span className="text-[10px] text-zinc-400 mt-1">
+                {isAr ? 'اكتشفي المزيد ←' : 'Discover More →'}
+              </span>
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Client Testimonials & Social Proof */}
       <section className="roma-container">
-        <div className="rounded-3xl border border-white/10 bg-[#141414] p-8 md:p-14">
+        <div className="rounded-3xl border border-white/10 bg-[#121212] p-8 md:p-14 shadow-xl">
           <div className="text-center max-w-xl mx-auto mb-10">
             <span className="text-xs font-bold text-[#D4A5A5] uppercase tracking-widest">
               {isAr ? 'شهادات عميلاتنا الموثقة' : 'Client Testimonials'}
@@ -132,23 +152,28 @@ export default function Home() {
             {TESTIMONIALS.map((tItem) => (
               <div
                 key={tItem.id}
-                className="rounded-2xl border border-white/10 bg-[#1A1A1A] p-6 shadow-sm space-y-3"
+                className="flex flex-col items-center justify-between text-center rounded-2xl border border-[#D4A5A5]/25 bg-[#161616]/90 p-6 md:p-7 shadow-lg shadow-[#D4A5A5]/5 space-y-4 hover:border-[#D4A5A5]/45 hover:scale-[1.01] transition duration-300"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex text-amber-400">
+                {/* Rating & Verified Tag */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex text-[#D4A5A5] gap-0.5">
                     {Array.from({ length: tItem.rating }).map((_, i) => (
                       <Star key={i} className="size-3.5 fill-current" />
                     ))}
                   </div>
-                  <span className="text-[10px] text-emerald-300 bg-emerald-950/40 border border-emerald-800/40 font-bold px-2 py-0.5 rounded-full">
-                    {isAr ? '✓ مشترية مؤكدة' : '✓ Verified Buyer'}
+                  <span className="text-[10px] text-[#D4A5A5] bg-[#D4A5A5]/10 border border-[#D4A5A5]/25 font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                    {isAr ? '✓ مشتري موثق' : '✓ Verified Purchase'}
                   </span>
                 </div>
-                <p className="text-xs md:text-sm text-[#A1A1AA] leading-relaxed italic">
+
+                {/* Centered Modern Review Quote */}
+                <p className="text-xs md:text-sm text-zinc-300 leading-relaxed font-normal italic max-w-xs">
                   "{isAr ? tItem.quoteAr : tItem.quoteEn}"
                 </p>
-                <div className="pt-2 border-t border-white/5">
-                  <strong className="text-xs font-bold text-white block">
+
+                {/* Author Name */}
+                <div className="pt-2 border-t border-white/5 w-full">
+                  <strong className="text-xs font-bold text-white block tracking-wide">
                     {isAr ? tItem.nameAr : tItem.nameEn}
                   </strong>
                 </div>

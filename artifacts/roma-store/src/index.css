@@ -199,23 +199,31 @@
 .no-scrollbar, .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* Third-party accessibility floating widget offset so it sits neatly offset from navigation menus and footer content */
+.accessibility-widget,
 [class*="accessibility"],
 [id*="accessibility"],
 [id*="userway"],
+[class*="userway"],
 .asw-menu-btn,
-.accessibility-trigger {
-  bottom: 5.5rem !important;
-  z-index: 35 !important;
+.accessibility-trigger,
+[aria-label*="accessibility" i],
+[aria-label*="تسهيل الاستخدام" i] {
+  bottom: 5rem !important;
+  z-index: 30 !important;
 }
 
 @media (min-width: 768px) {
   .roma-container { width: min(100% - 4rem, 1280px); }
+  .accessibility-widget,
   [class*="accessibility"],
   [id*="accessibility"],
   [id*="userway"],
+  [class*="userway"],
   .asw-menu-btn,
-  .accessibility-trigger {
-    bottom: 2rem !important;
-    z-index: 35 !important;
+  .accessibility-trigger,
+  [aria-label*="accessibility" i],
+  [aria-label*="تسهيل الاستخدام" i] {
+    bottom: 5rem !important;
+    z-index: 30 !important;
   }
 }

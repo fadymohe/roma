@@ -14,6 +14,7 @@ import {
   Truck,
   CheckCircle2,
   Package,
+  ChevronDown,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useCart } from '@/hooks/use-cart';
@@ -69,11 +70,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
             </span>
           </div>
 
-          {/* Quick Language Toggle in Top Bar for Desktop */}
+          {/* Quick Language Toggle in Top Bar */}
           <button
             type="button"
             onClick={toggleLang}
-            className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 hover:bg-white/10 text-[11px] font-bold text-white border border-white/10 transition shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 hover:bg-white/10 text-[11px] font-bold text-white border border-white/10 transition shrink-0"
             title={isAr ? 'Switch to English' : 'التحويل إلى العربية'}
           >
             <Globe className="size-3 text-[#D4A5A5]" />
@@ -101,19 +102,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
             />
           </Link>
 
-          {/* Mobile Right Controls: Language Switch + Search + Wishlist */}
-          <div className="flex items-center gap-1.5">
-            {/* Quick Language Switch */}
-            <button
-              type="button"
-              onClick={toggleLang}
-              aria-label="Toggle Language"
-              className="flex items-center gap-1 h-8 px-2.5 rounded-full border border-white/10 bg-[#141414] text-[11px] font-bold text-white hover:border-[#D4A5A5] active:scale-95 transition"
-            >
-              <Globe className="size-3 text-[#D4A5A5]" strokeWidth={1.5} />
-              <span>{isAr ? 'EN' : 'عربي'}</span>
-            </button>
-
+          {/* Mobile Right Controls: Search + Wishlist */}
+          <div className="flex items-center gap-2">
             {/* Circular Search Button */}
             <button
               type="button"
@@ -161,33 +151,82 @@ export function StoreShell({ children }: { children: ReactNode }) {
             />
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="flex items-center gap-5 text-[13px] font-semibold text-[#A1A1AA]">
-            {nav.slice(0, 6).map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`transition-all hover:text-[#D4A5A5] ${
-                  location === item.href ? 'font-bold text-[#D4A5A5] border-b-2 border-[#D4A5A5] pb-1' : ''
+          {/* Desktop Navigation Links: Primary Links & Category Dropdown */}
+          <nav className="flex items-center gap-6 text-[13px] font-semibold text-zinc-300">
+            <Link
+              href="/"
+              className={`transition-all hover:text-[#D4A5A5] ${
+                location === '/' ? 'font-bold text-[#D4A5A5] border-b-2 border-[#D4A5A5] pb-1' : ''
+              }`}
+            >
+              {t('nav.home')}
+            </Link>
+
+            <Link
+              href="/shop"
+              className={`transition-all hover:text-[#D4A5A5] ${
+                location === '/shop' && !location.includes('category=') ? 'font-bold text-[#D4A5A5] border-b-2 border-[#D4A5A5] pb-1' : ''
+              }`}
+            >
+              {isAr ? 'جميع المنتجات' : 'All Products'}
+            </Link>
+
+            {/* Elegant Dropdown for Categories */}
+            <div className="relative group py-2">
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 transition-all hover:text-[#D4A5A5] ${
+                  location.includes('category=') || location === '/categories' ? 'font-bold text-[#D4A5A5]' : ''
                 }`}
               >
-                {item.label}
-              </Link>
-            ))}
+                <span>{isAr ? 'الأقسام' : 'Categories'}</span>
+                <ChevronDown className="size-3.5 transition-transform duration-200 group-hover:rotate-180 text-zinc-400 group-hover:text-[#D4A5A5]" />
+              </button>
+
+              <div className="absolute top-full right-0 mt-1 hidden w-48 flex-col rounded-2xl border border-white/10 bg-[#141414]/95 backdrop-blur-xl p-2 shadow-2xl group-hover:flex z-50">
+                <Link
+                  href="/shop?category=face"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                >
+                  {t('nav.face')}
+                </Link>
+                <Link
+                  href="/shop?category=serum"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                >
+                  {t('nav.serums')}
+                </Link>
+                <Link
+                  href="/shop?category=skincare"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                >
+                  {t('nav.skincare')}
+                </Link>
+                <Link
+                  href="/shop?category=lips"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                >
+                  {t('nav.lips')}
+                </Link>
+                <Link
+                  href="/shop?category=accessories"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                >
+                  {isAr ? 'إكسسوارات' : 'Accessories'}
+                </Link>
+                <div className="my-1 border-t border-white/10" />
+                <Link
+                  href="/categories"
+                  className="rounded-xl px-3 py-2 text-xs font-bold text-[#D4A5A5] hover:bg-[#D4A5A5]/10 transition"
+                >
+                  {isAr ? 'عرض كل الأقسام ←' : 'All Categories →'}
+                </Link>
+              </div>
+            </div>
           </nav>
 
-          {/* Right section on Desktop: Language + Search + Wishlist + Cart + Profile */}
+          {/* Right section on Desktop: Search + Wishlist + Profile + Cart */}
           <div className="flex items-center gap-2.5">
-            {/* Language Switch */}
-            <button
-              type="button"
-              onClick={toggleLang}
-              aria-label="Toggle Language"
-              className="flex items-center gap-1.5 h-10 px-3 rounded-full border border-white/10 bg-[#141414] text-xs font-bold text-white hover:border-[#D4A5A5] hover:bg-white/5 transition shadow-xs"
-            >
-              <Globe className="size-3.5 text-[#D4A5A5]" strokeWidth={1.5} />
-              <span>{isAr ? 'EN' : 'عربي'}</span>
-            </button>
 
             {/* Circular Search Button */}
             <button
@@ -495,7 +534,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 : 'Join our inner circle for exclusive previews and private atelier offers.'}
             </p>
             <form
-              className="relative flex items-center bg-[#161616] border border-white/10 rounded-xl overflow-hidden p-1 focus-within:border-[#D4A5A5]/60 transition"
+              className="relative flex items-center bg-[#141414] border border-white/10 rounded-xl p-1.5 focus-within:border-[#D4A5A5]/50 transition"
               onSubmit={(e) => {
                 e.preventDefault();
                 if (newsletterEmail) setNewsletterSent(true);
@@ -512,7 +551,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
               />
               <button
                 type="submit"
-                className="rounded-lg bg-[#D4A5A5] px-4 py-2 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition shrink-0"
+                className="rounded-lg bg-[#D4A5A5] px-4 py-2 text-xs font-semibold text-[#0A0A0A] hover:bg-[#C89595] transition shrink-0"
               >
                 {newsletterSent ? (isAr ? 'تم' : 'Subscribed') : (isAr ? 'اشتراك' : 'Join')}
               </button>

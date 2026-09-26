@@ -106,14 +106,14 @@ export function ProductCard({ product }: ProductCardProps) {
           {discountPercent ? (
             <span
               data-testid={`tag-discount-${product.id}`}
-              className="inline-flex items-center rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[11px] font-medium px-2 py-0.5 shadow-xs backdrop-blur-xs"
+              className="inline-flex items-center rounded-full bg-[#D4A5A5]/15 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[10px] font-semibold px-2 py-0.5 shadow-xs backdrop-blur-xs font-mono"
             >
-              {isAr ? `خصم ${discountPercent}%` : `${discountPercent}% OFF`}
+              -{discountPercent}%
             </span>
           ) : displayBadge ? (
             <span
               data-testid={`tag-badge-${product.id}`}
-              className="inline-flex items-center rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[11px] font-medium px-2 py-0.5 shadow-xs backdrop-blur-xs"
+              className="inline-flex items-center rounded-full bg-[#D4A5A5]/15 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[10px] font-semibold px-2 py-0.5 shadow-xs backdrop-blur-xs"
             >
               {displayBadge}
             </span>
