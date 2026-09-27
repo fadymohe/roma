@@ -68,7 +68,7 @@ const translations: Record<Language, Record<string, string>> = {
     'trust.moh_desc': 'جميع المنتجات حاصلة على تراخيص الجودة المصرية المعتمدة',
 
     // Categories Section
-    'section.categories_title': 'اكتشفي المجموعات الملكية',
+    'section.categories_title': 'اكتشفي المجموعات',
     'section.categories_subtitle': 'مستحضرات صممت بعناية فائقة لتبرز أبهى تفاصيل أنوثتك',
     'section.bestsellers_title': 'الأكثر طلباً وتألقاً',
     'section.bestsellers_subtitle': 'المستحضرات التي نالت ثقة آلاف السيدات في مصر',

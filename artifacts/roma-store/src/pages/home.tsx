@@ -1,4 +1,4 @@
-import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { ProductCard } from '@/components/product-card';
@@ -47,7 +47,7 @@ export default function Home() {
         <div className="mb-6 flex items-center justify-between relative z-10">
           <div>
             <span className="text-xs md:text-sm font-semibold text-[#D4A5A5] flex items-center gap-1.5">
-              <Sparkles className="size-3.5 text-[#D4A5A5] animate-pulse" />
+              <Boxes className="size-3.5 text-[#D4A5A5]" />
               <span>{isAr ? 'الأقسام والمجموعات' : 'Royal Collections'}</span>
             </span>
             <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
@@ -104,10 +104,11 @@ export default function Home() {
       <section className="roma-container">
         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <span className="text-xs font-bold text-[#D4A5A5] tracking-widest uppercase">
-              {isAr ? 'المختارات الأكثر تألقاً' : 'Most Coveted Bestsellers'}
+            <span className="text-xs md:text-sm font-semibold text-[#D4A5A5] flex items-center gap-1.5">
+              <Sparkles className="size-3.5 text-[#D4A5A5] animate-pulse" />
+              <span>{isAr ? 'المختارات الأكثر تألقاً' : 'Most Coveted Bestsellers'}</span>
             </span>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-white mt-1">
+            <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
               {t('section.bestsellers_title')}
             </h2>
           </div>
@@ -165,7 +166,7 @@ export default function Home() {
             <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-80 h-80 bg-[#D4A5A5]/10 rounded-full blur-3xl" />
             <div className="relative max-w-md mx-auto space-y-4">
               <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-[#D4A5A5]/15 text-[#D4A5A5] border border-[#D4A5A5]/30 shadow-md">
-                <Sparkles className="size-7 animate-pulse" />
+                <Construction className="size-7 text-[#D4A5A5]" />
               </div>
               <h3 className="font-display text-xl md:text-2xl font-bold text-white">
                 {isAr ? 'تشكيلة ROMA الحصرية الجديدة قيد الإضافة' : 'New Exclusive ROMA Collection Coming Soon'}
