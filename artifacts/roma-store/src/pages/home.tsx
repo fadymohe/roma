@@ -1,4 +1,4 @@
-import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction } from 'lucide-react';
+import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { ProductCard } from '@/components/product-card';
@@ -199,14 +199,14 @@ export default function Home() {
           <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#D4A5A5]/10 rounded-full blur-3xl" />
 
           <div className="relative text-center max-w-xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4A5A5]/10 border border-[#D4A5A5]/25 text-[#D4A5A5] text-[11px] font-bold tracking-widest uppercase mb-3 shadow-xs">
-              <Sparkles className="size-3 text-[#D4A5A5] animate-pulse" />
-              <span>{isAr ? 'شهادات عميلاتنا الموثقة' : 'Client Testimonials'}</span>
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#D4A5A5]/10 border border-[#D4A5A5]/25 text-[#D4A5A5] text-xs font-semibold mb-3 shadow-xs">
+              <BadgeCheck className="size-4 text-[#D4A5A5]" />
+              <span>{isAr ? 'شهادات عميلاتنا الموثقة' : 'Verified Client Reviews'}</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-100 to-[#D4A5A5] tracking-tight">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mt-1 leading-snug">
               {isAr ? 'ماذا تقول جميلات ROMA عنا؟' : 'Cherished Experiences'}
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-2 font-medium">
+            <p className="text-xs sm:text-sm text-zinc-400 mt-2 font-normal leading-relaxed">
               {isAr ? 'ثقة وتجارب حقيقية تعكس رقي وجودة مستحضراتنا الملكية' : 'Authentic reflections of luxury, purity and care'}
             </p>
           </div>
