@@ -381,7 +381,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       )}
 
       {/* Main Content View */}
-      <main className="flex-1 w-full">{children}</main>
+      <main className={`flex-1 w-full ${location !== '/' ? 'pb-24 md:pb-12' : ''}`}>{children}</main>
 
       {/* ========================================================================= */}
       {/* 1. BRAND AESTHETICS & MOBILE-FIRST UX: STICKY MOBILE BOTTOM NAVIGATION    */}
@@ -473,8 +473,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
       <WishlistDrawer />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {/* Bespoke Luxury Dark Footer */}
-      <footer className="mt-20 border-t border-white/10 bg-[#0E0E0E]">
+      {/* Bespoke Luxury Dark Footer - Visible on Home Page Only */}
+      {location === '/' && (
+        <footer className="mt-20 border-t border-white/10 bg-[#0E0E0E]">
         <div className="roma-container grid gap-10 py-16 md:grid-cols-4">
           {/* Col 1: Brand & Identity */}
           <div className="space-y-4 md:col-span-1">
@@ -619,6 +620,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </footer>
+      )}
     </div>
   );
 }
