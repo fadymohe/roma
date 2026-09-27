@@ -89,7 +89,31 @@ export const CATEGORIES: Category[] = [
 
 export const DEFAULT_PRODUCTS: Product[] = [];
 
-export const PRODUCTS: Product[] = [];
+export const PRODUCTS: Product[] = [
+  {
+    "id": 1790505693985,
+    "nameAr": "سيروم زيت الفيف اكسترا اورديناري من لوريال باريس لأنواع الشعر الجاف، 100 مل",
+    "slug": "prod-1790505693985",
+    "descriptionAr": "مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.",
+    "price": 390,
+    "compareAtPrice": 488,
+    "category": "سيروم وزيوت (Serums & Oils)",
+    "imageUrl": "/uploads/prod_1790505693360.jpg",
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790505693985",
+        "stock": 50
+      }
+    ]
+  }
+];
 
 function decodeBase64Utf8(base64: string): string {
   try {
