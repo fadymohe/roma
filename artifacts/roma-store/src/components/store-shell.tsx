@@ -28,6 +28,7 @@ import { SearchModal } from '@/components/search-modal';
 
 export function StoreShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const isHomePage = location === '/' || location === '' || location === '/index.html';
   const { count } = useCart();
   const { t, lang, toggleLang, isAr, dir } = useLanguage();
   const {
@@ -381,7 +382,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       )}
 
       {/* Main Content View */}
-      <main className={`flex-1 w-full ${location !== '/' ? 'pb-24 md:pb-12' : ''}`}>{children}</main>
+      <main className={`flex-1 w-full ${!isHomePage ? 'pb-24 md:pb-12' : ''}`}>{children}</main>
 
       {/* ========================================================================= */}
       {/* 1. BRAND AESTHETICS & MOBILE-FIRST UX: STICKY MOBILE BOTTOM NAVIGATION    */}
@@ -474,7 +475,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* Bespoke Luxury Dark Footer - Visible on Home Page Only */}
-      {location === '/' && (
+      {isHomePage && (
         <footer className="mt-20 border-t border-white/10 bg-[#0E0E0E]">
         <div className="roma-container grid gap-10 py-16 md:grid-cols-4">
           {/* Col 1: Brand & Identity */}
