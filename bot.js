@@ -653,14 +653,34 @@ async function handleUpdate(update) {
     const chatId = update.message.chat.id;
     const userId = update.message.from.id;
 
-    if (text === '/start' || text === '/menu') {
+    const normalized = text.toLowerCase();
+    const isStartOrMenu =
+      normalized === '/start' ||
+      normalized === '/menu' ||
+      normalized === '/help' ||
+      normalized === 'start' ||
+      normalized === 'menu' ||
+      normalized === 'بدء' ||
+      normalized === 'ابدأ' ||
+      normalized === 'ابدا' ||
+      normalized === 'القائمة' ||
+      normalized === 'قائمة' ||
+      normalized === 'مرحبا' ||
+      normalized === 'هلا' ||
+      normalized === 'سلام' ||
+      normalized === 'السلام عليكم' ||
+      normalized === 'اوامر' ||
+      normalized === 'أوامر' ||
+      normalized === 'لوحة التحكم';
+
+    if (isStartOrMenu) {
       sessions.delete(userId);
       return tg('sendMessage', {
         chat_id: chatId,
         text:
           `🌿 *أهلاً بك في نظام إدارة متجر Roma Store الذكي!*\n\n` +
           `المتجر مرتبط ومفعل بالكامل على [roma-eg.my](https://roma-eg.my).\n\n` +
-          `🛠️ يمكنك إضافة وتعديل المنتجات والمخزون، وتأكيد وشحن الطلبات واستعادة السلات المتروكة:`,
+          `🛠️ يمكنك إدارة الطلبات، وتعديل المنتجات والمخزون، وتأكيد وشحن الطلبات واستعادة السلات المتروكة:`,
         parse_mode: 'Markdown',
         reply_markup: getMainKeyboard(),
       });
@@ -844,6 +864,14 @@ async function handleUpdate(update) {
         return finalizeProduct(chatId, userId, session);
       }
     }
+
+    // Default friendly response for any other incoming text
+    return tg('sendMessage', {
+      chat_id: chatId,
+      text: '🌿 *لوحة تحكم إدارة متجر Roma*\n\nيرجى الاختيار من القائمة أدناه، أو إرسال `/start` للبدء من جديد:',
+      parse_mode: 'Markdown',
+      reply_markup: getMainKeyboard(),
+    });
   }
 
   // 3. Photo upload in wizard
