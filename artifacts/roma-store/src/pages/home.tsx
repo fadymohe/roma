@@ -1,4 +1,4 @@
-import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle } from 'lucide-react';
+import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { ProductCard } from '@/components/product-card';
@@ -17,61 +17,84 @@ export default function Home() {
   const displayedProducts = featuredProducts.filter((p) => {
     if (activeCategory === 'all') return true;
     const cat = (p.category || '').toLowerCase();
-    if (activeCategory === 'face') return cat.includes('وجه') || cat.includes('face');
-    if (activeCategory === 'serum') return cat.includes('سيروم') || cat.includes('serum');
-    if (activeCategory === 'skincare') return cat.includes('عناية') || cat.includes('skin');
-    if (activeCategory === 'moisturizers') return cat.includes('مرطب') || cat.includes('moisturizer');
-    if (activeCategory === 'lips') return cat.includes('شفاه') || cat.includes('lip');
-    if (activeCategory === 'accessories') return cat.includes('إكسسوار') || cat.includes('accessory') || cat.includes('hair');
-    return true;
+    if (activeCategory === 'hair-accessories') return cat.includes('شعر') || cat.includes('hair');
+    if (activeCategory === 'look-accessories') return cat.includes('إطلالة') || cat.includes('اطلالة') || cat.includes('look') || cat.includes('حقيبة') || cat.includes('نظارة') || cat.includes('ساعة');
+    if (activeCategory === 'jewelry') return cat.includes('مجوهرات') || cat.includes('ذهب') || cat.includes('سلسلة') || cat.includes('خاتم') || cat.includes('jewelry');
+    if (activeCategory === 'makeup') return cat.includes('مكياج') || cat.includes('شفاه') || cat.includes('روج') || cat.includes('تنت') || cat.includes('makeup');
+    if (activeCategory === 'body-care') return cat.includes('جسم') || cat.includes('نعومة') || cat.includes('عناية') || cat.includes('body');
+    if (activeCategory === 'perfumes') return cat.includes('عطر') || cat.includes('عطور') || cat.includes('perfume');
+    return cat.includes(activeCategory);
   });
 
   const categoryPills = [
     { id: 'all', label: isAr ? 'الكل' : 'All Products' },
-    { id: 'serum', label: t('nav.serums') },
-    { id: 'lips', label: t('nav.lips') },
-    { id: 'moisturizers', label: t('nav.moisturizers') },
-    { id: 'face', label: t('nav.face') },
-    { id: 'skincare', label: t('nav.skincare') },
-    { id: 'accessories', label: isAr ? 'إكسسوارات' : 'Accessories' },
+    { id: 'hair-accessories', label: isAr ? 'إكسسوارات الشعر' : 'Hair Accessories' },
+    { id: 'look-accessories', label: isAr ? 'إكسسوارات الإطلالة' : 'Look Accessories' },
+    { id: 'jewelry', label: isAr ? 'مجوهرات اليد والعنق' : 'Jewelry' },
+    { id: 'makeup', label: isAr ? 'المكياج والجمال' : 'Makeup & Beauty' },
+    { id: 'body-care', label: isAr ? 'العناية والنعومة' : 'Body Care' },
+    { id: 'perfumes', label: isAr ? 'العطور الفاخرة' : 'Perfumes' },
   ];
 
   return (
     <div dir={dir} className="space-y-10 md:space-y-16 py-4 md:py-8 text-[#F9FAFB]">
 
       {/* Categories Visual Grid */}
-      <section className="roma-container">
-        <div className="mb-6 flex items-center justify-between">
+      <section className="roma-container relative">
+        {/* Subtle Ambient Radial Glow */}
+        <div className="absolute inset-0 -top-8 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(212,165,165,0.08),transparent)] pointer-events-none" />
+
+        <div className="mb-6 flex items-center justify-between relative z-10">
           <div>
-            <span className="font-mono-brand text-xs font-bold text-[#D4A5A5] tracking-widest uppercase">
-              {isAr ? 'الأقسام والمجموعات' : 'Royal Collections'}
+            <span className="font-mono-brand text-xs font-bold text-[#D4A5A5] tracking-widest uppercase flex items-center gap-1.5">
+              <Sparkles className="size-3.5 text-[#D4A5A5] animate-pulse" />
+              <span>{isAr ? 'الأقسام والمجموعات الملكية' : 'Royal Collections'}</span>
             </span>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-white">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-white mt-1">
               {t('section.categories_title')}
             </h2>
           </div>
-          <Link href="/categories" className="text-xs font-bold text-[#D4A5A5] hover:underline">
-            {isAr ? 'تصفح الكل' : 'View All'}
+          <Link 
+            href="/categories" 
+            className="group inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A5A5] hover:text-white px-3 py-1.5 rounded-full bg-[#D4A5A5]/10 hover:bg-[#D4A5A5]/20 border border-[#D4A5A5]/25 transition-all duration-300"
+          >
+            <span>{isAr ? 'تصفح كل الأقسام' : 'View All'}</span>
+            <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1 rtl:rotate-0 ltr:rotate-180" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-          {CATEGORIES.map((cat) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 md:gap-4 relative z-10">
+          {CATEGORIES.map((cat, idx) => (
             <Link
               key={cat.id}
               href={`/shop?category=${cat.slug}`}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-xs hover:border-[#D4A5A5]/40 transition text-center"
+              className="group relative overflow-hidden rounded-2xl md:rounded-3xl border border-white/10 bg-gradient-to-b from-[#181818] via-[#141414] to-[#0E0E0E] p-3 md:p-3.5 shadow-md hover:border-[#D4A5A5]/60 hover:shadow-[0_16px_36px_-8px_rgba(212,165,165,0.25)] hover:-translate-y-2.5 transition-all duration-500 ease-out text-center flex flex-col justify-between active:scale-95 cursor-pointer"
+              style={{ animationDelay: `${idx * 80}ms` }}
             >
-              <div className="aspect-square w-full rounded-xl overflow-hidden mb-2 bg-[#1A1A1A]">
+              {/* Shimmer Light Reflection on Hover */}
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none z-20" />
+
+              {/* Image Container with seamless light background matching user photos */}
+              <div className="aspect-square w-full rounded-xl md:rounded-2xl overflow-hidden mb-2.5 bg-[#EBEBEB] relative shadow-inner border border-black/5">
                 <img
                   src={cat.imageUrl}
                   alt={isAr ? cat.nameAr : cat.nameEn}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                  className="h-full w-full object-contain p-1.5 transition-transform duration-700 ease-out group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               </div>
-              <h3 className="text-xs font-bold text-white line-clamp-1 group-hover:text-[#D4A5A5] transition">
-                {isAr ? cat.nameAr : cat.nameEn}
-              </h3>
+
+              {/* Title & Micro-indicator */}
+              <div className="pt-0.5">
+                <h3 className="text-[12px] sm:text-[13px] font-bold text-zinc-100 group-hover:text-[#D4A5A5] transition-colors duration-300 line-clamp-1 leading-snug">
+                  {isAr ? cat.nameAr : cat.nameEn}
+                </h3>
+                <div className="flex items-center justify-center gap-1 mt-1 text-[10px] font-semibold text-[#D4A5A5] opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0 transition-all duration-300">
+                  <span>{isAr ? 'استكشفي' : 'Explore'}</span>
+                  <ArrowLeft className="size-2.5 rtl:rotate-0 ltr:rotate-180" />
+                </div>
+              </div>
             </Link>
           ))}
         </div>

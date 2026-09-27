@@ -42,12 +42,20 @@ export default function Shop() {
         const pCat = (p.category || '').toLowerCase();
         const pSlug = (p.slug || '').toLowerCase();
 
-        if (qCat === 'face' || qCat.includes('وجه')) return pCat.includes('وجه') || pCat.includes('face');
+        if (qCat === 'hair-accessories' || qCat.includes('شعر')) return pCat.includes('شعر') || pCat.includes('hair');
+        if (qCat === 'look-accessories' || qCat.includes('إطلالة') || qCat.includes('اطلالة')) return pCat.includes('إطلالة') || pCat.includes('اطلالة') || pCat.includes('look') || pCat.includes('حقيبة') || pCat.includes('نظارة') || pCat.includes('ساعة');
+        if (qCat === 'jewelry' || qCat.includes('مجوهرات') || qCat.includes('عنق') || qCat.includes('يد')) return pCat.includes('مجوهرات') || pCat.includes('ذهب') || pCat.includes('سلسلة') || pCat.includes('خاتم') || pCat.includes('jewelry');
+        if (qCat === 'makeup' || qCat.includes('مكياج') || qCat.includes('شفاه') || qCat.includes('روج')) return pCat.includes('مكياج') || pCat.includes('makeup') || pCat.includes('روج') || pCat.includes('تنت') || pCat.includes('lip');
+        if (qCat === 'body-care' || qCat.includes('جسم') || qCat.includes('نعومة') || qCat.includes('بشرة') || qCat.includes('عناية')) return pCat.includes('جسم') || pCat.includes('body') || pCat.includes('نعومة') || pCat.includes('عناية') || pCat.includes('skin');
+        if (qCat === 'perfumes' || qCat.includes('عطر') || qCat.includes('عطور')) return pCat.includes('عطر') || pCat.includes('perfume') || pCat.includes('fragrance');
+
+        // Legacy aliases
+        if (qCat === 'face' || qCat.includes('وجه')) return pCat.includes('وجه') || pCat.includes('face') || pCat.includes('مكياج');
         if (qCat === 'serum' || qCat.includes('سيروم')) return pCat.includes('سيروم') || pCat.includes('serum');
-        if (qCat === 'skincare' || qCat.includes('عناية')) return pCat.includes('عناية') || pCat.includes('skin');
-        if (qCat === 'moisturizers' || qCat.includes('مرطب')) return pCat.includes('مرطب') || pCat.includes('moisturizer');
-        if (qCat === 'lips' || qCat.includes('شفاه')) return pCat.includes('شفاه') || pCat.includes('lip');
-        if (qCat === 'accessories' || qCat.includes('إكسسوار') || qCat.includes('accessory')) return pCat.includes('إكسسوار') || pCat.includes('accessory') || pCat.includes('hair');
+        if (qCat === 'skincare') return pCat.includes('عناية') || pCat.includes('skin');
+        if (qCat === 'moisturizers') return pCat.includes('مرطب') || pCat.includes('moisturizer');
+        if (qCat === 'lips') return pCat.includes('شفاه') || pCat.includes('lip');
+        if (qCat === 'accessories') return pCat.includes('إكسسوار') || pCat.includes('accessory');
 
         return pCat.includes(qCat) || pSlug.includes(qCat);
       });

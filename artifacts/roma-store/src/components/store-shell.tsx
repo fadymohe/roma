@@ -184,36 +184,42 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 <ChevronDown className="size-3.5 transition-transform duration-200 group-hover:rotate-180 text-zinc-400 group-hover:text-[#D4A5A5]" />
               </button>
 
-              <div className="absolute top-full right-0 mt-1 hidden w-48 flex-col rounded-2xl border border-white/10 bg-[#141414]/95 backdrop-blur-xl p-2 shadow-2xl group-hover:flex z-50">
+              <div className="absolute top-full right-0 mt-1 hidden w-52 flex-col rounded-2xl border border-white/10 bg-[#141414]/95 backdrop-blur-xl p-2 shadow-2xl group-hover:flex z-50">
                 <Link
-                  href="/shop?category=face"
-                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                  href="/shop?category=hair-accessories"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition flex items-center justify-between"
                 >
-                  {t('nav.face')}
+                  <span>{isAr ? 'إكسسوارات الشعر' : 'Hair Accessories'}</span>
                 </Link>
                 <Link
-                  href="/shop?category=serum"
-                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                  href="/shop?category=look-accessories"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition flex items-center justify-between"
                 >
-                  {t('nav.serums')}
+                  <span>{isAr ? 'إكسسوارات الإطلالة' : 'Look Accessories'}</span>
                 </Link>
                 <Link
-                  href="/shop?category=skincare"
-                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                  href="/shop?category=jewelry"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition flex items-center justify-between"
                 >
-                  {t('nav.skincare')}
+                  <span>{isAr ? 'مجوهرات اليد والعنق' : 'Jewelry'}</span>
                 </Link>
                 <Link
-                  href="/shop?category=lips"
-                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                  href="/shop?category=makeup"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition flex items-center justify-between"
                 >
-                  {t('nav.lips')}
+                  <span>{isAr ? 'المكياج والجمال' : 'Makeup & Beauty'}</span>
                 </Link>
                 <Link
-                  href="/shop?category=accessories"
-                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition"
+                  href="/shop?category=body-care"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition flex items-center justify-between"
                 >
-                  {isAr ? 'إكسسوارات' : 'Accessories'}
+                  <span>{isAr ? 'العناية بالجسم والنعومة' : 'Body Care & Softness'}</span>
+                </Link>
+                <Link
+                  href="/shop?category=perfumes"
+                  className="rounded-xl px-3 py-2 text-xs text-zinc-300 hover:bg-white/5 hover:text-[#D4A5A5] transition flex items-center justify-between"
+                >
+                  <span>{isAr ? 'العطور الفاخرة' : 'Luxury Perfumes'}</span>
                 </Link>
                 <div className="my-1 border-t border-white/10" />
                 <Link
@@ -499,11 +505,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
             <div className="space-y-2.5 text-xs">
               <Link href="/shop" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.shop')}</Link>
               <Link href="/categories" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'كل الأقسام' : 'All Categories'}</Link>
-              <Link href="/shop?category=face" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.face')}</Link>
-              <Link href="/shop?category=serum" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.serums')}</Link>
-              <Link href="/shop?category=skincare" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.skincare')}</Link>
-              <Link href="/shop?category=lips" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.lips')}</Link>
-              <Link href="/shop?category=accessories" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'إكسسوارات' : 'Accessories'}</Link>
+              <Link href="/shop?category=hair-accessories" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'إكسسوارات الشعر' : 'Hair Accessories'}</Link>
+              <Link href="/shop?category=look-accessories" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'إكسسوارات الإطلالة' : 'Look Accessories'}</Link>
+              <Link href="/shop?category=jewelry" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'مجوهرات اليد والعنق' : 'Hand & Neck Jewelry'}</Link>
+              <Link href="/shop?category=makeup" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'المكياج والجمال' : 'Makeup & Beauty'}</Link>
+              <Link href="/shop?category=body-care" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'العناية بالجسم والنعومة' : 'Body Care & Softness'}</Link>
+              <Link href="/shop?category=perfumes" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'العطور الفاخرة' : 'Luxury Perfumes'}</Link>
             </div>
           </div>
 

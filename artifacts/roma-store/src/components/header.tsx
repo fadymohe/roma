@@ -40,12 +40,12 @@ export function Header({
 
   const categories = [
     { name: isAr ? 'الكل' : 'All Products', href: '/shop' },
-    { name: isAr ? 'مستحضرات الوجه' : 'Face Makeup', href: '/shop?category=face' },
-    { name: isAr ? 'سيرومات النضارة' : 'Radiance Serums', href: '/shop?category=serum' },
-    { name: isAr ? 'العناية بالبشرة' : 'Skin Care', href: '/shop?category=skincare' },
-    { name: isAr ? 'الترطيب الفائق' : 'Moisturizers', href: '/shop?category=moisturizers' },
-    { name: isAr ? 'أحمر الشفاه والقلوس' : 'Lips & Gloss', href: '/shop?category=lips' },
-    { name: isAr ? 'إكسسوارات فاخرة' : 'Accessories', href: '/shop?category=accessories' },
+    { name: isAr ? 'إكسسوارات الشعر' : 'Hair Accessories', href: '/shop?category=hair-accessories' },
+    { name: isAr ? 'إكسسوارات الإطلالة' : 'Look Accessories', href: '/shop?category=look-accessories' },
+    { name: isAr ? 'مجوهرات اليد والعنق' : 'Hand & Neck Jewelry', href: '/shop?category=jewelry' },
+    { name: isAr ? 'المكياج والجمال' : 'Makeup & Beauty', href: '/shop?category=makeup' },
+    { name: isAr ? 'العناية بالجسم والنعومة' : 'Body Care', href: '/shop?category=body-care' },
+    { name: isAr ? 'العطور الفاخرة' : 'Perfumes', href: '/shop?category=perfumes' },
     { name: isAr ? 'سياسات المتجر' : 'Store Policies', href: '/policies' },
   ];
 

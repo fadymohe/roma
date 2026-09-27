@@ -45,45 +45,45 @@ export interface Category {
 export const CATEGORIES: Category[] = [
   { 
     id: 1, 
-    nameAr: "الوجه والمكياج", 
-    nameEn: "Face & Makeup", 
-    slug: "face", 
-    imageUrl: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85" 
+    nameAr: "إكسسوارات الشعر", 
+    nameEn: "Hair Accessories", 
+    slug: "hair-accessories", 
+    imageUrl: "/categories/cat-hair-accessories.png" 
   },
   { 
     id: 2, 
-    nameAr: "السيروم والنضارة", 
-    nameEn: "Serums & Glow", 
-    slug: "serum", 
-    imageUrl: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=85" 
+    nameAr: "إكسسوارات الإطلالة", 
+    nameEn: "Look Accessories", 
+    slug: "look-accessories", 
+    imageUrl: "/categories/cat-look-accessories.png" 
   },
   { 
     id: 3, 
-    nameAr: "العناية بالبشرة", 
-    nameEn: "Skincare Rituals", 
-    slug: "skincare", 
-    imageUrl: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=85" 
+    nameAr: "مجوهرات اليد والعنق", 
+    nameEn: "Hand & Neck Jewelry", 
+    slug: "jewelry", 
+    imageUrl: "/categories/cat-jewelry.png" 
   },
   { 
     id: 4, 
-    nameAr: "المرطبات والمخمل", 
-    nameEn: "Silk Moisturizers", 
-    slug: "moisturizers", 
-    imageUrl: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=85" 
+    nameAr: "المكياج والجمال", 
+    nameEn: "Makeup & Beauty", 
+    slug: "makeup", 
+    imageUrl: "/categories/cat-makeup.png" 
   },
   { 
     id: 5, 
-    nameAr: "أحمر الشفاه المخملي", 
-    nameEn: "Velvet Lips", 
-    slug: "lips", 
-    imageUrl: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=800&q=85" 
+    nameAr: "العناية بالجسم والنعومة", 
+    nameEn: "Body Care & Softness", 
+    slug: "body-care", 
+    imageUrl: "/categories/cat-body-care.png" 
   },
   { 
     id: 6, 
-    nameAr: "إكسسوارات نسائية فاخرة", 
-    nameEn: "Fine Accessories", 
-    slug: "accessories", 
-    imageUrl: "https://images.unsplash.com/photo-1535295972055-1c762f4483e5?auto=format&fit=crop&w=800&q=85" 
+    nameAr: "العطور الفاخرة", 
+    nameEn: "Luxury Perfumes", 
+    slug: "perfumes", 
+    imageUrl: "/categories/cat-perfumes.png" 
   },
 ];
 
