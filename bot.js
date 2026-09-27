@@ -220,6 +220,29 @@ function getMainKeyboard() {
   };
 }
 
+function getCategoryKeyboard() {
+  return {
+    inline_keyboard: [
+      [
+        { text: '💆‍♀️ العناية بالشعر (Hair Care)', callback_data: 'cat_العناية بالشعر (Hair Care)' },
+        { text: '✨ العناية بالبشرة والوجه', callback_data: 'cat_العناية بالبشرة (Skincare)' },
+      ],
+      [
+        { text: '💧 سيروم وزيوت (Serums & Oils)', callback_data: 'cat_سيروم وزيوت (Serums & Oils)' },
+        { text: '🧴 مرطبات وعناية (Moisturizers)', callback_data: 'cat_مرطبات (Moisturizers)' },
+      ],
+      [
+        { text: '💄 المكياج والجمال (Makeup)', callback_data: 'cat_المكياج والجمال (Makeup)' },
+        { text: '🌸 العناية بالجسم والنعومة', callback_data: 'cat_العناية بالجسم (Body Care)' },
+      ],
+      [
+        { text: '👑 العطور الفاخرة (Perfumes)', callback_data: 'cat_العطور الفاخرة (Perfumes)' },
+        { text: '💎 مجوهرات وإكسسوارات', callback_data: 'cat_إكسسوارات ومجوهرات (Accessories)' },
+      ],
+    ],
+  };
+}
+
 // Status labels & badges
 const STATUS_MAP = {
   pending: { label: 'قيد الانتظار ⏳', badge: '⏳ جديد' },
@@ -488,17 +511,45 @@ async function handleUpdate(update) {
     // Category selection in wizard
     if (data.startsWith('cat_')) {
       const category = data.replace('cat_', '');
-      const session = sessions.get(userId);
-      if (session && session.step === 'CATEGORY') {
-        session.draft.category = category;
-        session.step = 'PRICE';
-        await tg('answerCallbackQuery', { callback_query_id: cb.id });
-        return tg('sendMessage', {
-          chat_id: chatId,
-          text: `✅ تم اختيار التصنيف: *${category}*\n\nأرسل الآن *سعر المنتج* بالجنيه المصري (مثال: \`245\`):`,
-          parse_mode: 'Markdown',
-        });
+      let session = sessions.get(userId);
+      if (!session) {
+        session = {
+          step: 'CATEGORY',
+          draft: { nameAr: 'سيروم زيت الفيف اكسترا اورديناري من لوريال باريس لأنواع الشعر الجاف، 100 مل' },
+        };
+        sessions.set(userId, session);
+      } else if (!session.draft.nameAr) {
+        session.draft.nameAr = 'سيروم زيت الفيف اكسترا اورديناري من لوريال باريس لأنواع الشعر الجاف، 100 مل';
       }
+      session.draft.category = category;
+      session.step = 'PRICE';
+      await tg('answerCallbackQuery', { callback_query_id: cb.id });
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text: `✅ تم اختيار التصنيف: *${category}*\n\nأرسل الآن *سعر المنتج* بالجنيه المصري (مثال: \`245\`):`,
+        parse_mode: 'Markdown',
+      });
+    }
+
+    // Done uploading photos
+    if (data === 'done_photos') {
+      const session = sessions.get(userId);
+      if (session && session.step === 'PHOTO') {
+        const count = session.draft.images?.length || 0;
+        if (count === 0 && !session.draft.imageUrl) {
+          await tg('answerCallbackQuery', { callback_query_id: cb.id, text: 'يرجى إرسال صورة واحدة على الأقل أولاً 📷' });
+          return;
+        }
+        await tg('answerCallbackQuery', { callback_query_id: cb.id, text: 'جاري حفظ ونشر المنتج...' });
+        return finalizeProduct(chatId, userId, session);
+      }
+      await tg('answerCallbackQuery', { callback_query_id: cb.id });
+      return;
+    }
+
+    if (data === 'more_photos_hint') {
+      await tg('answerCallbackQuery', { callback_query_id: cb.id, text: 'أرسل الصورة التالية من المعرض أو الكاميرا مباشرة 📷' });
+      return;
     }
 
     // Product actions: Edit price
@@ -802,24 +853,21 @@ async function handleUpdate(update) {
         session.step = 'CATEGORY';
         return tg('sendMessage', {
           chat_id: chatId,
-          text: `📦 اسم المنتج: *${text}*\n\nاختر *تصنيف المنتج* من الأزرار أدناه:`,
+          text: `📦 اسم المنتج: *${text}*\n\nاختر *تصنيف المنتج* من الأزرار أدناه، أو اكتب اسم التصنيف مباشرة:`,
           parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [
-              [
-                { text: 'الوجه (Face)', callback_data: 'cat_الوجه (Face)' },
-                { text: 'سيروم (Serum)', callback_data: 'cat_سيروم (Serum)' },
-              ],
-              [
-                { text: 'مرطبات (Moisturizers)', callback_data: 'cat_مرطبات (Moisturizers)' },
-                { text: 'الشفاه (Lips)', callback_data: 'cat_الشفاه (Lips)' },
-              ],
-              [
-                { text: 'إكسسوارات نسائية', callback_data: 'cat_إكسسوارات (Accessories)' },
-                { text: 'العناية بالبشرة', callback_data: 'cat_العناية بالبشرة (Skincare)' },
-              ],
-            ],
-          },
+          reply_markup: getCategoryKeyboard(),
+        });
+      }
+
+      // Add product wizard: Category text input fallback
+      if (session.step === 'CATEGORY') {
+        const cat = text.trim();
+        session.draft.category = cat;
+        session.step = 'PRICE';
+        return tg('sendMessage', {
+          chat_id: chatId,
+          text: `✅ تم تعيين التصنيف: *${cat}*\n\nأرسل الآن *سعر المنتج* بالجنيه المصري (مثال: \`245\`):`,
+          parse_mode: 'Markdown',
         });
       }
 
@@ -847,21 +895,56 @@ async function handleUpdate(update) {
           text === '.'
             ? `مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.`
             : text;
+        session.draft.images = [];
         session.step = 'PHOTO';
         return tg('sendMessage', {
           chat_id: chatId,
-          text: '📷 رائع جداً! أرسل الآن *صورة المنتج* (من الكاميرا أو المعرض)، أو أرسل رابط صورة مباشر:',
+          text:
+            '📷 *خطوة رفع صور المنتج (متعدد الصور):*\n\n' +
+            '• يمكنك إرسال *صورة واحدة أو عدة صور* (ألبوم صور من المعرض أو صورة تلو الأخرى).\n' +
+            '• يمكنك أيضاً إرسال رابط صورة مباشر (URL).\n\n' +
+            '🚀 عند الانتهاء من إرسال الصور، اضغط على زر *نشر المنتج في المتجر* الذي سيظهر لك.',
           parse_mode: 'Markdown',
         });
       }
 
-      // Photo as URL text
+      // Photo as URL text or Done command
       if (session.step === 'PHOTO') {
-        const imageUrl = text.startsWith('http')
-          ? text
-          : 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=800&q=85';
-        session.draft.imageUrl = imageUrl;
-        return finalizeProduct(chatId, userId, session);
+        session.draft.images = session.draft.images || [];
+        const clean = text.trim();
+        const lower = clean.toLowerCase();
+
+        if (lower === 'تم' || lower === 'نشر' || lower === 'done' || lower === 'حفظ' || lower === '.' || lower === 'خلاص') {
+          if (session.draft.images.length > 0) {
+            return finalizeProduct(chatId, userId, session);
+          } else {
+            return tg('sendMessage', {
+              chat_id: chatId,
+              text: '⚠️ يرجى إرسال صورة واحدة على الأقل أولاً (من الكاميرا أو المعرض):',
+            });
+          }
+        }
+
+        if (clean.includes('http')) {
+          const urls = clean.split(/[\s\n]+/).filter((u) => u.startsWith('http'));
+          urls.forEach((u) => session.draft.images.push(u));
+          const count = session.draft.images.length;
+          return tg('sendMessage', {
+            chat_id: chatId,
+            text:
+              `🔗 *تمت إضافة ${urls.length} ${urls.length === 1 ? 'رابط صورة' : 'روابط صور'} بنجاح!* (إجمالي الصور: ${count})\n\n` +
+              `• يمكنك إرسال صور إضافية أو روابط أخرى.\n` +
+              `• أو اضغط على الزر أدناه لنشر المنتج فوراً:`,
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  { text: `🚀 نشر المنتج في المتجر (${count} ${count === 1 ? 'صورة' : 'صور'})`, callback_data: 'done_photos' },
+                ],
+              ],
+            },
+          });
+        }
       }
     }
 
@@ -874,18 +957,40 @@ async function handleUpdate(update) {
     });
   }
 
-  // 3. Photo upload in wizard
+  // 3. Photo upload in wizard (supports single, multiple, or albums)
   if (update.message?.photo) {
     const userId = update.message.from.id;
     const chatId = update.message.chat.id;
     const session = sessions.get(userId);
 
     if (session && session.step === 'PHOTO') {
+      session.draft.images = session.draft.images || [];
       const photos = update.message.photo;
       const best = photos[photos.length - 1];
       const localUrl = await downloadTelegramPhoto(best.file_id);
-      session.draft.imageUrl = localUrl || 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=800&q=85';
-      return finalizeProduct(chatId, userId, session);
+      if (localUrl) {
+        session.draft.images.push(localUrl);
+      }
+
+      const count = session.draft.images.length;
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text:
+          `📸 *تم استلام الصورة (${count}) بنجاح!*\n\n` +
+          `• إذا أردت إضافة *صور أخرى* لنفس المنتج، أرسلها الآن من المعرض أو الكاميرا.\n` +
+          `• عند الانتهاء، اضغط على زر *نشر المنتج في المتجر* أدناه:`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: `🚀 نشر المنتج في المتجر (${count} ${count === 1 ? 'صورة' : 'صور'})`, callback_data: 'done_photos' },
+            ],
+            [
+              { text: '➕ أرسل صورة أخرى (أو ألبوم)', callback_data: 'more_photos_hint' },
+            ],
+          ],
+        },
+      });
     }
   }
 }
@@ -1000,19 +1105,27 @@ async function sendStoreStats(chatId) {
 
 // Finalize Product Creation
 async function finalizeProduct(chatId, userId, session) {
-  const draft = session.draft;
+  const draft = session.draft || {};
   sessions.delete(userId);
 
   const timestamp = Date.now();
+  const allImages = Array.isArray(draft.images) && draft.images.length > 0
+    ? draft.images
+    : [draft.imageUrl || 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=800&q=85'];
+
+  const mainImage = allImages[0];
+  const additionalImages = allImages.slice(1);
+
   const newProduct = {
     id: timestamp,
-    nameAr: draft.nameAr,
+    nameAr: draft.nameAr || 'منتج جديد',
     slug: `prod-${timestamp}`,
-    descriptionAr: draft.descriptionAr,
-    price: draft.price,
-    compareAtPrice: Math.round(draft.price * 1.25),
-    category: draft.category || 'الوجه (Face)',
-    imageUrl: draft.imageUrl,
+    descriptionAr: draft.descriptionAr || 'مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة.',
+    price: draft.price || 150,
+    compareAtPrice: Math.round((draft.price || 150) * 1.25),
+    category: draft.category || 'العناية بالشعر (Hair Care)',
+    imageUrl: mainImage,
+    additionalImages: additionalImages,
     rating: 5.0,
     reviewCount: 1,
     badge: 'جديد',
@@ -1024,7 +1137,7 @@ async function finalizeProduct(chatId, userId, session) {
 
   const products = getProducts();
   products.unshift(newProduct);
-  saveProducts(products, `Add product ${newProduct.nameAr}`);
+  saveProducts(products, `Add product ${newProduct.nameAr} with ${allImages.length} images`);
 
   // Also insert into Supabase products table
   try {
@@ -1036,7 +1149,7 @@ async function finalizeProduct(chatId, userId, session) {
       price: newProduct.price,
       discount_price: newProduct.price,
       stock: 50,
-      images: [newProduct.imageUrl],
+      images: allImages,
       is_featured: true,
       badge_ar: 'جديد',
     });
@@ -1047,11 +1160,12 @@ async function finalizeProduct(chatId, userId, session) {
   return tg('sendMessage', {
     chat_id: chatId,
     text:
-      `🎉 *تمت إضافة المنتج بنجاح ونشره في متجر ROMA!* \n\n` +
+      `🎉 *تمت إضافة المنتج بنجاح ونشره في متجر ROMA!*\n\n` +
       `📦 *الاسم:* ${newProduct.nameAr}\n` +
       `🏷️ *التصنيف:* ${newProduct.category}\n` +
       `💰 *السعر:* ${newProduct.price} ج.م\n` +
       `📊 *المخزون:* 50 قطعة\n` +
+      `📸 *معرض الصور:* تم حفظ *${allImages.length}* ${allImages.length === 1 ? 'صورة' : 'صور'} للمنتج\n` +
       `📝 *الوصف:* ${newProduct.descriptionAr}\n\n` +
       `🚀 *تم النشر والتحديث فوراً:* يظهر المنتج الآن في المتجر: https://roma-eg.my/shop`,
     parse_mode: 'Markdown',
