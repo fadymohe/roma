@@ -56,7 +56,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = 'roma_user_session';
-const WISHLIST_STORAGE_KEY = 'roma_user_wishlist';
+const WISHLIST_STORAGE_KEY = 'roma_user_wishlist_v2';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
@@ -71,9 +71,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<number[]>(() => {
     try {
       const saved = localStorage.getItem(WISHLIST_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [1, 3];
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return [1, 3];
+      return [];
     }
   });
 

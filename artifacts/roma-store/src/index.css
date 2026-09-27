@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Almarai:wght@300;400;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -73,11 +73,11 @@
   --destructive-foreground: 0 0% 100%;
   
   /* Typography Variables */
-  --font-arabic-body: 'Cairo', 'IBM Plex Sans Arabic', sans-serif;
-  --font-arabic-display: 'Cairo', 'IBM Plex Sans Arabic', sans-serif;
-  --font-english-body: 'Inter', 'Plus Jakarta Sans', sans-serif;
-  --font-english-display: 'Cormorant Garamond', 'Inter', serif;
-  --app-font-sans: 'Cairo', 'Inter', 'IBM Plex Sans Arabic', sans-serif;
+  --font-arabic-body: 'Alexandria', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-arabic-display: 'Alexandria', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-english-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-english-display: 'Outfit', 'Inter', sans-serif;
+  --app-font-sans: 'Alexandria', 'Plus Jakarta Sans', 'IBM Plex Sans Arabic', sans-serif;
   --app-font-serif: 'Cormorant Garamond', serif;
   --app-font-mono: 'Inter', monospace;
   --radius: 1.25rem;
@@ -124,7 +124,7 @@
 @layer utilities {
   html[lang="ar"] .font-display, html[dir="rtl"] .font-display {
     font-family: var(--font-arabic-display);
-    letter-spacing: -0.01em;
+    letter-spacing: normal;
   }
   html[lang="en"] .font-display, html[dir="ltr"] .font-display {
     font-family: var(--font-english-display);

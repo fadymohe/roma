@@ -46,11 +46,11 @@ export default function Home() {
 
         <div className="mb-6 flex items-center justify-between relative z-10">
           <div>
-            <span className="font-mono-brand text-xs font-bold text-[#D4A5A5] tracking-widest uppercase flex items-center gap-1.5">
+            <span className="text-xs md:text-sm font-semibold text-[#D4A5A5] flex items-center gap-1.5">
               <Sparkles className="size-3.5 text-[#D4A5A5] animate-pulse" />
-              <span>{isAr ? 'الأقسام والمجموعات الملكية' : 'Royal Collections'}</span>
+              <span>{isAr ? 'الأقسام والمجموعات' : 'Royal Collections'}</span>
             </span>
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-white mt-1">
+            <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
               {t('section.categories_title')}
             </h2>
           </div>

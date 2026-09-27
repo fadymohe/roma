@@ -58,32 +58,6 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-[100dvh] bg-[#0A0A0A] text-[#F9FAFB] flex flex-col" dir={dir}>
-      {/* Top Luxury Announcement Bar - Pitch Charcoal & Rose Gold */}
-      <div className="bg-[#121212] text-[#F9FAFB] px-3 py-1.5 text-center text-[10px] sm:text-[12px] font-medium tracking-wide border-b border-white/5">
-        <div className="roma-container flex items-center justify-between md:justify-center gap-2">
-          <div className="flex items-center gap-1.5 mx-auto">
-            <Sparkles className="size-3 text-[#D4A5A5] animate-pulse shrink-0" />
-            <span className="text-[#A1A1AA] truncate">
-              {t('common.free_shipping_notice')}{' '}
-              <strong className="rounded-full bg-[#D4A5A5]/15 border border-[#D4A5A5]/30 px-1.5 py-0.5 font-mono text-[#D4A5A5] text-[10px]">
-                ROMA10 (-10%)
-              </strong>
-            </span>
-          </div>
-
-          {/* Quick Language Toggle in Top Bar */}
-          <button
-            type="button"
-            onClick={toggleLang}
-            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 hover:bg-white/10 text-[11px] font-bold text-white border border-white/10 transition shrink-0"
-            title={isAr ? 'Switch to English' : 'التحويل إلى العربية'}
-          >
-            <Globe className="size-3 text-[#D4A5A5]" />
-            <span>{isAr ? 'English' : 'العربية'}</span>
-          </button>
-        </div>
-      </div>
-
       {/* Main Sticky Header */}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0A0A0A]/95 backdrop-blur-md transition-all">
         {/* ========================================================================= */}
@@ -103,8 +77,20 @@ export function StoreShell({ children }: { children: ReactNode }) {
             />
           </Link>
 
-          {/* Mobile Right Controls: Search + Wishlist */}
-          <div className="flex items-center gap-2">
+          {/* Mobile Right Controls: Language + Search + Wishlist */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Quick Language Toggle on Mobile */}
+            <button
+              type="button"
+              onClick={toggleLang}
+              data-testid="button-language-toggle-mobile"
+              className="inline-flex items-center gap-1 h-8 px-2.5 rounded-full border border-white/10 bg-[#141414] text-white hover:border-[#D4A5A5]/50 transition active:scale-95 text-xs font-bold shrink-0"
+              title={isAr ? 'Switch to English' : 'التحويل إلى العربية'}
+            >
+              <span>{isAr ? 'English' : 'العربية'}</span>
+              <Globe className="size-3 text-[#D4A5A5]" />
+            </button>
+
             {/* Circular Search Button */}
             <button
               type="button"
@@ -123,10 +109,10 @@ export function StoreShell({ children }: { children: ReactNode }) {
               className="relative flex size-8 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] hover:text-[#F9FAFB] active:scale-95 transition"
             >
               <Heart
-                className={`size-3.5 ${wishlist.length > 0 ? 'fill-[#D4A5A5] text-[#D4A5A5]' : ''}`}
+                className={`size-3.5 ${wishlist && wishlist.length > 0 ? 'fill-[#D4A5A5] text-[#D4A5A5]' : ''}`}
                 strokeWidth={1.75}
               />
-              {wishlist.length > 0 && (
+              {Boolean(wishlist && wishlist.length > 0) && (
                 <span className="absolute -top-1 -right-1 flex size-3.5 items-center justify-center rounded-full bg-[#D4A5A5] text-[8px] font-bold text-[#0A0A0A]">
                   {wishlist.length}
                 </span>
@@ -232,8 +218,19 @@ export function StoreShell({ children }: { children: ReactNode }) {
             </div>
           </nav>
 
-          {/* Right section on Desktop: Search + Wishlist + Profile + Cart */}
+          {/* Right section on Desktop: Language + Search + Wishlist + Profile + Cart */}
           <div className="flex items-center gap-2.5">
+            {/* Quick Language Toggle beside icons */}
+            <button
+              type="button"
+              onClick={toggleLang}
+              data-testid="button-language-toggle"
+              className="inline-flex items-center gap-1.5 h-10 px-3.5 rounded-full border border-white/10 bg-[#141414] hover:bg-white/5 hover:border-[#D4A5A5]/50 text-white hover:text-[#D4A5A5] transition active:scale-95 text-xs font-bold shadow-xs shrink-0"
+              title={isAr ? 'Switch to English' : 'التحويل إلى العربية'}
+            >
+              <span>{isAr ? 'English' : 'العربية'}</span>
+              <Globe className="size-3.5 text-[#D4A5A5]" />
+            </button>
 
             {/* Circular Search Button */}
             <button
@@ -255,10 +252,10 @@ export function StoreShell({ children }: { children: ReactNode }) {
               className="relative flex size-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] shadow-xs hover:border-[#D4A5A5] hover:text-[#F9FAFB] transition"
             >
               <Heart
-                className={`size-4 ${wishlist.length > 0 ? 'fill-[#D4A5A5] text-[#D4A5A5]' : ''}`}
+                className={`size-4 ${wishlist && wishlist.length > 0 ? 'fill-[#D4A5A5] text-[#D4A5A5]' : ''}`}
                 strokeWidth={1.5}
               />
-              {wishlist.length > 0 && (
+              {Boolean(wishlist && wishlist.length > 0) && (
                 <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#D4A5A5] text-[9px] font-bold text-[#0A0A0A] shadow-xs">
                   {wishlist.length}
                 </span>
