@@ -62,8 +62,8 @@ export function ProductCard({ product }: ProductCardProps) {
       data-testid={`card-product-${product.id}`}
       className="group relative flex flex-col justify-between rounded-3xl border border-white/10 hover:border-[#D4A5A5]/60 bg-gradient-to-b from-[#151515] to-[#0F0F0F] p-3 sm:p-3.5 shadow-xl hover:shadow-2xl hover:shadow-[#D4A5A5]/10 transition-all duration-300 select-none overflow-hidden"
     >
-      {/* Top Image Container: Balanced 4:5 vertical portrait aspect ratio with luxury border & inner vignette */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#181818] flex items-center justify-center border border-white/10 group-hover:border-[#D4A5A5]/30 transition-colors shadow-inner">
+      {/* Top Image Container: Balanced 4:5 vertical portrait aspect ratio with luxury border & clean padding */}
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#161616] flex items-center justify-center border border-white/10 group-hover:border-[#D4A5A5]/40 transition-colors shadow-inner p-3 sm:p-4">
         {/* Skeleton placeholder while image loads */}
         {!imageLoaded && (
           <div className="absolute inset-0 bg-white/5 animate-pulse rounded-2xl" />
@@ -72,7 +72,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link
           href={`/product/${product.slug}`}
           data-testid={`link-product-${product.id}`}
-          className="block h-full w-full relative z-0 focus:outline-hidden"
+          className="flex items-center justify-center h-full w-full relative z-0 focus:outline-hidden"
           aria-label={displayName}
         >
           {product.imageUrl ? (
@@ -90,7 +90,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 }
                 setImageLoaded(true);
               }}
-              className={`h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108 ${
+              className={`max-h-full max-w-full h-auto w-auto object-contain transition-transform duration-500 ease-out group-hover:scale-105 drop-shadow-md select-none ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
             />

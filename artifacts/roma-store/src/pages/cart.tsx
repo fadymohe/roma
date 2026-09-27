@@ -509,7 +509,7 @@ export default function CartPage() {
                   <img
                     src={line.product.imageUrl || ''}
                     alt={line.product.nameAr}
-                    className="size-20 rounded-2xl object-cover bg-[#1A1A1A] shrink-0 border border-white/10 p-1"
+                    className="size-20 rounded-2xl object-contain bg-[#161616] shrink-0 border border-white/10 p-1.5"
                   />
 
                   <div className="flex flex-1 flex-col justify-between min-w-0">

@@ -181,7 +181,7 @@ export default function ProductPage() {
                   target.src = '/logo-white-bg.png';
                 }
               }}
-              className="h-full w-full object-cover rounded-2xl transition-transform duration-700 group-hover:scale-105"
+              className="max-h-full max-w-full h-auto w-auto object-contain rounded-2xl transition-transform duration-500 group-hover:scale-105 drop-shadow-2xl"
             />
 
             {/* Badge */}
@@ -237,7 +237,7 @@ export default function ProductPage() {
                         target.src = '/logo-white-bg.png';
                       }
                     }}
-                    className="h-full w-full object-cover rounded-lg"
+                    className="h-full w-full object-contain rounded-lg p-0.5"
                   />
                 </button>
               ))}
