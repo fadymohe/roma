@@ -218,14 +218,13 @@ export default function AccountPage() {
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => setAuthModalOpen(true)}
+              <Link
+                href="/auth"
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] text-xs font-bold text-[#0A0A0A] shadow-md transition"
               >
                 <User className="size-4" />
                 <span>{isAr ? 'تسجيل الدخول / إنشاء حساب' : 'Sign In / Register'}</span>
-              </button>
+              </Link>
             )}
           </div>
 

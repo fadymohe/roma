@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Link } from 'wouter';
 import { Heart, ShoppingBag, Star, Check } from 'lucide-react';
@@ -62,8 +60,8 @@ export function ProductCard({ product }: ProductCardProps) {
       data-testid={`card-product-${product.id}`}
       className="group relative flex flex-col justify-between rounded-3xl border border-white/10 hover:border-[#D4A5A5]/60 bg-gradient-to-b from-[#151515] to-[#0F0F0F] p-3 sm:p-3.5 shadow-xl hover:shadow-2xl hover:shadow-[#D4A5A5]/10 transition-all duration-300 select-none overflow-hidden"
     >
-      {/* Top Image Container: Balanced 4:5 vertical portrait aspect ratio with luxury border & clean padding */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#161616] flex items-center justify-center border border-white/10 group-hover:border-[#D4A5A5]/40 transition-colors shadow-inner p-3 sm:p-4">
+      {/* Top Image Container: Perfectly proportioned container for laptop and mobile with luxury border & clean padding */}
+      <div className="relative h-48 sm:h-56 md:h-60 w-full overflow-hidden rounded-2xl bg-[#141414] flex items-center justify-center border border-white/10 group-hover:border-[#D4A5A5]/40 transition-colors shadow-inner p-3 sm:p-4">
         {/* Skeleton placeholder while image loads */}
         {!imageLoaded && (
           <div className="absolute inset-0 bg-white/5 animate-pulse rounded-2xl" />
@@ -79,8 +77,6 @@ export function ProductCard({ product }: ProductCardProps) {
             <img
               src={product.imageUrl}
               alt={displayName}
-              width={320}
-              height={400}
               loading="lazy"
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
@@ -90,7 +86,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 }
                 setImageLoaded(true);
               }}
-              className={`max-h-full max-w-full h-auto w-auto object-contain transition-transform duration-500 ease-out group-hover:scale-105 drop-shadow-md select-none ${
+              className={`h-full w-full max-h-full max-w-full object-contain p-1.5 transition-transform duration-500 ease-out group-hover:scale-105 drop-shadow-md select-none ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
             />

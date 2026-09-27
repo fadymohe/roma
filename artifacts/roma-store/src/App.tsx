@@ -11,9 +11,11 @@ import ProductPage from '@/pages/product';
 import CartPage from '@/pages/cart';
 import AccountPage from '@/pages/account';
 import PoliciesPage from '@/pages/policies';
+import AuthPage from '@/pages/auth';
 import { CartProvider } from '@/hooks/use-cart';
 import { LanguageProvider } from '@/lib/language-context';
 import { AuthProvider } from '@/hooks/use-auth';
+import { LuxuryLoaderProvider } from '@/components/luxury-loader';
 import { StoreShell } from '@/components/store-shell';
 import {
   Route,
@@ -42,6 +44,9 @@ function Router() {
           <Route path="/product/:slug" component={ProductPage} />
           <Route path="/cart" component={CartPage} />
           <Route path="/account" component={AccountPage} />
+          <Route path="/auth" component={AuthPage} />
+          <Route path="/login" component={AuthPage} />
+          <Route path="/register" component={AuthPage} />
           <Route path="/policies" component={PoliciesPage} />
           <Route component={NotFound} />
         </Switch>
@@ -62,10 +67,12 @@ function App() {
         <TooltipProvider>
           <AuthProvider>
             <CartProvider>
-              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-                <Router />
-              </WouterRouter>
-              <Toaster />
+              <LuxuryLoaderProvider>
+                <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+                  <Router />
+                </WouterRouter>
+                <Toaster />
+              </LuxuryLoaderProvider>
             </CartProvider>
           </AuthProvider>
         </TooltipProvider>

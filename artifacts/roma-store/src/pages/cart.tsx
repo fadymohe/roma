@@ -28,6 +28,7 @@ import { Link } from 'wouter';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
+import { useLuxuryLoader } from '@/components/luxury-loader';
 import { notifyTelegramNewOrder } from '@/lib/telegram';
 import { uploadOrderToSupabase, supabase } from '@/lib/supabase';
 
@@ -61,6 +62,7 @@ export default function CartPage() {
   const { lines, subtotal, setQuantity, remove, clear } = useCart();
   const { user, setAuthModalOpen, addAddress, updateUserPoints } = useAuth();
   const { t, isAr, formatPrice, dir } = useLanguage();
+  const { showLoader } = useLuxuryLoader();
 
   // Customer shipping fields
   const [name, setName] = useState(user?.name || '');
@@ -177,6 +179,7 @@ export default function CartPage() {
 
     setValidationError('');
     setIsSubmitting(true);
+    showLoader(isAr ? 'جاري تأكيد ومعالجة طلبك الفاخر...' : 'Processing your royal order...', 500);
 
     const fallbackId = String(Math.floor(100000 + Math.random() * 900000));
     const selectedGov = GOVERNORATES.find((g) => g.id === governorate);

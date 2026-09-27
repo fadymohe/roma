@@ -159,6 +159,8 @@ const translations: Record<Language, Record<string, string>> = {
     'policy.terms_title': 'الشروط والأحكام',
 
     // Auth & Security
+    'auth.tab_login': 'تسجيل الدخول',
+    'auth.tab_register': 'إنشاء حساب جديد',
     'auth.login_title': 'تسجيل الدخول في ROMA',
     'auth.register_title': 'إنشاء حساب جديد',
     'auth.password_strength': 'قوة كلمة المرور:',
@@ -304,6 +306,8 @@ const translations: Record<Language, Record<string, string>> = {
     'policy.terms_title': 'Terms of Service',
 
     // Auth & Security
+    'auth.tab_login': 'Sign In',
+    'auth.tab_register': 'Create Account',
     'auth.login_title': 'Sign In to ROMA',
     'auth.register_title': 'Create an Account',
     'auth.password_strength': 'Password Strength:',

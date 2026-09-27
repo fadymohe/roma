@@ -17,17 +17,45 @@ export default function Shop() {
     }
   };
 
+  const getUrlSearch = () => {
+    try {
+      return new URLSearchParams(window.location.search).get('search') ?? '';
+    } catch {
+      return '';
+    }
+  };
+
   const [category, setCategory] = useState(getUrlCategory);
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState(getUrlSearch);
+  const [searchInput, setSearchInput] = useState(getUrlSearch);
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
 
   useEffect(() => {
-    const urlCat = getUrlCategory();
-    if (urlCat) {
+    const syncFromUrl = () => {
+      const urlCat = getUrlCategory();
       setCategory(urlCat);
-    }
+      const urlSearch = getUrlSearch();
+      if (urlSearch) {
+        setSearch(urlSearch);
+        setSearchInput(urlSearch);
+      }
+    };
+
+    syncFromUrl();
+    window.addEventListener('popstate', syncFromUrl);
+    return () => window.removeEventListener('popstate', syncFromUrl);
   }, [wouterLocation]);
+
+  const handleCategoryChange = (newCat: string) => {
+    setCategory(newCat);
+    const url = new URL(window.location.href);
+    if (newCat) {
+      url.searchParams.set('category', newCat);
+    } else {
+      url.searchParams.delete('category');
+    }
+    window.history.pushState({}, '', url.toString());
+  };
 
   const liveProducts = useLiveProducts();
   const rawProducts = liveProducts.length > 0 ? liveProducts : DEFAULT_PRODUCTS;
@@ -85,31 +113,38 @@ export default function Shop() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
+    const url = new URL(window.location.href);
+    if (searchInput.trim()) {
+      url.searchParams.set('search', searchInput.trim());
+    } else {
+      url.searchParams.delete('search');
+    }
+    window.history.pushState({}, '', url.toString());
   };
 
   const handleClearSearch = () => {
     setSearch('');
     setSearchInput('');
+    const url = new URL(window.location.href);
+    url.searchParams.delete('search');
+    window.history.pushState({}, '', url.toString());
   };
 
   const categoryFilters = [
     { id: '', label: isAr ? 'جميع المستحضرات' : 'All Products' },
-    { id: 'face', label: t('nav.face') },
-    { id: 'serum', label: t('nav.serums') },
-    { id: 'skincare', label: t('nav.skincare') },
-    { id: 'moisturizers', label: t('nav.moisturizers') },
-    { id: 'lips', label: t('nav.lips') },
-    { id: 'accessories', label: isAr ? 'إكسسوارات' : 'Accessories' },
+    { id: 'hair-accessories', label: isAr ? 'إكسسوارات الشعر' : 'Hair Accessories' },
+    { id: 'look-accessories', label: isAr ? 'إكسسوارات الإطلالة' : 'Look Accessories' },
+    { id: 'jewelry', label: isAr ? 'مجوهرات اليد والعنق' : 'Jewelry' },
+    { id: 'makeup', label: isAr ? 'المكياج والجمال' : 'Makeup & Beauty' },
+    { id: 'body-care', label: isAr ? 'العناية بالجسم والنعومة' : 'Body Care' },
+    { id: 'perfumes', label: isAr ? 'العطور الفاخرة' : 'Perfumes' },
   ];
 
   return (
     <div className="roma-container py-8 md:py-12 text-[#F9FAFB]" dir={dir}>
       {/* Header & Subtitle */}
       <div className="mb-8">
-        <span className="font-mono-brand text-xs font-bold text-[#D4A5A5] tracking-widest uppercase">
-          ROMA COLLECTION 2026
-        </span>
-        <h1 className="font-display text-3xl md:text-5xl font-extrabold text-white mt-1">
+        <h1 className="font-display text-3xl md:text-5xl font-extrabold text-white">
           {t('nav.shop')}
         </h1>
         <p className="mt-2 text-xs md:text-sm text-[#A1A1AA] max-w-xl">
@@ -129,7 +164,7 @@ export default function Shop() {
               <button
                 type="button"
                 key={f.id}
-                onClick={() => setCategory(f.id)}
+                onClick={() => handleCategoryChange(f.id)}
                 className={`shrink-0 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm ${
                   active
                     ? 'bg-[#D4A5A5] text-[#0A0A0A]'

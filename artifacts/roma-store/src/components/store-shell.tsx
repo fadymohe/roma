@@ -21,7 +21,7 @@ import { useState, type ReactNode } from 'react';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
-import { AuthModal } from '@/components/auth-modal';
+import { IntegratedSearch } from '@/components/integrated-search';
 import { UserDrawer } from '@/components/user-drawer';
 import { WishlistDrawer } from '@/components/wishlist-drawer';
 import { SearchModal } from '@/components/search-modal';
@@ -78,7 +78,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
             />
           </Link>
 
-          {/* Mobile Right Controls: Language + Search + Wishlist */}
+          {/* Mobile Right Controls: Language + Wishlist */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Quick Language Toggle on Mobile */}
             <button
@@ -90,16 +90,6 @@ export function StoreShell({ children }: { children: ReactNode }) {
             >
               <span>{isAr ? 'English' : 'العربية'}</span>
               <Globe className="size-3 text-[#D4A5A5]" />
-            </button>
-
-            {/* Circular Search Button */}
-            <button
-              type="button"
-              aria-label={t('nav.search_placeholder')}
-              onClick={() => setSearchOpen(true)}
-              className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] hover:text-[#F9FAFB] active:scale-95 transition"
-            >
-              <Search className="size-3.5" strokeWidth={1.75} />
             </button>
 
             {/* Wishlist Button with Counter */}
@@ -120,6 +110,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
               )}
             </button>
           </div>
+        </div>
+
+        {/* Integrated Mobile Search Bar - Part of the page */}
+        <div className="px-4 pb-3 md:hidden w-full">
+          <IntegratedSearch variant="mobile" />
         </div>
 
         {/* ========================================================================= */}
@@ -219,7 +214,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
             </div>
           </nav>
 
-          {/* Right section on Desktop: Language + Search + Wishlist + Profile + Cart */}
+          {/* Integrated Search Bar on Desktop - Native Part of Site UI */}
+          <div className="flex-1 max-w-xs xl:max-w-sm mx-2">
+            <IntegratedSearch variant="desktop" />
+          </div>
+
+          {/* Right section on Desktop: Language + Wishlist + Profile + Cart */}
           <div className="flex items-center gap-2.5">
             {/* Quick Language Toggle beside icons */}
             <button
@@ -231,17 +231,6 @@ export function StoreShell({ children }: { children: ReactNode }) {
             >
               <span>{isAr ? 'English' : 'العربية'}</span>
               <Globe className="size-3.5 text-[#D4A5A5]" />
-            </button>
-
-            {/* Circular Search Button */}
-            <button
-              type="button"
-              aria-label={t('nav.search_placeholder')}
-              data-testid="link-search"
-              onClick={() => setSearchOpen(true)}
-              className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] shadow-xs hover:border-[#D4A5A5] hover:text-[#F9FAFB] transition"
-            >
-              <Search className="size-4" strokeWidth={1.5} />
             </button>
 
             {/* Wishlist Button */}
@@ -263,7 +252,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
               )}
             </button>
 
-            {/* User Profile Avatar / Login */}
+            {/* User Profile Avatar / Login Page Link */}
             {user ? (
               <Link
                 href="/account"
@@ -278,15 +267,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 />
               </Link>
             ) : (
-              <button
-                type="button"
+              <Link
+                href="/auth"
                 aria-label={t('nav.login')}
                 data-testid="button-login"
-                onClick={() => setAuthModalOpen(true)}
                 className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#F9FAFB] shadow-xs hover:border-[#D4A5A5] hover:text-[#D4A5A5] transition"
               >
                 <User className="size-4 text-[#A1A1AA]" strokeWidth={1.5} />
-              </button>
+              </Link>
             )}
 
             {/* Minimalist Luxury Shopping Cart Button */}
@@ -452,15 +440,15 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
           {/* Destination 4: My Account */}
           <Link
-            href="/account"
+            href={user ? '/account' : '/auth'}
             aria-label={isAr ? 'حسابي' : 'Account'}
             className={`flex flex-col items-center justify-center py-1 transition ${
-              location === '/account'
+              location === '/account' || location === '/auth' || location === '/login'
                 ? 'text-[#D4A5A5]'
                 : 'text-[#A1A1AA] hover:text-white'
             }`}
           >
-            <div className={`p-1 rounded-full ${location === '/account' ? 'bg-[#D4A5A5]/15' : ''}`}>
+            <div className={`p-1 rounded-full ${location === '/account' || location === '/auth' || location === '/login' ? 'bg-[#D4A5A5]/15' : ''}`}>
               <User className="size-5" strokeWidth={1.75} />
             </div>
             <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'حسابي' : 'Account'}</span>
@@ -469,7 +457,6 @@ export function StoreShell({ children }: { children: ReactNode }) {
       </nav>
 
       {/* Popups & Drawers */}
-      <AuthModal />
       <UserDrawer />
       <WishlistDrawer />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />

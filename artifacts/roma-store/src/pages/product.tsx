@@ -166,7 +166,7 @@ export default function ProductPage() {
         {/* Left Column: Amazon-Style Touch-Swipeable Gallery */}
         <div className="space-y-4">
           <div
-            className="relative aspect-square overflow-hidden rounded-3xl border border-white/10 bg-[#141414] p-6 flex items-center justify-center shadow-xl group select-none"
+            className="relative aspect-square md:aspect-[4/3] max-h-[460px] overflow-hidden rounded-3xl border border-white/10 bg-[#141414] p-4 sm:p-6 flex items-center justify-center shadow-xl group select-none"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
@@ -181,7 +181,7 @@ export default function ProductPage() {
                   target.src = '/logo-white-bg.png';
                 }
               }}
-              className="max-h-full max-w-full h-auto w-auto object-contain rounded-2xl transition-transform duration-500 group-hover:scale-105 drop-shadow-2xl"
+              className="max-h-[380px] md:max-h-[420px] max-w-full h-auto w-auto object-contain rounded-2xl transition-transform duration-500 group-hover:scale-105 drop-shadow-2xl"
             />
 
             {/* Badge */}
