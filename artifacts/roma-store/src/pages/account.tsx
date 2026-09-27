@@ -537,7 +537,7 @@ export default function AccountPage() {
                       {/* Direct WhatsApp Concierge Button */}
                       <div className="flex items-center justify-end gap-2 pt-2">
                         <a
-                          href={`https://wa.me/201012345678?text=${encodeURIComponent(
+                          href={`https://wa.me/201505566849?text=${encodeURIComponent(
                             isAr
                               ? `مرحباً، أود الاستفسار عن حالة طلبي رقم #ROMA-${order.order_number || order.id}:`
                               : `Hello, I'd like to ask about my order #ROMA-${order.order_number || order.id}:`
@@ -697,7 +697,7 @@ export default function AccountPage() {
               <div className="space-y-2 text-xs text-[#A1A1AA]">
                 <div className="rounded-xl bg-[#1A1A1A] p-3 border border-white/5 flex items-center justify-between">
                   <span className="text-white font-medium">فودافون كاش (Vodafone Cash)</span>
-                  <span className="font-mono text-[#D4A5A5]">01012345678</span>
+                  <span className="font-mono text-[#D4A5A5]">01505566849</span>
                 </div>
                 <div className="rounded-xl bg-[#1A1A1A] p-3 border border-white/5 flex items-center justify-between">
                   <span className="text-white font-medium">عنوان إنستاباي (InstaPay)</span>

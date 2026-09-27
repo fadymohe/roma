@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Package,
   ChevronDown,
+  MessageCircle,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useCart } from '@/hooks/use-cart';
@@ -362,7 +363,15 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
             <div className="mt-auto border-t border-white/10 pt-4 text-xs text-[#A1A1AA] space-y-2">
               <p>📍 {isAr ? 'القاهرة، جمهورية مصر العربية' : 'Cairo, Arab Republic of Egypt'}</p>
-              <p>📞 {isAr ? 'خدمة العملاء واتساب: 01012345678' : 'WhatsApp Concierge: +201012345678'}</p>
+              <a
+                href="https://wa.me/201505566849"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-emerald-400 font-semibold hover:underline"
+              >
+                <MessageCircle className="size-3.5" />
+                <span>{isAr ? 'خدمة العملاء واتساب: 01505566849' : 'WhatsApp Concierge: +201505566849'}</span>
+              </a>
             </div>
           </div>
         </div>
@@ -516,10 +525,26 @@ export function StoreShell({ children }: { children: ReactNode }) {
               <Link href="/account" className="block hover:text-zinc-200 transition">
                 {isAr ? 'متابعة وتتبع طلباتي' : 'Track My Orders'}
               </Link>
-              <p className="text-[11px] text-zinc-400 pt-2">
-                {isAr ? 'تواصل معنا واتساب: ' : 'WhatsApp Concierge: '}
-                <strong className="text-white font-mono">01012345678</strong>
-              </p>
+              <div className="pt-2">
+                <a
+                  href="https://wa.me/201505566849"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[#141414] hover:bg-[#1A1A1A] border border-emerald-500/30 hover:border-emerald-500/60 text-zinc-300 hover:text-white transition group shadow-sm"
+                >
+                  <div className="flex size-7 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition shrink-0">
+                    <MessageCircle className="size-4" />
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[10px] text-zinc-400 font-medium">
+                      {isAr ? 'تواصل معنا واتساب' : 'WhatsApp Concierge'}
+                    </span>
+                    <span className="text-xs font-bold text-emerald-400 font-mono tracking-wider mt-0.5" dir="ltr">
+                      01505566849
+                    </span>
+                  </div>
+                </a>
+              </div>
             </div>
           </div>
 

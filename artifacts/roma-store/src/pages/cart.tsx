@@ -414,7 +414,7 @@ export default function CartPage() {
 
           {/* Direct WhatsApp Concierge Button */}
           <a
-            href={`https://wa.me/201012345678?text=${encodeURIComponent(
+            href={`https://wa.me/201505566849?text=${encodeURIComponent(
               isAr
                 ? `مرحباً، أود متابعة طلبي رقم #ROMA-${complete.id} من متجر روما:`
                 : `Hello, I would like to inquire about my order #ROMA-${complete.id} from ROMA:`
@@ -877,11 +877,11 @@ export default function CartPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'رقم محفظة فودافون كاش لمتجر روما:' : 'ROMA Vodafone Cash Wallet:'}</span>
-                      <strong className="text-base font-bold text-[#D4A5A5] font-mono">01012345678</strong>
+                      <strong className="text-base font-bold text-[#D4A5A5] font-mono">01505566849</strong>
                     </div>
                     <button
                       type="button"
-                      onClick={() => copyToClipboard('01012345678', 'voda')}
+                      onClick={() => copyToClipboard('01505566849', 'voda')}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/10"
                     >
                       <Copy className="size-3.5" />

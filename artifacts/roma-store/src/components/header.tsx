@@ -30,7 +30,7 @@ export interface HeaderProps {
 
 export function Header({
   onOpenSearch,
-  whatsappNumber = '201012345678',
+  whatsappNumber = '201505566849',
 }: HeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [location] = useLocation();

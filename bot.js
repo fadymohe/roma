@@ -404,7 +404,7 @@ async function checkAbandonedCartsRoutine() {
           reply_markup: {
             inline_keyboard: [
               [
-                { text: 'واتساب العميلة 💬', url: `https://wa.me/201012345678?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، نهديكِ كود خصم 15% إضافي ${coupon} لإكمال سلتكِ بمتجر روما:`)}` },
+                { text: 'واتساب العميلة 💬', url: `https://wa.me/${c.phone ? (c.phone.startsWith('0') ? '2' + c.phone : c.phone) : '201505566849'}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، نهديكِ كود خصم 15% إضافي ${coupon} لإكمال سلتكِ بمتجر روما:`)}` },
               ],
             ],
           },
