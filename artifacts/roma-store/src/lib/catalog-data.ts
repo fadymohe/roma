@@ -91,6 +91,34 @@ export const DEFAULT_PRODUCTS: Product[] = [];
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790619437667,
+    "nameAr": "قلادة ذهبية للازواج من لوف اند كرافت، للنساء والرجال قلادة مطابقة مثالية للازواج، هدايا مجوهرات، نحاس، بدون احجار كريمة",
+    "slug": "prod-1790619437667",
+    "descriptionAr": "مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.",
+    "price": 75,
+    "compareAtPrice": 94,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_1790619421887.jpg",
+    "additionalImages": [
+      "/uploads/prod_1790619422444.jpg",
+      "/uploads/prod_1790619422952.jpg",
+      "/uploads/prod_1790619423528.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790619437667",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790505693985,
     "nameAr": "سيروم زيت الفيف اكسترا اورديناري من لوريال باريس لأنواع الشعر الجاف، 100 مل",
     "slug": "prod-1790505693985",

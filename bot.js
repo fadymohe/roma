@@ -5,8 +5,41 @@ import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
 
+// Prevent process crashing from unhandled errors
+process.on('uncaughtException', (err) => {
+  console.error('⚠️ Uncaught Exception in Bot:', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('⚠️ Unhandled Rejection in Bot:', reason);
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Ensure single instance to prevent Telegram 409 Conflict
+const PID_FILE = path.join(__dirname, '.bot.pid');
+try {
+  if (fs.existsSync(PID_FILE)) {
+    const oldPid = parseInt(fs.readFileSync(PID_FILE, 'utf8'), 10);
+    if (!isNaN(oldPid) && oldPid !== process.pid) {
+      try {
+        process.kill(oldPid, 0);
+        console.log(`[BOT] Stopping previous instance (PID: ${oldPid})...`);
+        process.kill(oldPid, 'SIGKILL');
+      } catch (_) {}
+    }
+  }
+  fs.writeFileSync(PID_FILE, String(process.pid), 'utf8');
+} catch (_) {}
+
+process.on('exit', () => {
+  try {
+    if (fs.existsSync(PID_FILE)) {
+      const p = parseInt(fs.readFileSync(PID_FILE, 'utf8'), 10);
+      if (p === process.pid) fs.unlinkSync(PID_FILE);
+    }
+  } catch (_) {}
+});
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8358497211:AAF5Tr2e3VHXSt5K1BEvxqa-8bgIaHj-nwA';
 const ADMIN_CHAT_ID = String(process.env.TELEGRAM_ADMIN_CHAT_ID || '8940310160');
@@ -36,18 +69,30 @@ for (const dir of [UPLOADS_DIR, DIST_UPLOADS_DIR]) {
 // In-memory sessions for multi-step wizards
 const sessions = new Map();
 
-// Helper to call Telegram API via native fetch
-async function tg(method, body = {}) {
-  try {
-    const res = await fetch(`${BASE_URL}/${method}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    return await res.json();
-  } catch (err) {
-    console.error(`Telegram API error on ${method}:`, err.message);
-    return { ok: false, error: err.message };
+// Helper to call Telegram API via native fetch with automatic retry
+async function tg(method, body = {}, retries = 2) {
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      const res = await fetch(`${BASE_URL}/${method}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = await res.json();
+      if (!data.ok && attempt <= retries && res.status >= 500) {
+        await new Promise((r) => setTimeout(r, 1000));
+        continue;
+      }
+      return data;
+    } catch (err) {
+      if (attempt <= retries) {
+        await new Promise((r) => setTimeout(r, 1000));
+        continue;
+      }
+      console.error(`Telegram API error on ${method}:`, err.message);
+      return { ok: false, error: err.message };
+    }
   }
 }
 
@@ -420,18 +465,25 @@ async function checkAbandonedCartsRoutine() {
           `🎟️ *تم إنشاء كود استعادة:* \`${coupon}\` (-15%)\n` +
           `🔗 [رابط استعادة السلة](${recoveryUrl})`;
 
-        tg('sendMessage', {
-          chat_id: ADMIN_CHAT_ID,
-          text: msg,
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [
-              [
-                { text: 'واتساب العميلة 💬', url: `https://wa.me/${c.phone ? (c.phone.startsWith('0') ? '2' + c.phone : c.phone) : '201505566849'}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، نهديكِ كود خصم 15% إضافي ${coupon} لإكمال سلتكِ بمتجر روما:`)}` },
+        const admins = getKnownAdmins();
+        const cleanPhone = phone && phone !== 'غير مسجل' ? String(phone).replace(/\D+/g, '') : '';
+        const waPhone = cleanPhone ? (cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone.startsWith('2') ? cleanPhone : '20' + cleanPhone) : '201505566849';
+        const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، نهديكِ كود خصم 15% إضافي ${coupon} لإكمال سلتكِ بمتجر روما: ${recoveryUrl}`)}`;
+
+        for (const adminId of admins) {
+          await tg('sendMessage', {
+            chat_id: adminId,
+            text: msg,
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  { text: 'واتساب العميلة 💬', url: waUrl },
+                ],
               ],
-            ],
-          },
-        });
+            },
+          });
+        }
       }
     }
   } catch (err) {
@@ -706,9 +758,9 @@ async function handleUpdate(update) {
 
     const normalized = text.toLowerCase();
     const isStartOrMenu =
-      normalized === '/start' ||
-      normalized === '/menu' ||
-      normalized === '/help' ||
+      normalized.startsWith('/start') ||
+      normalized.startsWith('/menu') ||
+      normalized.startsWith('/help') ||
       normalized === 'start' ||
       normalized === 'menu' ||
       normalized === 'بدء' ||
@@ -1185,19 +1237,26 @@ let lastUpdateId = 0;
 async function poll() {
   while (true) {
     try {
-      const res = await fetch(`${BASE_URL}/getUpdates?offset=${lastUpdateId + 1}&timeout=10`, {
-        signal: AbortSignal.timeout(15000),
+      const res = await fetch(`${BASE_URL}/getUpdates?offset=${lastUpdateId + 1}&timeout=15`, {
+        signal: AbortSignal.timeout(20000),
       });
       const data = await res.json();
       if (data.ok && Array.isArray(data.result)) {
         for (const update of data.result) {
           lastUpdateId = update.update_id;
-          await handleUpdate(update);
+          try {
+            await handleUpdate(update);
+          } catch (updateErr) {
+            console.error('Error handling update:', updateErr);
+          }
         }
+      } else if (!data.ok) {
+        console.warn('Telegram getUpdates returned error:', data.description || data);
+        await new Promise((r) => setTimeout(r, 3000));
       }
     } catch (err) {
       if (err.name !== 'TimeoutError') {
-        // quiet retry
+        console.warn('Telegram polling retry:', err?.message || err);
       }
       await new Promise((r) => setTimeout(r, 1000));
     }
@@ -1210,18 +1269,22 @@ console.log('🤖 Telegram Bot @romaupbot is RUNNING with Realtime Order Trackin
 initSupabaseRealtime();
 setInterval(checkAbandonedCartsRoutine, 15 * 60 * 1000); // Check every 15 mins
 
-tg('sendMessage', {
-  chat_id: ADMIN_CHAT_ID,
-  text:
-    `🟢 *تم تشغيل نظام إدارة متجر Roma المتكامل بنجاح!*\n\n` +
-    `⚡ مفعل مع:\n` +
-    `• 📡 الاستماع اللحظي للطلبات الجديدة عبر Supabase Realtime\n` +
-    `• 🔘 أزرار التحديث الفوري: تأكيد، شحن، تسليم، إلغاء\n` +
-    `• 🛒 استعادة السلات المتروكة بكوبونات خصم مؤتمتة\n` +
-    `• 🏷️ إضافة وتعديل المنتجات والمخزون\n\n` +
-    `أرسل /menu لفتح لوحة التحكم.`,
-  parse_mode: 'Markdown',
-  reply_markup: getMainKeyboard(),
-});
+const startupText =
+  `🟢 *تم تشغيل نظام إدارة متجر Roma المتكامل بنجاح!*\n\n` +
+  `⚡ مفعل مع:\n` +
+  `• 📡 الاستماع اللحظي للطلبات الجديدة عبر Supabase Realtime\n` +
+  `• 🔘 أزرار التحديث الفوري: تأكيد، شحن، تسليم، إلغاء\n` +
+  `• 🛒 استعادة السلات المتروكة بكوبونات خصم مؤتمتة\n` +
+  `• 🏷️ إضافة وتعديل المنتجات والمخزون\n\n` +
+  `أرسل /menu أو /start لفتح لوحة التحكم.`;
+
+for (const adminId of getKnownAdmins()) {
+  tg('sendMessage', {
+    chat_id: adminId,
+    text: startupText,
+    parse_mode: 'Markdown',
+    reply_markup: getMainKeyboard(),
+  });
+}
 
 poll();
