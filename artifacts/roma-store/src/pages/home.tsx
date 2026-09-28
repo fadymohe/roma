@@ -18,8 +18,8 @@ export default function Home() {
     if (activeCategory === 'all') return true;
     const cat = (p.category || '').toLowerCase();
     if (activeCategory === 'hair-accessories') return cat.includes('شعر') || cat.includes('hair');
-    if (activeCategory === 'look-accessories') return cat.includes('إطلالة') || cat.includes('اطلالة') || cat.includes('look') || cat.includes('حقيبة') || cat.includes('نظارة') || cat.includes('ساعة');
-    if (activeCategory === 'jewelry') return cat.includes('مجوهرات') || cat.includes('ذهب') || cat.includes('سلسلة') || cat.includes('خاتم') || cat.includes('jewelry');
+    if (activeCategory === 'look-accessories') return cat.includes('إطلالة') || cat.includes('اطلالة') || cat.includes('look') || cat.includes('حقيبة') || cat.includes('نظارة') || cat.includes('ساعة') || cat.includes('إكسسوار') || cat.includes('اكسسوار') || cat.includes('accessories');
+    if (activeCategory === 'jewelry') return cat.includes('مجوهرات') || cat.includes('ذهب') || cat.includes('سلسلة') || cat.includes('قلادة') || cat.includes('خاتم') || cat.includes('jewelry');
     if (activeCategory === 'makeup') return cat.includes('مكياج') || cat.includes('شفاه') || cat.includes('روج') || cat.includes('تنت') || cat.includes('makeup');
     if (activeCategory === 'body-care') return cat.includes('جسم') || cat.includes('نعومة') || cat.includes('عناية') || cat.includes('body');
     if (activeCategory === 'perfumes') return cat.includes('عطر') || cat.includes('عطور') || cat.includes('perfume');

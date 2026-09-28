@@ -87,7 +87,6 @@ export const CATEGORIES: Category[] = [
   },
 ];
 
-export const DEFAULT_PRODUCTS: Product[] = [];
 
 export const PRODUCTS: Product[] = [
   {
@@ -143,6 +142,8 @@ export const PRODUCTS: Product[] = [
   }
 ];
 
+export const DEFAULT_PRODUCTS: Product[] = PRODUCTS;
+
 function decodeBase64Utf8(base64: string): string {
   try {
     const cleanB64 = base64.replace(/\s/g, '');
@@ -168,13 +169,12 @@ export function useLiveProducts(): Product[] {
       const cached = localStorage.getItem('roma_live_products');
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) {
-          const realOnly = parsed.filter((p: any) => p && p.id && (p.id < 101 || p.id > 106));
-          return realOnly;
+        if (Array.isArray(parsed) && parsed.length >= PRODUCTS.length) {
+          return parsed;
         }
       }
     } catch (_) {}
-    return [];
+    return PRODUCTS;
   });
 
   useEffect(() => {
@@ -183,65 +183,58 @@ export function useLiveProducts(): Product[] {
     async function loadProducts() {
       let candidateList: Product[] | null = null;
 
-      // 1. Fetch directly from GitHub Contents API (Instant 0-sec sync right after bot commit)
+      // 1. Fetch directly from same-domain /products.json (Instant, 0 rate limits, zero CORS issues)
       try {
-        const ghApiRes = await fetch(
-          `https://api.github.com/repos/fadymohe/roma/contents/artifacts/roma-store/public/products.json?ref=main&_t=${Date.now()}`,
-          { cache: 'no-store' }
-        );
-        if (ghApiRes.ok) {
-          const ghApiData = await ghApiRes.json();
-          if (ghApiData && ghApiData.content && ghApiData.encoding === 'base64') {
-            const decodedStr = decodeBase64Utf8(ghApiData.content);
-            const parsed = JSON.parse(decodedStr);
-            if (Array.isArray(parsed)) {
-              candidateList = parsed;
-            }
+        const localRes = await fetch(`/products.json?_t=${Date.now()}`, { cache: 'no-store' });
+        if (localRes.ok) {
+          const data = await localRes.json();
+          if (Array.isArray(data) && data.length > 0) {
+            candidateList = data;
           }
         }
-      } catch (e) {}
+      } catch (_) {}
 
-      // 2. Fetch from GitHub Raw if API was rate-limited or failed
-      if (!candidateList) {
+      // 2. Fetch from /api/products serverless endpoint as high-reliability fallback
+      if (!candidateList || candidateList.length < PRODUCTS.length) {
         try {
-          const ghRawRes = await fetch(
-            `https://raw.githubusercontent.com/fadymohe/roma/main/artifacts/roma-store/public/products.json?v=${Date.now()}`,
-            { cache: 'no-store' }
-          );
-          if (ghRawRes.ok) {
-            const rawData = await ghRawRes.json();
-            if (Array.isArray(rawData)) {
-              candidateList = rawData;
+          const apiRes = await fetch(`/api/products?_t=${Date.now()}`, { cache: 'no-store' });
+          if (apiRes.ok) {
+            const apiData = await apiRes.json();
+            if (Array.isArray(apiData) && apiData.length > 0) {
+              if (!candidateList || apiData.length > candidateList.length) {
+                candidateList = apiData;
+              }
             }
           }
         } catch (_) {}
       }
 
-      // 3. Fetch from local /products.json as standard fallback
-      if (!candidateList) {
+      // 3. Fetch from GitHub Raw as secondary cloud fallback
+      if (!candidateList || candidateList.length < PRODUCTS.length) {
         try {
-          const localRes = await fetch(`/products.json?t=${Date.now()}`, { cache: 'no-store' });
-          if (localRes.ok) {
-            const data = await localRes.json();
-            if (Array.isArray(data)) {
-              candidateList = data;
+          const ghRawRes = await fetch(
+            `https://raw.githubusercontent.com/fadymohe/roma/main/artifacts/roma-store/public/products.json?_t=${Date.now()}`,
+            { cache: 'no-store' }
+          );
+          if (ghRawRes.ok) {
+            const rawData = await ghRawRes.json();
+            if (Array.isArray(rawData) && rawData.length > 0) {
+              if (!candidateList || rawData.length > candidateList.length) {
+                candidateList = rawData;
+              }
             }
           }
         } catch (_) {}
       }
 
       if (isMounted) {
-        const finalProducts = candidateList && Array.isArray(candidateList)
-          ? candidateList.filter((p: any) => p && p.id && (p.id < 101 || p.id > 106))
-          : [];
+        const sourceToUse = candidateList && candidateList.length >= PRODUCTS.length ? candidateList : PRODUCTS;
+        const finalProducts = sourceToUse.filter((p: any) => p && p.id && (p.id < 101 || p.id > 106));
         const jsonStr = JSON.stringify(finalProducts);
-        const currentStr = JSON.stringify(products);
-        if (jsonStr !== currentStr) {
-          setProducts(finalProducts);
-          try {
-            localStorage.setItem('roma_live_products', jsonStr);
-          } catch (_) {}
-        }
+        setProducts(finalProducts);
+        try {
+          localStorage.setItem('roma_live_products', jsonStr);
+        } catch (_) {}
       }
     }
 
@@ -251,7 +244,7 @@ export function useLiveProducts(): Product[] {
     window.addEventListener('focus', onFocus);
     window.addEventListener('visibilitychange', onFocus);
 
-    const interval = setInterval(loadProducts, 8000);
+    const interval = setInterval(loadProducts, 5000);
 
     return () => {
       isMounted = false;
@@ -261,7 +254,7 @@ export function useLiveProducts(): Product[] {
     };
   }, []);
 
-  return products;
+  return products.length > 0 ? products : PRODUCTS;
 }
 
 export const TESTIMONIALS = [
