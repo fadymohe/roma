@@ -229,32 +229,34 @@ export default function CartPage() {
     };
 
     try {
-      // 1. Upload to Supabase database (parameterized query matching schema)
+      // 1. Upload to Supabase database (matching real table columns)
       let resolvedOrderId: string = fallbackId;
       try {
+        const fullAddressWithGov = `${govName} - ${fullAddress}${notes ? ` (ملاحظات: ${notes.trim()})` : ''}`;
+        const orderItemsPayload = lines.map((l) => ({
+          product_id: l.product.id,
+          name: isAr ? l.product.nameAr : (l.product.nameEn || l.product.nameAr),
+          price: Number(l.product.price) || 0,
+          quantity: Number(l.quantity) || 1,
+          variant: isAr ? l.variant?.nameAr : (l.variant?.nameEn || l.variant?.nameAr || null),
+          image: l.product.imageUrl || '',
+          payment_method: paymentMethod,
+          shipping_cost: shippingCost,
+          coupon: couponSuccess ? couponCode.trim().toUpperCase() : null,
+          discount: discountAmount,
+        }));
+
         const { data: newOrder, error: sbError } = await supabase
           .from('orders')
           .insert({
             order_number: `ROMA-${fallbackId}`,
             user_id: user?.id || null,
+            customer_name: name.trim(),
+            phone: phone.trim(),
+            shipping_address: fullAddressWithGov,
             total_amount: total,
-            shipping_fee: shippingCost,
-            discount_amount: discountAmount,
-            coupon_used: couponSuccess ? couponCode.trim().toUpperCase() : null,
             status: 'pending',
-            payment_method: paymentMethod,
-            payment_status: paymentMethod === 'cod' ? 'unpaid' : 'paid',
-            payment_reference: paymentRef,
-            payment_receipt_url: receiptImage ? 'data:image/jpeg;receipt' : null,
-            shipping_details: {
-              fullName: name.trim(),
-              phone: phone.trim(),
-              altPhone: altPhone.trim(),
-              city: govName,
-              fullAddress,
-              notes: notes.trim(),
-            },
-            notes: notes.trim(),
+            items: orderItemsPayload,
           })
           .select()
           .single();
@@ -262,19 +264,9 @@ export default function CartPage() {
         if (!sbError && newOrder?.id) {
           resolvedOrderId = String(newOrder.id);
           orderPayload.orderId = resolvedOrderId;
-          orderPayload.orderNumber = `ROMA-${resolvedOrderId.slice(0, 8).toUpperCase()}`;
-
-          // Insert order items
-          const orderItemRows = lines.map((l) => ({
-            order_id: newOrder.id,
-            product_id: typeof l.product.id === 'string' ? l.product.id : null,
-            product_name: l.product.nameAr,
-            price: l.product.price,
-            quantity: l.quantity,
-            variant_info: l.variant?.nameAr || null,
-            image_url: l.product.imageUrl,
-          }));
-          await supabase.from('order_items').insert(orderItemRows).catch(() => {});
+          orderPayload.orderNumber = newOrder.order_number || `ROMA-${resolvedOrderId.slice(0, 8).toUpperCase()}`;
+        } else if (sbError) {
+          console.warn('Supabase order upload notice:', sbError.message);
         }
       } catch (sbErr) {
         console.warn('Supabase order upload notice:', sbErr);

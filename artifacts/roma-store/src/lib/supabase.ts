@@ -13,6 +13,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 
 export interface SupabaseOrderPayload {
+  order_number?: string;
   user_id?: string | null;
   status: string;
   total_amount: number;
@@ -37,6 +38,7 @@ export async function uploadOrderToSupabase(payload: SupabaseOrderPayload) {
     const { data, error } = await supabase
       .from('orders')
       .insert({
+        order_number: payload.order_number || `ROMA-${Date.now()}`,
         user_id: payload.user_id || null,
         status: payload.status || 'pending',
         total_amount: payload.total_amount,

@@ -106,31 +106,24 @@ export default function AccountPage() {
 
     try {
       // 1. Update Supabase Auth user metadata
-      await supabase.auth.updateUser({
+      const { data, error } = await supabase.auth.updateUser({
         data: {
           name: fullName.trim(),
+          full_name: fullName.trim(),
           phone: phone.trim(),
           city,
           savedAddresses: [addressLine.trim()],
         },
       });
 
-      // 2. Update profiles table in public schema
-      await supabase
-        .from('profiles')
-        .update({
-          full_name: fullName.trim(),
-          phone: phone.trim(),
-          city,
-          address_line: addressLine.trim(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
-
-      setProfileSuccessMsg(
-        isAr ? 'تم حفظ التعديلات بنجاح في ملفك الشخصي' : 'Profile settings updated successfully'
-      );
-      setTimeout(() => setProfileSuccessMsg(''), 4000);
+      if (!error) {
+        setProfileSuccessMsg(
+          isAr ? 'تم حفظ التعديلات بنجاح في ملفك الشخصي' : 'Profile settings updated successfully'
+        );
+        setTimeout(() => setProfileSuccessMsg(''), 4000);
+      } else {
+        console.warn('Update user metadata note:', error.message);
+      }
     } catch (err: any) {
       console.error('Save profile error:', err);
     } finally {
@@ -185,8 +178,8 @@ export default function AccountPage() {
             <div className="flex items-center gap-4">
               <div className="size-16 md:size-20 rounded-2xl border-2 border-[#D4A5A5] bg-[#1E1E1E] flex items-center justify-center p-0.5 shadow-lg shadow-[#D4A5A5]/10">
                 <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
-                  alt="Profile"
+                  src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"}
+                  alt={user?.name || "Profile"}
                   className="h-full w-full rounded-2xl object-cover"
                 />
               </div>

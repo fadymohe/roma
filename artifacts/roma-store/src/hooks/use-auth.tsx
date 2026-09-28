@@ -23,6 +23,7 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
+  avatar?: string;
   points: number;
   ordersCount: number;
   savedAddresses: string[];
@@ -109,13 +110,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const syncUserFromSupabase = (sbUser: any) => {
     const meta = sbUser.user_metadata || {};
     const nameFromEmail = sbUser.email ? sbUser.email.split('@')[0] : 'عميل روما';
-    const formattedName = meta.name || (nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1));
+    const formattedName =
+      meta.full_name ||
+      meta.name ||
+      meta.user_name ||
+      (nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1));
+    const avatar = meta.avatar_url || meta.picture || '';
 
     const updatedUser: User = {
       id: sbUser.id,
       name: formattedName,
       email: sbUser.email || '',
       phone: meta.phone || sbUser.phone || '',
+      avatar: avatar,
       points: Number(meta.points ?? 50),
       ordersCount: Number(meta.ordersCount ?? 0),
       savedAddresses: Array.isArray(meta.savedAddresses) ? meta.savedAddresses : [],
@@ -235,33 +242,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Google OAuth sign-in handler with automatic redirect and fallback
+  // Google OAuth sign-in handler with automatic redirect to Google and callback to /account
   const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
     try {
+      const redirectUrl = `${window.location.origin}/account`;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account',
+          },
         },
       });
 
       if (error) {
-        // Fallback simulation for local/testing if Google provider is pending setup
         console.warn('Google Auth OAuth note:', error.message);
-        const googleUser: User = {
-          id: 'goog_' + Date.now(),
-          name: 'عميل Google المميز',
-          email: 'customer.google@roma-eg.com',
-          phone: '01012345678',
-          points: 100,
-          ordersCount: 0,
-          savedAddresses: [],
-          savedPaymentMethods: [
-            { id: 'pm_cod', type: 'cod', title: 'الدفع عند الاستلام', isDefault: true },
-          ],
-        };
-        setUser(googleUser);
-        setAuthModalOpen(false);
+        return { success: false, error: error.message };
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
         return { success: true };
       }
 
@@ -377,11 +379,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserOrders = async (): Promise<UserOrder[]> => {
     if (!user) return [];
     try {
+      // 1. Fetch by user_id
       const { data, error } = await supabase
         .from('orders')
         .select('*')
-        .or(`user_id.eq.${user.id},customer_name.eq.${user.name}`)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return data;
+      }
+
+      // 2. If no orders by user_id yet, fallback to searching by phone if available
+      if (user.phone && user.phone.length > 8) {
+        const cleanPhone = user.phone.replace(/\D+/g, '');
+        const { data: phoneOrders, error: phoneErr } = await supabase
+          .from('orders')
+          .select('*')
+          .ilike('phone', `%${cleanPhone}%`)
+          .order('created_at', { ascending: false });
+
+        if (!phoneErr && Array.isArray(phoneOrders) && phoneOrders.length > 0) {
+          return phoneOrders;
+        }
+      }
 
       if (!error && Array.isArray(data)) {
         return data;
