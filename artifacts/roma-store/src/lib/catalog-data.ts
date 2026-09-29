@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790674564792,
+    "nameAr": "كريم بانثينول للبشرة من هيبتا، 50 جم",
+    "slug": "prod-1790674564792",
+    "descriptionAr": "مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.",
+    "price": 75,
+    "compareAtPrice": 94,
+    "category": "العناية بالبشرة (Skincare)",
+    "imageUrl": "/uploads/prod_1790674562425.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790674564792",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790674525699,
     "nameAr": "سبلاش للجسم من ايفا سكين كير سينسيز - ان ذا كلاودز 240 مل",
     "slug": "prod-1790674525699",
