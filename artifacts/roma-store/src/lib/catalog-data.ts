@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790675755388,
+    "nameAr": "قناع حليب لتفتيح البشرة ، مع فيتامين اي 250 جرام من بوبانا لنوع كل الأنواعة قد يختلف تصميم العبوة",
+    "slug": "prod-1790675755388",
+    "descriptionAr": "مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.",
+    "price": 55,
+    "compareAtPrice": 69,
+    "category": "العناية بالبشرة (Skincare)",
+    "imageUrl": "/uploads/prod_1790675753349.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790675755388",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790675353063,
     "nameAr": "بلسم شفاه سكين كير سينسيز من ايفا، نكهة بطيخ منعشة، عبوة سعة 4 جم",
     "slug": "prod-1790675353063",
