@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790674427175,
+    "nameAr": "لوشن للجسم كامل من جليسوليد يوفر ترطيباً عميقاً للبشرة الجافة للحفاظ عليها ناعمة ومرطبة، مناسب للبشرة الجافة، 500 مل",
+    "slug": "prod-1790674427175",
+    "descriptionAr": "مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.",
+    "price": 175,
+    "compareAtPrice": 219,
+    "category": "العناية بالبشرة (Skincare)",
+    "imageUrl": "/uploads/prod_1790674425006.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790674427175",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790674372884,
     "nameAr": "عناية إيفا بالبشرة، مقشر الجسم الطبيعي للتألق، 250 جم",
     "slug": "prod-1790674372884",
