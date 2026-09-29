@@ -90,6 +90,32 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790674840849,
+    "nameAr": "ايفا لمستحضرات التجميل - مقشر شفاه بنكهة التوت البري - 20 جرام",
+    "slug": "prod-1790674840849",
+    "descriptionAr": "مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.",
+    "price": 59,
+    "compareAtPrice": 74,
+    "category": "المكياج والجمال (Makeup)",
+    "imageUrl": "/uploads/prod_1790674838710.jpg",
+    "additionalImages": [
+      "/uploads/prod_1790674839212.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790674840849",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790674752479,
     "nameAr": "ماسكارا بلاك من مايبيلين نيويورك للرموش الطويلة للغاية لاش سينسيشنال سكاي هاي لون اسود 7.2 مل",
     "slug": "prod-1790674752479",
