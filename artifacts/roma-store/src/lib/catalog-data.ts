@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790675180203,
+    "nameAr": "كريم استحمام سينسيز للعناية بالبشرة من ايفا كوزميتكس، ان ذا كلاودز، 250 مل",
+    "slug": "prod-1790675180203",
+    "descriptionAr": "مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.",
+    "price": 90,
+    "compareAtPrice": 113,
+    "category": "العناية بالشعر (Hair Care)",
+    "imageUrl": "/uploads/prod_1790675178071.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790675180203",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790675033368,
     "nameAr": "قلم تحديد العيون ايسنس يدوم طويلا 01 بلاك فيفر، غير لامع، أسود",
     "slug": "prod-1790675033368",
