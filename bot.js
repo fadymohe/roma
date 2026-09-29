@@ -1,9 +1,14 @@
 import 'dotenv/config';
+import dns from 'dns';
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch (_) {}
 import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
+import { scrapeAmazonProduct, downloadAmazonImages } from './amazon-scraper.js';
 
 // Prevent process crashing from unhandled errors
 process.on('uncaughtException', (err) => {
@@ -250,15 +255,18 @@ function getMainKeyboard() {
   return {
     inline_keyboard: [
       [
-        { text: '➕ إضافة منتج جديد', callback_data: 'nav_add_prod' },
+        { text: '📦 سحب منتج من أمازون 🛒', callback_data: 'nav_amazon_prod' },
+        { text: '➕ إضافة منتج يدوي', callback_data: 'nav_add_prod' },
+      ],
+      [
         { text: '🏷️ إدارة المنتجات والمخزون', callback_data: 'nav_list_prod' },
-      ],
-      [
         { text: '📦 متابعة الطلبات', callback_data: 'nav_orders_all' },
-        { text: '🛒 السلات المتروكة', callback_data: 'nav_check_abandoned' },
       ],
       [
+        { text: '🛒 السلات المتروكة', callback_data: 'nav_check_abandoned' },
         { text: '📊 تقرير الإيرادات والمبيعات', callback_data: 'nav_stats' },
+      ],
+      [
         { text: '🌐 زيارة متجر Roma', url: 'https://roma-eg.my' },
       ],
     ],
@@ -515,6 +523,31 @@ async function handleUpdate(update) {
         text: '🌿 *لوحة تحكم إدارة متجر Roma*\n\nاختر من الأقسام التالية:',
         parse_mode: 'Markdown',
         reply_markup: getMainKeyboard(),
+      });
+    }
+
+    // Navigation: Import from Amazon
+    if (data === 'nav_amazon_prod') {
+      sessions.set(userId, { step: 'AMAZON_URL' });
+      await tg('answerCallbackQuery', { callback_query_id: cb.id });
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text:
+          `🛒 *سحب ورفع منتج تلقائياً عبر رابط أمازون*\n\n` +
+          `🔗 أرسل الآن *رابط المنتج* من موقع أمازون (مثال: \`amazon.eg\` أو \`amazon.com\` أو رابط مختصر \`amzn.to\`):\n\n` +
+          `⚡ سيقوم البوت تلقائياً بـ:\n` +
+          `• سحب الاسم بالكامل بدقة\n` +
+          `• استخراج السعر بالجنيه وحساب الخصم\n` +
+          `• تحميل الصور فائقة الدقة (HD) وحفظها بالمتجر\n` +
+          `• سحب الوصف الكامل وقائمة المميزات\n` +
+          `• التصنيف التلقائي الذكي للمنتج\n` +
+          `• النشر المباشر والفوري في المتجر!`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔙 إلغاء والعودة للقائمة', callback_data: 'nav_menu' }],
+          ],
+        },
       });
     }
 
@@ -826,6 +859,26 @@ async function handleUpdate(update) {
       });
     }
 
+    if (text.startsWith('/amazon') || text.startsWith('/amz')) {
+      const parts = text.split(' ').filter(Boolean);
+      if (parts.length > 1 && parts[1].includes('http')) {
+        return handleAmazonImport(chatId, userId, parts[1]);
+      }
+      sessions.set(userId, { step: 'AMAZON_URL' });
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text:
+          `🛒 *سحب ورفع منتج تلقائياً عبر رابط أمازون*\n\n` +
+          `أرسل الآن *رابط المنتج* من موقع أمازون لسحبه ونشره فوراً في متجر Roma:`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔙 إلغاء والعودة للقائمة', callback_data: 'nav_menu' }],
+          ],
+        },
+      });
+    }
+
     if (text === '/add_product' || text === '/new_product') {
       sessions.set(userId, { step: 'NAME', draft: {} });
       return tg('sendMessage', {
@@ -847,9 +900,27 @@ async function handleUpdate(update) {
       return sendStoreStats(chatId);
     }
 
+    // Auto-detect Amazon product links in any incoming text message
+    const amazonLinkRegex = /(https?:\/\/(?:www\.)?(?:amazon\.[a-z.]+|amzn\.[a-z]+)\/[^\s]+)/i;
+    if (amazonLinkRegex.test(text)) {
+      const matched = text.match(amazonLinkRegex)[0];
+      return handleAmazonImport(chatId, userId, matched);
+    }
+
     // Step machine for adding or editing
     const session = sessions.get(userId);
     if (session) {
+      // Amazon URL input step
+      if (session.step === 'AMAZON_URL') {
+        if (text.includes('http')) {
+          return handleAmazonImport(chatId, userId, text.trim());
+        }
+        return tg('sendMessage', {
+          chat_id: chatId,
+          text: '⚠️ يرجى إرسال رابط صحيح يبدأ بـ http:// أو https:// (مثال: رابط أمازون أو amzn.to):',
+        });
+      }
+
       // Edit stock step
       if (session.step === 'EDIT_STOCK') {
         const newQty = parseInt(text, 10);
@@ -1071,7 +1142,10 @@ async function sendProductsList(chatId) {
     ]);
   });
 
-  buttons.push([{ text: '➕ إضافة منتج جديد', callback_data: 'nav_add_prod' }]);
+  buttons.push([
+    { text: '📦 سحب منتج من أمازون 🛒', callback_data: 'nav_amazon_prod' },
+    { text: '➕ إضافة يدوي', callback_data: 'nav_add_prod' },
+  ]);
   buttons.push([{ text: '🔙 القائمة الرئيسية', callback_data: 'nav_menu' }]);
 
   return tg('sendMessage', {
@@ -1153,6 +1227,146 @@ async function sendStoreStats(chatId) {
     parse_mode: 'Markdown',
     reply_markup: getMainKeyboard(),
   });
+}
+
+// Handle Automatic Import from Amazon
+async function handleAmazonImport(chatId, userId, rawUrl) {
+  sessions.delete(userId);
+
+  // Send initial waiting notification
+  await tg('sendMessage', {
+    chat_id: chatId,
+    text: '⏳ *جاري سحب بيانات المنتج من أمازون وتحميل الصور بجودة فائقة...*\nيرجى الانتظار بضع ثوانٍ.',
+    parse_mode: 'Markdown',
+  });
+
+  try {
+    const res = await scrapeAmazonProduct(rawUrl);
+    if (!res.ok || !res.data) {
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text: `❌ *تعذر سحب بيانات المنتج من أمازون:*\n${res.error || 'حدث خطأ غير متوقع'}\n\nيرجى التأكد من أن الرابط لصفحة منتج صحيحة على أمازون.`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔄 إعادة المحاولة برابط آخر', callback_data: 'nav_amazon_prod' }],
+            [{ text: '🔙 القائمة الرئيسية', callback_data: 'nav_menu' }],
+          ],
+        },
+      });
+    }
+
+    const data = res.data;
+
+    // Download high-resolution images locally
+    const localImages = await downloadAmazonImages(data.images, UPLOADS_DIR, DIST_UPLOADS_DIR);
+    const mainImage = localImages[0] || (data.images && data.images[0]) || '/uploads/default.jpg';
+    const additionalImages = localImages.slice(1);
+
+    const timestamp = Date.now();
+    const newProduct = {
+      id: timestamp,
+      nameAr: data.title,
+      slug: `prod-${timestamp}`,
+      descriptionAr: data.description,
+      price: data.price,
+      compareAtPrice: data.compareAtPrice || Math.round(data.price * 1.25),
+      category: data.category,
+      imageUrl: mainImage,
+      additionalImages: additionalImages,
+      rating: 5.0,
+      reviewCount: 1,
+      badge: 'جديد',
+      stock: 50,
+      variants: [
+        { id: 1, nameAr: 'الحجم القياسي', hex: '#D4A5A5', sku: `RM-${timestamp}`, stock: 50 },
+      ],
+    };
+
+    // Save locally and trigger git auto-push
+    const products = getProducts();
+    products.unshift(newProduct);
+    saveProducts(products, `Auto-import Amazon product: ${newProduct.nameAr}`);
+
+    // Insert into Supabase database
+    try {
+      await supabase.from('products').insert({
+        name_ar: newProduct.nameAr,
+        name_en: newProduct.nameAr,
+        description_ar: newProduct.descriptionAr,
+        description_en: newProduct.descriptionAr,
+        price: newProduct.price,
+        discount_price: newProduct.price,
+        stock: 50,
+        images: [mainImage, ...additionalImages],
+        is_featured: true,
+        badge_ar: 'جديد',
+      });
+    } catch (err) {
+      console.warn('Supabase Amazon product insert note:', err?.message);
+    }
+
+    // Compose rich summary
+    const descSnippet = newProduct.descriptionAr.length > 350
+      ? newProduct.descriptionAr.slice(0, 347) + '...'
+      : newProduct.descriptionAr;
+
+    const caption =
+      `🎉 *تم سحب ونشر المنتج من أمازون بنجاح!*\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `📦 *الاسم بالكامل:*\n${newProduct.nameAr}\n\n` +
+      `🏷️ *التصنيف / الفئة:* *${newProduct.category}*\n` +
+      `💰 *السعر:* *${newProduct.price} ج.م* (قبل الخصم: ~${newProduct.compareAtPrice} ج.م)\n` +
+      `📊 *المخزون:* 50 قطعة\n` +
+      `📸 *معرض الصور:* تم حفظ *${1 + additionalImages.length}* صور فائقة الدقة (HD)\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `📝 *الوصف والمميزات:*\n${descSnippet}\n\n` +
+      `🚀 *تم النشر والتحديث فوراً في المتجر المباشر!*`;
+
+    const replyMarkup = {
+      inline_keyboard: [
+        [{ text: '🛍️ معاينة في المتجر المباشر', url: 'https://roma-eg.my/shop' }],
+        [
+          { text: '✏️ تعديل السعر', callback_data: `edit_price_${newProduct.id}` },
+          { text: '📊 تعديل المخزون', callback_data: `edit_stock_${newProduct.id}` },
+        ],
+        [{ text: '📦 سحب منتج آخر من أمازون', callback_data: 'nav_amazon_prod' }],
+        [{ text: '🔙 القائمة الرئيسية', callback_data: 'nav_menu' }],
+      ],
+    };
+
+    // Try sending with photo first
+    let photoSent = false;
+    const photoUrl = (data.images && data.images[0]) || (mainImage.startsWith('http') ? mainImage : `https://roma-eg.my${mainImage}`);
+    if (photoUrl && photoUrl.startsWith('http')) {
+      const photoRes = await tg('sendPhoto', {
+        chat_id: chatId,
+        photo: photoUrl,
+        caption: caption,
+        parse_mode: 'Markdown',
+        reply_markup: replyMarkup,
+      });
+      if (photoRes && photoRes.ok) {
+        photoSent = true;
+      }
+    }
+
+    if (!photoSent) {
+      await tg('sendMessage', {
+        chat_id: chatId,
+        text: caption,
+        parse_mode: 'Markdown',
+        reply_markup: replyMarkup,
+      });
+    }
+  } catch (err) {
+    console.error('handleAmazonImport error:', err);
+    return tg('sendMessage', {
+      chat_id: chatId,
+      text: `❌ حدث خطأ أثناء معالجة رابط أمازون: ${err.message}`,
+      reply_markup: getMainKeyboard(),
+    });
+  }
 }
 
 // Finalize Product Creation
@@ -1272,11 +1486,12 @@ setInterval(checkAbandonedCartsRoutine, 15 * 60 * 1000); // Check every 15 mins
 const startupText =
   `🟢 *تم تشغيل نظام إدارة متجر Roma المتكامل بنجاح!*\n\n` +
   `⚡ مفعل مع:\n` +
+  `• 📦 سحب ونشر المنتجات تلقائياً عبر روابط أمازون بنقرة واحدة\n` +
   `• 📡 الاستماع اللحظي للطلبات الجديدة عبر Supabase Realtime\n` +
   `• 🔘 أزرار التحديث الفوري: تأكيد، شحن، تسليم، إلغاء\n` +
   `• 🛒 استعادة السلات المتروكة بكوبونات خصم مؤتمتة\n` +
   `• 🏷️ إضافة وتعديل المنتجات والمخزون\n\n` +
-  `أرسل /menu أو /start لفتح لوحة التحكم.`;
+  `أرسل /menu أو /start لفتح لوحة التحكم، أو أرسل رابط أمازون مباشرة!`;
 
 for (const adminId of getKnownAdmins()) {
   tg('sendMessage', {
