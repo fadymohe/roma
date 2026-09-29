@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790674622751,
+    "nameAr": "بلندز هيربال سنسيشن كريم بحبة البركة (١٨٠ مل) - ليف إن للشعر الضعيف - حماية وتقوية",
+    "slug": "prod-1790674622751",
+    "descriptionAr": "مستحضر فاخر من متجر روما، مصمم بتركيبة فريدة وآمنة للعناية الفائقة ومنح بشرتك لمسة من النقاء والإشراقة الدائمة.",
+    "price": 32,
+    "compareAtPrice": 40,
+    "category": "العناية بالبشرة (Skincare)",
+    "imageUrl": "/uploads/prod_1790674620999.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790674622751",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790674564792,
     "nameAr": "كريم بانثينول للبشرة من هيبتا، 50 جم",
     "slug": "prod-1790674564792",
