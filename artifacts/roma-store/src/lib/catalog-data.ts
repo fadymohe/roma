@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790731586335,
+    "nameAr": "شنطة مستحضرات تجميل من الجلد للنساء",
+    "slug": "prod-1790731586335",
+    "descriptionAr": "مستحضر فاخر عالي الجودة متوفر لدى متجر روما، مصمم بتركيبة مميزة وآمنة تلبي احتياجاتك اليومية بعناية فائقة.",
+    "price": 149,
+    "compareAtPrice": 186,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790731585331_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790731585331_2.jpg",
+      "/uploads/prod_amz_1790731585331_3.jpg",
+      "/uploads/prod_amz_1790731585331_4.jpg",
+      "/uploads/prod_amz_1790731585331_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790731586335",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790731576355,
     "nameAr": "مرطب شفاه من اماندا ميلانو، رقم 08 خوخي",
     "slug": "prod-1790731576355",
