@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732097540,
+    "nameAr": "او دو بارفان اسد من لطافة، 100 مل",
+    "slug": "prod-1790732097540",
+    "descriptionAr": "او دو برفان اسد للجنسين من لطافة - 100 مل\n\n✨ *أبرز المميزات:*\n• نبذة عن: عطر لطافة Asad هو عطر فانيليا يفتتح بعطر مميز مع روائح فريدة. يحتوي العطر على أفضل إجابة عن الحيوانات المستنسخة الأخرى والعطر مخصص للرجال والنساء على حد سواء.\n• المكونات العليا: الفلفل الأسود والأناناس والتبغ\n• الروائح الوسطى: القهوة والباتشولي والسوسن",
+    "price": 1120,
+    "compareAtPrice": 1400,
+    "category": "العطور الفاخرة (Perfumes)",
+    "imageUrl": "/uploads/prod_amz_1790732097034_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790732097034_2.jpg",
+      "/uploads/prod_amz_1790732097034_3.jpg",
+      "/uploads/prod_amz_1790732097034_4.jpg",
+      "/uploads/prod_amz_1790732097034_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732097540",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732086498,
     "nameAr": "Maa Al Thahab Sweety N188 For Women Inspired By Good Girl 30Ml",
     "slug": "prod-1790732086498",
