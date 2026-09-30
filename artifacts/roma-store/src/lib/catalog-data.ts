@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790730421439,
+    "nameAr": "ماسكارا اي لوف اكستر. كريزي فوليوم من ايسنس",
+    "slug": "prod-1790730421439",
+    "descriptionAr": "العلامة التجارية: ايسنس ^ النوع: ماسكارا^ اللون: أسود^ مقاس المنتج: 14.34 مل ^EAN-13: 4250587739084\n\n✨ *أبرز المميزات:*\n• العلامة التجارية: ايسنس.\n• النوع: ماسكارا.\n• اللون: أسود.\n• سعة المنتج: 0.40 اونصة\n• EAN-13: 4250587739084",
+    "price": 209,
+    "compareAtPrice": 261,
+    "category": "المكياج والجمال (Makeup)",
+    "imageUrl": "/uploads/prod_amz_1790730421048_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790730421048_2.jpg",
+      "/uploads/prod_amz_1790730421048_3.jpg",
+      "/uploads/prod_amz_1790730421048_4.jpg",
+      "/uploads/prod_amz_1790730421048_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790730421439",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790730401488,
     "nameAr": "ملمع شفاه اكستريم شاين فوليوم 01 من ايسنس، لامع",
     "slug": "prod-1790730401488",
