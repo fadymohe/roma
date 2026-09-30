@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732858777,
+    "nameAr": "ساعة يد للنساء من ريس بمينا ذهبي R2054-TGS",
+    "slug": "prod-1790732858777",
+    "descriptionAr": "ساعات ريس هي علامة تجارية عصرية من داش ووتشز",
+    "price": 2575,
+    "compareAtPrice": 3219,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790732858458_1.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732858777",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732852825,
     "nameAr": "ساعة كوارتز نسائية، موديل 2615، لون أسود، بعقارب أنيقة، تصميم مينيماليست خفيف الوزن، مقاومة للماء",
     "slug": "prod-1790732852825",
