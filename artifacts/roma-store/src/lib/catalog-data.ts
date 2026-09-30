@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790735821661,
+    "nameAr": "اقراط حلقية ذهبية صغيرة للنساء: مجوهرات هاجي مطلية بالذهب الحقيقي عيار 14 قيراط ولا تسبب الحساسية من لين وودز",
+    "slug": "prod-1790735821661",
+    "descriptionAr": "اقراط حلقية ذهبية صغيرة للنساء",
+    "price": 65,
+    "compareAtPrice": 81,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790735819557_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790735819557_2.jpg",
+      "/uploads/prod_amz_1790735819557_3.jpg",
+      "/uploads/prod_amz_1790735819557_4.jpg",
+      "/uploads/prod_amz_1790735819557_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790735821661",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790735815934,
     "nameAr": "اقراط نسائية ذهبية اللون على شكل نجم البحر - اقراط عصرية مستوحاة من المحيط للنساء",
     "slug": "prod-1790735815934",
