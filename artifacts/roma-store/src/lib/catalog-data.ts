@@ -90,6 +90,34 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790736907399,
+    "nameAr": "سلسلة انفنتى فضى للنساء",
+    "slug": "prod-1790736907399",
+    "descriptionAr": "المادة : خليط معدنىالشكل : انفنتىاللون : فضىطول السلسلة : 45 سم",
+    "price": 75,
+    "compareAtPrice": 94,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790736907027_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790736907027_2.jpg",
+      "/uploads/prod_amz_1790736907027_3.jpg",
+      "/uploads/prod_amz_1790736907027_4.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790736907399",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790736889592,
     "nameAr": "سلسلة انفنتى فضى للنساء",
     "slug": "prod-1790736889592",
