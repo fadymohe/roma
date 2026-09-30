@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732803066,
+    "nameAr": "ساعة إصبع للنساء بعرض تناظري، حلقة كوارتز أنيقة للإصبع",
+    "slug": "prod-1790732803066",
+    "descriptionAr": "مستحضر فاخر عالي الجودة متوفر لدى متجر روما، مصمم بتركيبة مميزة وآمنة تلبي احتياجاتك اليومية بعناية فائقة.",
+    "price": 250,
+    "compareAtPrice": 313,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790732801635_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790732801635_2.jpg",
+      "/uploads/prod_amz_1790732801635_3.jpg",
+      "/uploads/prod_amz_1790732801635_4.jpg",
+      "/uploads/prod_amz_1790732801635_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732803066",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732794354,
     "nameAr": "ساعة باركر من الستانلس ستيل بلمسة فاخرة مايكل كورس أحمر الخدود ذهبي وردي Standard انالوج للنساء",
     "slug": "prod-1790732794354",
