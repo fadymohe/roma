@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790735544676,
+    "nameAr": "Women's Crossbody Bag, Brown, PU Leather, Gold D Buckle Closure, Elegant Small Shoulder Bag (Olive)",
+    "slug": "prod-1790735544676",
+    "descriptionAr": "Elegant crossbody bag for ladies, made of high quality faux leather in premium dark brown color. This mini bag has a modern and distinctive design that combines style and function. The front is adorned with a shiny gold D-buckle that gives it a sophisticated and distinctive character. The bag is sized to fit your essentials, with an adjustable shoulder strap that allows you to carry it comfortably. Perfect for evening looks and special occasions, this bag can be easily paired with everyday outfits to add a touch of elegance to any outfit. The shiny gold rings on the sides complete the harmonious design and reflect attention to detail. Perfect gift for every woman who appreciates elegance and uniqueness.",
+    "price": 382,
+    "compareAtPrice": 478,
+    "category": "العناية بالجسم (Body Care)",
+    "imageUrl": "/uploads/prod_amz_1790735544334_1.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790735544676",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790735402176,
     "nameAr": "شنطة نسائية بيضاء بتصميم عصري (Crossbody)، حقيبة يد أنيقة بسحاب إغلاق، مناسبة كهدية، شنطة كتف خفيفة الوزن وعملية للاستخدام اليومي.",
     "slug": "prod-1790735402176",
