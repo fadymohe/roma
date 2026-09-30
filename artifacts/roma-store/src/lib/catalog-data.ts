@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790737171800,
+    "nameAr": "كونجو حزام سلسلة للنساء، واسط، مكتنزة، ذهبية (ذهبي، 45 بوصة)، 115 سم، معدن",
+    "slug": "prod-1790737171800",
+    "descriptionAr": "إذا كانت لديك أي مشكلات، فلا تتردد في الاتصال بنا. سيسعد موظفو الخدمة لدينا بالرد عليك في غضون 24 ساعة عمل",
+    "price": 186,
+    "compareAtPrice": 233,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790737170997_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790737170997_2.jpg",
+      "/uploads/prod_amz_1790737170997_3.jpg",
+      "/uploads/prod_amz_1790737170997_4.jpg",
+      "/uploads/prod_amz_1790737170997_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790737171800",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790737155835,
     "nameAr": "كونجو حزام سلسلة للنساء، واسط، مكتنزة، ذهبية (ذهبي، 45 بوصة)، 115 سم، معدن",
     "slug": "prod-1790737155835",
