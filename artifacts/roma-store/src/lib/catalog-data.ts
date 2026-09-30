@@ -90,6 +90,34 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732794354,
+    "nameAr": "ساعة باركر من الستانلس ستيل بلمسة فاخرة مايكل كورس أحمر الخدود ذهبي وردي Standard انالوج للنساء",
+    "slug": "prod-1790732794354",
+    "descriptionAr": "تتميز ساعة كرونوغراف من مايكل كورس هذه بهيكل من الستانلس ستيل مع حلقة علوية ومؤشرات لامعة. سوار مذهل من الستانلس ستيل الوردي والأسيتات الحمراء ما يمنحها مستوى جديدًا من الأناقة.",
+    "price": 5049,
+    "compareAtPrice": 6311,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790732793457_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790732793457_2.jpg",
+      "/uploads/prod_amz_1790732793457_3.jpg",
+      "/uploads/prod_amz_1790732793457_4.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732794354",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732780622,
     "nameAr": "ساعة رسمية كلاسيكية للنساء بسوار من الفولاذ المقاوم للصدأ بتقويم من زيكيري، لون واحد",
     "slug": "prod-1790732780622",
