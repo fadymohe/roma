@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790736848446,
+    "nameAr": "دلاية عصرية على شكل قلب، قلادة من الزركون للنساء، سلسلة فضية اللون، مجوهرات للنساء",
+    "slug": "prod-1790736848446",
+    "descriptionAr": "دلاية عصرية على شكل قلب، قلادة من الزركون للنساء، سلسلة فضية اللون، مجوهرات للنساء",
+    "price": 155,
+    "compareAtPrice": 194,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790736847399_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790736847399_2.jpg",
+      "/uploads/prod_amz_1790736847399_3.jpg",
+      "/uploads/prod_amz_1790736847399_4.jpg",
+      "/uploads/prod_amz_1790736847399_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790736848446",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790736387750,
     "nameAr": "سلسلة أنيقة ذهبي للنساء من ايفتوب بقلب لطيف مطلي بالذهب الابيض /الذهب عيار 14 قيراط مصنوع يدويا وسلسلة على شكل دائرة ونحل بطول قابل للتعديل للنساء، مجوهرات عصرية",
     "slug": "prod-1790736387750",
