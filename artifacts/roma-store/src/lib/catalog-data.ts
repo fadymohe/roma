@@ -90,6 +90,33 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732014882,
+    "nameAr": "عطر او دو بارفان بولد ليدي للنساء من كرياشن لاميس ديلوكس، إصدار محدود، 100 مل",
+    "slug": "prod-1790732014882",
+    "descriptionAr": "عطر او دو تواليت بولد ليدي للنساء من كرياشن لاميس ديلوكس، إصدار محدود، 100 مل\n\n✨ *أبرز المميزات:*\n• العلامة التجارية: كرياشن لاميس ديلوكس",
+    "price": 434,
+    "compareAtPrice": 543,
+    "category": "العطور الفاخرة (Perfumes)",
+    "imageUrl": "/uploads/prod_amz_1790732014110_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790732014110_2.jpg",
+      "/uploads/prod_amz_1790732014110_3.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732014882",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732005794,
     "nameAr": "ماء الذهب أورينتست N195 روزيز فانيل مانسيرا أو دي بارفيوم للنساء 50 مل",
     "slug": "prod-1790732005794",
