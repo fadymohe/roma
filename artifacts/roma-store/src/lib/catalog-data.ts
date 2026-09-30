@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732077458,
+    "nameAr": "عطر ريندروبس من اجمل للنساء - او دو بارفان، 50 مل",
+    "slug": "prod-1790732077458",
+    "descriptionAr": "The floral and fruity fragrance of the Raindrops Perfume by Ajmal is a feminine perfume, best suited for the days when you want to let yourself appear a bit more feminine. The scent has strong floral and fruity aromas which impart an attractiveness and sensual appeal to your personality. The fragrance suits your style and adds confidence to your appearance. It is the most attractive and intense aroma that never fails to impress. Fruits for the Never-Ending Youth As the fruity smell spells magic around you, you become unforgettable. The aroma is long lasting and makes you feel young and fresh throughout the day. The fruity smell feels delicious and elegant at the same time. The aroma has the power to turn heads around as you walk the ramp of life. Smell like Flowers The scent of this Ajmal for women has a strong aroma of flowers. Imagine yourself smelling like a flower as you pass through people. The perfume immediately provides your personality with a sensual yet classy appeal. Also, the presence of ambergris adds a salty and warm touch to this fragrance.\n\n✨ *أبرز المميزات:*\n• تركيز أو دو بارفان مع عطر زهري وفاكهي يتميز بنفحات قاعدة خشبية\n• ثبات العطر لمدة 10 ساعات مع نفحات علوية من الفواكه والزهور والخشب ونفحات قلبية من الزهور الحيوانية\n• شكل سبراي سائل بسعة 50 ملليلتر مصمم للنساء\n• مناسب للارتداء النهاري ومناسبات الحفلات بأسلوب عصري\n• موديل أجمل رين دروبس يتميز بلمسة نهائية طبيعية وعرض متعدد الألوان",
+    "price": 650,
+    "compareAtPrice": 813,
+    "category": "العطور الفاخرة (Perfumes)",
+    "imageUrl": "/uploads/prod_amz_1790732075632_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790732075632_2.jpg",
+      "/uploads/prod_amz_1790732075632_3.jpg",
+      "/uploads/prod_amz_1790732075632_4.jpg",
+      "/uploads/prod_amz_1790732075632_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732077458",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732066384,
     "nameAr": "او دي بارفان مهرا سيلكي روز من لطافة، 100 مل",
     "slug": "prod-1790732066384",
