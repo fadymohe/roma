@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790731518064,
+    "nameAr": "احمر خدود سائل لامع صن كيسر مع فيتامين E من ميبيلين نيويورك، 06 سيتي سيزل",
+    "slug": "prod-1790731518064",
+    "descriptionAr": "مستحضر فاخر عالي الجودة متوفر لدى متجر روما، مصمم بتركيبة مميزة وآمنة تلبي احتياجاتك اليومية بعناية فائقة.\n\n✨ *أبرز المميزات:*\n• أحمر خدود سائل مع أداة تطبيق XXL لتحديد شكل الوجه\n• لون سيتي سيزل مع لمسة نهائية متلألئة يوفر إشراقة فورية\n• تركيبة تغطية خفيفة تمتزج بتطبيق 3 نقرات\n• يدوم حتى 12 ساعة في أنبوب 4.7 مل",
+    "price": 312,
+    "compareAtPrice": 390,
+    "category": "المكياج والجمال (Makeup)",
+    "imageUrl": "/uploads/prod_amz_1790731517335_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790731517335_2.jpg",
+      "/uploads/prod_amz_1790731517335_3.jpg",
+      "/uploads/prod_amz_1790731517335_4.jpg",
+      "/uploads/prod_amz_1790731517335_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790731518064",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790731509332,
     "nameAr": "L’Oréal Paris Perfect Match Lumi Glotion Natural Glow Enhancer Liquid Highlighter for Face and Body with Glycerin and Shea Butter, 901 Fair Glow, 40 ml",
     "slug": "prod-1790731509332",
