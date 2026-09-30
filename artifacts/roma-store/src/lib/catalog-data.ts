@@ -90,6 +90,34 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790738506732,
+    "nameAr": "Set Of 3 Colorful Satin Scrunchies With Big Size",
+    "slug": "prod-1790738506732",
+    "descriptionAr": "With our satin set of scrunchies with the best verity colors , you will find that your hairstyles last longer. Your hair will still have a fresh and vibrant appearance It will keep your hair from falling out. With our satin set of true-to-color laces, you'll find that your hairstyles last longer. Your hair will still look fresh and vibrant. It will keep your hair from falling out. It is the absolute best for all hair types and the volume is very comfortable.",
+    "price": 40,
+    "compareAtPrice": 50,
+    "category": "العناية بالشعر (Hair Care)",
+    "imageUrl": "/uploads/prod_amz_1790738505517_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790738505517_2.jpg",
+      "/uploads/prod_amz_1790738505517_3.jpg",
+      "/uploads/prod_amz_1790738505517_4.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790738506732",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790738483472,
     "nameAr": "مشابك شعر بلاستيكية ملونة للبنات من دافان - بينك فاتح متعدد الالوان",
     "slug": "prod-1790738483472",
