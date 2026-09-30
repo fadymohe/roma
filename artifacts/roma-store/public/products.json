@@ -1,5 +1,34 @@
 [
   {
+    "id": 1790733527968,
+    "nameAr": "Women’s Top Handle Shoulder Handbag – Medium Size, PU Leather Bag with Detachable Strap",
+    "slug": "prod-1790733527968",
+    "descriptionAr": "This VELVARA women’s handbag is designed to combine style and practicality for everyday use. Made from premium PU leather, it offers a sleek and elegant look while remaining lightweight and durable. The medium size provides ample space for daily essentials such as a wallet, phone, cosmetics, and keys without feeling bulky. Featuring a comfortable top handle and a detachable shoulder strap, this handbag allows versatile carrying options to suit different occasions. Whether you are heading to work, shopping, or a casual outing, this handbag adds a refined touch to any outfit while keeping your belongings secure and organized.",
+    "price": 3650,
+    "compareAtPrice": 4563,
+    "category": "العناية بالبشرة (Skincare)",
+    "imageUrl": "/uploads/prod_amz_1790733525605_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790733525605_2.jpg",
+      "/uploads/prod_amz_1790733525605_3.jpg",
+      "/uploads/prod_amz_1790733525605_4.jpg",
+      "/uploads/prod_amz_1790733525605_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790733527968",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790733510560,
     "nameAr": "شنطة يد كتف نسائية جلد ناعم بتصميم سموكي، حقيبة كروس بودي واسعة برباط علوي، مناسبة للعمل والجامعة والمناسبات، تتضمن ميدالية كرتونية أنيقة،",
     "slug": "prod-1790733510560",
