@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732244485,
+    "nameAr": "عطر رويال عود يدوم طويلا وخالي من الكحول مخمرية للنساء من ستاركي - 50 مل",
+    "slug": "prod-1790732244485",
+    "descriptionAr": "ستاركي عطر رويال عود يدوم طويلا وخالي من الكحول للنساء من مخمرية - 50 مل\n\n✨ *أبرز المميزات:*\n• عطر رويال عود مع تركيبة عطرية مخمرية لتجربة شمية مميزة\n• تركيز أو دو بارفان يوفر رائحة طويلة الأمد طوال اليوم\n• شكل سائل يُطبق على نقاط النبض بما في ذلك المعصمين والرقبة والمرفقين\n• مناسب لمناسبات الليل والنهار والحفلات والمواعيد الرومانسية وحفلات الزفاف واستقبالات الزفاف\n• تركيبة خالية من الكحول في زجاجة 50 مل من علامة ستاركي",
+    "price": 40,
+    "compareAtPrice": 50,
+    "category": "العطور الفاخرة (Perfumes)",
+    "imageUrl": "/uploads/prod_amz_1790732243901_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790732243901_2.jpg",
+      "/uploads/prod_amz_1790732243901_3.jpg",
+      "/uploads/prod_amz_1790732243901_4.jpg",
+      "/uploads/prod_amz_1790732243901_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732244485",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732225233,
     "nameAr": "Emper Le Chameau (Arabia) Haya Eau De Parfum For Women 100Ml",
     "slug": "prod-1790732225233",
