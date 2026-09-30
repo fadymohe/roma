@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790731509332,
+    "nameAr": "L’Oréal Paris Perfect Match Lumi Glotion Natural Glow Enhancer Liquid Highlighter for Face and Body with Glycerin and Shea Butter, 901 Fair Glow, 40 ml",
+    "slug": "prod-1790731509332",
+    "descriptionAr": "اغمر نفسك في عالم الجمال المشرق مع لومي جلوشن، محسن التوهج الطبيعي! هذا الهايلايتر السائل للوجه والجسم لا يمنح بشرتك دفعة فورية من الرطوبة فحسب، بل يمنح أيضًا بشرة مشرقة بشكل طبيعي. تركيبة الغليسيرين وزبدة الشيا توفر للبشرة رطوبة مكثفة طوال اليوم. تبرز التركيبة خفيفة الوزن الإشراقة الطبيعية ومتوفرة في 4 درجات ألوان تتكيف مع أي لون بشرة. مع لومي جلوشن، ستحصلين على بشرة مشرقة ومشرقة بدون أشعة الشمس.\n\n✨ *أبرز المميزات:*\n• هايلايتر سائل للوجه والجسم للحصول على بشرة مشرقة وللتأكيد على الإشراق الطبيعي\n• النتيجة: ترطيب فوري للحصول على مظهر طبيعي ومشرق وبشرة مشمسة بدون أشعة الشمس\n• كيفية الاستخدام: للحصول على بشرة متساوية ضعيه تحت المكياج أو فوقه، ضعي ظلًا أفتح من لون البشرة كهايلايتر وضعي ظلًا أغمق على المنحنيات ككونتور\n• تركيبة سائلة وخفيفة الوزن مع الجلسرين وزبدة الشيا لترطيب مكثف طوال اليوم\n• محتويات الصندوق: L'Oréal Paris Perfect Match Lumi Glotion, Natural Glow Enhancer, 901 Fair Glow, 40 ml",
+    "price": 557,
+    "compareAtPrice": 696,
+    "category": "مرطبات (Moisturizers)",
+    "imageUrl": "/uploads/prod_amz_1790731508775_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790731508775_2.jpg",
+      "/uploads/prod_amz_1790731508775_3.jpg",
+      "/uploads/prod_amz_1790731508775_4.jpg",
+      "/uploads/prod_amz_1790731508775_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790731509332",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790731478161,
     "nameAr": "بودرة خدود سموث ان وير من سيبيل، بويس دي روز 04 3.7 جم",
     "slug": "prod-1790731478161",
