@@ -1,5 +1,34 @@
 [
   {
+    "id": 1790735644337,
+    "nameAr": "شنطة كروس للنساء من تشانس - 442",
+    "slug": "prod-1790735644337",
+    "descriptionAr": "يمكن ارتداء الشنطة كشنطة كروس أو فوق الكتف، ويتم استيراد جميع المواد والإكسسوارات. يبلغ عرضها 22 سم وطولها 16 سم، مع عرض قاعدة 9 سم.",
+    "price": 450,
+    "compareAtPrice": 563,
+    "category": "العناية بالجسم (Body Care)",
+    "imageUrl": "/uploads/prod_amz_1790735642629_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790735642629_2.jpg",
+      "/uploads/prod_amz_1790735642629_3.jpg",
+      "/uploads/prod_amz_1790735642629_4.jpg",
+      "/uploads/prod_amz_1790735642629_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790735644337",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790735637474,
     "nameAr": "شنطه يد كروس محفظه",
     "slug": "prod-1790735637474",
