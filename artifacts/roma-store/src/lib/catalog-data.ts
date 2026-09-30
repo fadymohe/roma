@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790737155835,
+    "nameAr": "كونجو حزام سلسلة للنساء، واسط، مكتنزة، ذهبية (ذهبي، 45 بوصة)، 115 سم، معدن",
+    "slug": "prod-1790737155835",
+    "descriptionAr": "إذا كانت لديك أي مشكلات، فلا تتردد في الاتصال بنا. سيسعد موظفو الخدمة لدينا بالرد عليك في غضون 24 ساعة عمل",
+    "price": 186,
+    "compareAtPrice": 233,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790737152890_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790737152890_2.jpg",
+      "/uploads/prod_amz_1790737152890_3.jpg",
+      "/uploads/prod_amz_1790737152890_4.jpg",
+      "/uploads/prod_amz_1790737152890_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790737155835",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790737150088,
     "nameAr": "حزام نسائي أسود رفيع بإبزيم ذهبي بتصميم العقدة المجدولة من EZABILLA - فخامة سينمائية وتفاصيل بارزة مع خصر قابل للتعديل - الهدية المثالية لها",
     "slug": "prod-1790737150088",
