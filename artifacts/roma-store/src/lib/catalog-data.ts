@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790736215693,
+    "nameAr": "خواتم مفصلية بتصميم أوراق شجر هندسية، طقم من 11 قطعة للنساء، أزياء إبداعية",
+    "slug": "prod-1790736215693",
+    "descriptionAr": "الفئة المستهدفة: النساء، المناسبة: كاجوال، النوع: خواتم",
+    "price": 189,
+    "compareAtPrice": 236,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790736214482_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790736214482_2.jpg",
+      "/uploads/prod_amz_1790736214482_3.jpg",
+      "/uploads/prod_amz_1790736214482_4.jpg",
+      "/uploads/prod_amz_1790736214482_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790736215693",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790736211039,
     "nameAr": "خواتم مفصلية بتصميم أوراق شجر هندسية، طقم من 11 قطعة للنساء، أزياء إبداعية",
     "slug": "prod-1790736211039",
