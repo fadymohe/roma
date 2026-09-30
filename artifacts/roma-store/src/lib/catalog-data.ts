@@ -90,6 +90,33 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732816391,
+    "nameAr": "ساعة يد كلاسيكية للنساء بإطار دائري تصميم عصري للمناسبات الرسمية والكاجوال",
+    "slug": "prod-1790732816391",
+    "descriptionAr": "سمك الهيكل: 10 ملم عرض السوار: 20 ملم نوع مادة السوار: ستانلس ستيل شكل الهيكل: دائري نوع مادة نافذة المينا: هاردليكس مواد الصناديق والحافظات: لا يوجد عبوة قطر المينا: 40 ملم نوع المشبك: مشبك للإغلاق",
+    "price": 200,
+    "compareAtPrice": 250,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790732815483_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790732815483_2.jpg",
+      "/uploads/prod_amz_1790732815483_3.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732816391",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732803066,
     "nameAr": "ساعة إصبع للنساء بعرض تناظري، حلقة كوارتز أنيقة للإصبع",
     "slug": "prod-1790732803066",
