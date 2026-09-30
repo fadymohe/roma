@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790738222975,
+    "nameAr": "طقم شعر استك للنساء من توك، 10قطع، اسود",
+    "slug": "prod-1790738222975",
+    "descriptionAr": "مثالية للاستخدام في روتينك اليومي المعتاد للعناية بشعرك. سهلة التخزين والتنظيف. مصنوعة من مادة عالية الجودة مما يجعلها متينة وتساعدك على رفع شعرك بعيدًا عن وجهك، 10 قطع أساتك متينة.\n\n✨ *أبرز المميزات:*\n• مثالي للاستخدام كجزء من روتينك المعتاد للعناية بالشعر.\n• سهل التخزين والتنظيف.\n• المادة: قماش\n• الفئة المستهدفة: النساء",
+    "price": 21,
+    "compareAtPrice": 26,
+    "category": "العناية بالشعر (Hair Care)",
+    "imageUrl": "/uploads/prod_amz_1790738221742_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790738221742_2.jpg",
+      "/uploads/prod_amz_1790738221742_3.jpg",
+      "/uploads/prod_amz_1790738221742_4.jpg",
+      "/uploads/prod_amz_1790738221742_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790738222975",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790738152733,
     "nameAr": "بيس شيلد من يولو",
     "slug": "prod-1790738152733",
