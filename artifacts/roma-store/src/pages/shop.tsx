@@ -28,7 +28,7 @@ export default function Shop() {
   const [category, setCategory] = useState(getUrlCategory);
   const [search, setSearch] = useState(getUrlSearch);
   const [searchInput, setSearchInput] = useState(getUrlSearch);
-  const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
+  const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating' | 'name-asc'>('featured');
 
   useEffect(() => {
     const syncFromUrl = () => {
@@ -69,21 +69,26 @@ export default function Shop() {
         if (!p) return false;
         const pCat = (p.category || '').toLowerCase();
         const pSlug = (p.slug || '').toLowerCase();
+        const pName = (p.nameAr || '').toLowerCase();
 
-        if (qCat === 'hair-accessories' || qCat.includes('شعر')) return pCat.includes('شعر') || pCat.includes('hair');
-        if (qCat === 'look-accessories' || qCat.includes('إطلالة') || qCat.includes('اطلالة')) return pCat.includes('إطلالة') || pCat.includes('اطلالة') || pCat.includes('look') || pCat.includes('حقيبة') || pCat.includes('نظارة') || pCat.includes('ساعة');
-        if (qCat === 'jewelry' || qCat.includes('مجوهرات') || qCat.includes('عنق') || qCat.includes('يد')) return pCat.includes('مجوهرات') || pCat.includes('ذهب') || pCat.includes('سلسلة') || pCat.includes('خاتم') || pCat.includes('jewelry');
-        if (qCat === 'makeup' || qCat.includes('مكياج') || qCat.includes('شفاه') || qCat.includes('روج')) return pCat.includes('مكياج') || pCat.includes('makeup') || pCat.includes('روج') || pCat.includes('تنت') || pCat.includes('lip');
-        if (qCat === 'body-care' || qCat.includes('جسم') || qCat.includes('نعومة') || qCat.includes('بشرة') || qCat.includes('عناية')) return pCat.includes('جسم') || pCat.includes('body') || pCat.includes('نعومة') || pCat.includes('عناية') || pCat.includes('skin');
-        if (qCat === 'perfumes' || qCat.includes('عطر') || qCat.includes('عطور')) return pCat.includes('عطر') || pCat.includes('perfume') || pCat.includes('fragrance');
-
-        // Legacy aliases
-        if (qCat === 'face' || qCat.includes('وجه')) return pCat.includes('وجه') || pCat.includes('face') || pCat.includes('مكياج');
-        if (qCat === 'serum' || qCat.includes('سيروم')) return pCat.includes('سيروم') || pCat.includes('serum');
-        if (qCat === 'skincare') return pCat.includes('عناية') || pCat.includes('skin');
-        if (qCat === 'moisturizers') return pCat.includes('مرطب') || pCat.includes('moisturizer');
-        if (qCat === 'lips') return pCat.includes('شفاه') || pCat.includes('lip');
-        if (qCat === 'accessories') return pCat.includes('إكسسوار') || pCat.includes('accessory');
+        if (qCat === 'hair-accessories' || qCat.includes('شعر')) {
+          return pCat.includes('إكسسوارات الشعر') || pCat === 'hair-accessories' || /توك|توكة|توكه|ربط(ة|ه|ات)\s*شعر|استك|طوق|شريط\s*ر(أ|ا)س|عصاب|مشبك|مشابك|شابك|كليبس|بندان|باندانا|سكرانشي|scrunch|فيونك|كلبس|بنس|هير\s*بيس|دبابيس|مشط|تاج/i.test(pName);
+        }
+        if (qCat === 'look-accessories' || qCat.includes('إطلالة') || qCat.includes('اطلالة')) {
+          return pCat.includes('إكسسوارات الإطلالة') || pCat === 'look-accessories' || /حزام|أحزمة|احزمة|نظار|حقيب|شنط|محفظ|محافظ|ساع(ة|ه|ات)|watch|bag|handbag|crossbody|سكارف|شال|إشارب|ايشارب|كاب|قبع|إبزيم|ابزيم|بروش/i.test(pName);
+        }
+        if (qCat === 'jewelry' || qCat.includes('مجوهرات') || qCat.includes('عنق') || qCat.includes('يد')) {
+          return (pCat.includes('مجوهرات اليد والعنق') || pCat === 'jewelry') && !/حزام|احزمة/i.test(pName) || (!/حزام|احزمة/i.test(pName) && /سلسل|سلاسل|قلاد|عقد|كولي|خاتم|خواتم|اسور|أساور|سوار|انسيال|حلق|أقراط|اقراط|خلخال|خلاخل|دلاي|زركون|لؤلؤ/i.test(pName));
+        }
+        if (qCat === 'makeup' || qCat.includes('مكياج') || qCat.includes('شفاه') || qCat.includes('روج')) {
+          return pCat.includes('المكياج والجمال') || pCat === 'makeup' || /روج|أحمر\s*(شفاه|خدود)|احمر\s*(شفاه|خدود)|شفاه|ليب|lip|مسكر|ماسكارا|mascara|كحل|ايلاينر|آيلاينر|محدد|طلاء\s*أظافر|مانيكير|اظافر|أظافر|بلاشر|بلش|مورد|كونسيلر|فاونديشن|كريم\s*اساس|بودر|ايشادو|ظلال|هايلايتر|كونتور|برايمر|مكياج|makeup|فرش\s*مكياج|بيوتي\s*بلندر|منظم\s*مكياج|رموش|يولو|توب\s*كوت|بيس\s*شيلد|شيجلام|sheglam/i.test(pName);
+        }
+        if (qCat === 'body-care' || qCat.includes('جسم') || qCat.includes('نعومة') || qCat.includes('بشرة') || qCat.includes('عناية')) {
+          return pCat.includes('العناية بالجسم') || pCat === 'body-care' || (!/توك|حزام|سلسل|روج|عطر/i.test(pName) && /لوشن|مرطب|كريم|غسول|سيروم|زيت|مقشر|سكراب|صابون|شاور|ماسك|قناع|فازلين|مزيل\s*عرق|ديودورنت|جل\s*الصبار|واقي\s*شمس|صن\s*بلوك|شامبو|بلسم|عناية/i.test(pName));
+        }
+        if (qCat === 'perfumes' || qCat.includes('عطر') || qCat.includes('عطور')) {
+          return pCat.includes('العطور الفاخرة') || pCat === 'perfumes' || /عطر|عطور|برفان|بارفيوم|parfum|perfume|مسك|عود|بخور|كولونيا|او\s*(دي|دو)|eau\s*d|بودي\s*ميست|رذاذ/i.test(pName);
+        }
 
         return pCat.includes(qCat) || pSlug.includes(qCat);
       });
@@ -105,6 +110,8 @@ export default function Shop() {
       list.sort((a, b) => b.price - a.price);
     } else if (sortBy === 'rating') {
       list.sort((a, b) => b.rating - a.rating);
+    } else if (sortBy === 'name-asc') {
+      list.sort((a, b) => (a.nameAr || '').localeCompare(b.nameAr || '', 'ar'));
     }
 
     return list;
@@ -207,6 +214,7 @@ export default function Shop() {
               className="appearance-none rounded-xl border border-white/10 bg-[#141414] py-2 pl-8 pr-4 text-xs font-semibold text-white outline-none focus:border-[#D4A5A5] cursor-pointer"
             >
               <option value="featured" className="bg-[#141414] text-white">{isAr ? 'الأكثر تميزاً' : 'Featured'}</option>
+              <option value="name-asc" className="bg-[#141414] text-white">{isAr ? 'الترتيب: أبجدياً (أ - ي)' : 'Name: A to Z'}</option>
               <option value="price-low" className="bg-[#141414] text-white">{isAr ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
               <option value="price-high" className="bg-[#141414] text-white">{isAr ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
               <option value="rating" className="bg-[#141414] text-white">{isAr ? 'الأعلى تقييماً' : 'Highest Rated'}</option>

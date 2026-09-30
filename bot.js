@@ -277,20 +277,16 @@ function getCategoryKeyboard() {
   return {
     inline_keyboard: [
       [
-        { text: '💆‍♀️ العناية بالشعر (Hair Care)', callback_data: 'cat_العناية بالشعر (Hair Care)' },
-        { text: '✨ العناية بالبشرة والوجه', callback_data: 'cat_العناية بالبشرة (Skincare)' },
+        { text: '🎀 إكسسوارات الشعر', callback_data: 'cat_إكسسوارات الشعر' },
+        { text: '👜 إكسسوارات الإطلالة', callback_data: 'cat_إكسسوارات الإطلالة' },
       ],
       [
-        { text: '💧 سيروم وزيوت (Serums & Oils)', callback_data: 'cat_سيروم وزيوت (Serums & Oils)' },
-        { text: '🧴 مرطبات وعناية (Moisturizers)', callback_data: 'cat_مرطبات (Moisturizers)' },
+        { text: '💎 مجوهرات اليد والعنق', callback_data: 'cat_مجوهرات اليد والعنق' },
+        { text: '💄 المكياج والجمال', callback_data: 'cat_المكياج والجمال' },
       ],
       [
-        { text: '💄 المكياج والجمال (Makeup)', callback_data: 'cat_المكياج والجمال (Makeup)' },
-        { text: '🌸 العناية بالجسم والنعومة', callback_data: 'cat_العناية بالجسم (Body Care)' },
-      ],
-      [
-        { text: '👑 العطور الفاخرة (Perfumes)', callback_data: 'cat_العطور الفاخرة (Perfumes)' },
-        { text: '💎 مجوهرات وإكسسوارات', callback_data: 'cat_إكسسوارات ومجوهرات (Accessories)' },
+        { text: '🌸 العناية بالجسم والنعومة', callback_data: 'cat_العناية بالجسم والنعومة' },
+        { text: '👑 العطور الفاخرة', callback_data: 'cat_العطور الفاخرة' },
       ],
     ],
   };
@@ -1285,8 +1281,20 @@ async function handleAmazonImport(chatId, userId, rawUrl) {
 
     // Save locally and trigger git auto-push
     const products = getProducts();
-    products.unshift(newProduct);
-    saveProducts(products, `Auto-import Amazon product: ${newProduct.nameAr}`);
+    const normTitle = (newProduct.nameAr || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const existingIndex = products.findIndex((p) => (p.nameAr || '').trim().replace(/\s+/g, ' ').toLowerCase() === normTitle);
+
+    if (existingIndex !== -1) {
+      products[existingIndex] = {
+        ...products[existingIndex],
+        ...newProduct,
+        id: products[existingIndex].id,
+      };
+      saveProducts(products, `Auto-update Amazon product: ${newProduct.nameAr}`);
+    } else {
+      products.unshift(newProduct);
+      saveProducts(products, `Auto-import Amazon product: ${newProduct.nameAr}`);
+    }
 
     // Insert into Supabase database
     try {
@@ -1402,8 +1410,20 @@ async function finalizeProduct(chatId, userId, session) {
   };
 
   const products = getProducts();
-  products.unshift(newProduct);
-  saveProducts(products, `Add product ${newProduct.nameAr} with ${allImages.length} images`);
+  const normTitle = (newProduct.nameAr || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  const existingIndex = products.findIndex((p) => (p.nameAr || '').trim().replace(/\s+/g, ' ').toLowerCase() === normTitle);
+
+  if (existingIndex !== -1) {
+    products[existingIndex] = {
+      ...products[existingIndex],
+      ...newProduct,
+      id: products[existingIndex].id,
+    };
+    saveProducts(products, `Update product: ${newProduct.nameAr}`);
+  } else {
+    products.unshift(newProduct);
+    saveProducts(products, `Add product ${newProduct.nameAr} with ${allImages.length} images`);
+  }
 
   // Also insert into Supabase products table
   try {

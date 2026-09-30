@@ -31,58 +31,37 @@ function stripHtml(html) {
   );
 }
 
-// Category Classifier
-function classifyCategory(breadcrumbs, title, description) {
-  const combined = `${breadcrumbs.join(' ')} ${title} ${description}`.toLowerCase();
+// Category Classifier by Product Name / Title
+export function classifyCategory(breadcrumbs, title, description) {
+  const n = `${title || ''}`.toLowerCase();
 
-  const rules = [
-    {
-      category: 'العناية بالشعر (Hair Care)',
-      keywords: ['شعر', 'hair', 'شامبو', 'بلسم', 'شامبو وبلسم', 'shampoo', 'conditioner', 'تساقط الشعر', 'فروة', 'صبغة'],
-    },
-    {
-      category: 'سيروم وزيوت (Serums & Oils)',
-      keywords: ['سيروم', 'serum', 'زيت أرغان', 'زيت ارجان', 'زيوت', 'oil', 'امبولات', 'إكسير', 'أكسير'],
-    },
-    {
-      category: 'مرطبات (Moisturizers)',
-      keywords: ['مرطب', 'ترطيب', 'لوشن', 'moisturizer', 'كريم ترطيب', 'كريم اليدين', 'كريم مرطب', 'lip balm', 'بلسم شفاه', 'فازلين'],
-    },
-    {
-      category: 'المكياج والجمال (Makeup)',
-      keywords: [
-        'مكياج', 'makeup', 'منظم مكياج', 'خزائن عرض المكياج', 'روج', 'احمر شفاه', 'أحمر شفاه',
-        'lipstick', 'مسكرة', 'ماسكارا', 'mascara', 'كونسيلر', 'كريم اساس', 'بودرة', 'ايلاينر',
-        'بلاشر', 'ظلال', 'فرش مكياج', 'إسفنجة مكياج'
-      ],
-    },
-    {
-      category: 'العناية بالجسم (Body Care)',
-      keywords: ['جسم', 'body', 'شاور', 'شاور جل', 'shower', 'صابون', 'صابونية', 'معطر جسم', 'مقشر جسم', 'سكراب جسم', 'مزيل عرق', 'ديودورنت'],
-    },
-    {
-      category: 'العطور الفاخرة (Perfumes)',
-      keywords: ['عطر', 'برفان', 'بارفيوم', 'perfume', 'parfum', 'مسك', 'عود', 'بخور', 'تواليت', 'كولونيا', 'معطر جو'],
-    },
-    {
-      category: 'إكسسوارات ومجوهرات (Accessories)',
-      keywords: ['إكسسوار', 'اكسسوار', 'مجوهرات', 'ساعة', 'خاتم', 'سلسلة', 'عقد', 'حلق', 'شنطة', 'حقيبة', 'محفظة'],
-    },
-    {
-      category: 'العناية بالبشرة (Skincare)',
-      keywords: ['بشرة', 'بشره', 'skin', 'skincare', 'وجه', 'face', 'غسول', 'ماسك', 'قناع', 'واقي شمس', 'sunscreen', 'sunblock', 'تقشير', 'تونر', 'toner'],
-    },
-  ];
-
-  for (const rule of rules) {
-    for (const kw of rule.keywords) {
-      if (combined.includes(kw.toLowerCase())) {
-        return rule.category;
-      }
-    }
+  // 1. Hair Accessories (إكسسوارات الشعر)
+  if (/توك|توكة|توكه|ربط(ة|ه|ات)\s*شعر|استك|طوق|أطواق|اطواق|شريط\s*ر(أ|ا)س|عصاب|مشبك|مشابك|شابك|كليبس|بندان|باندانا|سكرانشي|scrunch|فيونك|كلبس|بنس|هير\s*بيس|دبابيس|مشط|تاج/i.test(n)) {
+    return 'إكسسوارات الشعر';
   }
 
-  return 'العناية بالبشرة (Skincare)';
+  // 2. Look Accessories (إكسسوارات الإطلالة - احزمة، شنط، نظارات، ساعات، شالات)
+  if (/حزام|أحزمة|احزمة|نظار|حقيب|شنط|محفظ|محافظ|ساع(ة|ه|ات)|watch|bag|handbag|crossbody|سكارف|شال|شالات|إشارب|ايشارب|كاب|قبع|إبزيم|ابزيم|بروش/i.test(n)) {
+    return 'إكسسوارات الإطلالة';
+  }
+
+  // 3. Hand & Neck Jewelry (مجوهرات اليد والعنق - سلاسل، خواتم، اساور، اقراط)
+  if (/سلسل|سلاسل|قلاد|عقد|كولي|خاتم|خواتم|اسور|أساور|سوار|انسيال|حلق|أقراط|اقراط|خلخال|خلاخل|دلاي|مجوهرات|زركون|لؤلؤ/i.test(n)) {
+    return 'مجوهرات اليد والعنق';
+  }
+
+  // 4. Luxury Perfumes (العطور الفاخرة)
+  if (/عطر|عطور|برفان|بارفيوم|parfum|perfume|مسك|عود|بخور|كولونيا|او\s*(دي|دو)|eau\s*d|بودي\s*ميست|رذاذ\s*العطر/i.test(n)) {
+    return 'العطور الفاخرة';
+  }
+
+  // 5. Makeup & Beauty (المكياج والجمال)
+  if (/روج|أحمر\s*(شفاه|خدود)|احمر\s*(شفاه|خدود)|شفاه|ليب|lip|مسكر|ماسكارا|mascara|كحل|ايلاينر|آيلاينر|محدد|طلاء\s*أظافر|طلاء\s*اظافر|مانيكير|اظافر|أظافر|بلاشر|بلش|مورد|كونسيلر|فاونديشن|كريم\s*اساس|بودر|ايشادو|ظلال|هايلايتر|كونتور|برايمر|مكياج|makeup|فرش\s*مكياج|بيوتي\s*بلندر|منظم\s*مكياج|رموش|يولو|توب\s*كوت|بيس\s*شيلد|شيجلام|sheglam/i.test(n)) {
+    return 'المكياج والجمال';
+  }
+
+  // 6. Body & Skin Care (العناية بالجسم والنعومة)
+  return 'العناية بالجسم والنعومة';
 }
 
 // Fetch Amazon HTML using curl.exe directly via execFile (no shell expansion bugs)

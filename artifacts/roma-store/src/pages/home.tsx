@@ -15,14 +15,29 @@ export default function Home() {
 
   // Filter products based on selected tab pill
   const displayedProducts = featuredProducts.filter((p) => {
+    if (!p) return false;
     if (activeCategory === 'all') return true;
     const cat = (p.category || '').toLowerCase();
-    if (activeCategory === 'hair-accessories') return cat.includes('شعر') || cat.includes('hair');
-    if (activeCategory === 'look-accessories') return cat.includes('إطلالة') || cat.includes('اطلالة') || cat.includes('look') || cat.includes('حقيبة') || cat.includes('نظارة') || cat.includes('ساعة') || cat.includes('إكسسوار') || cat.includes('اكسسوار') || cat.includes('accessories');
-    if (activeCategory === 'jewelry') return cat.includes('مجوهرات') || cat.includes('ذهب') || cat.includes('سلسلة') || cat.includes('قلادة') || cat.includes('خاتم') || cat.includes('jewelry');
-    if (activeCategory === 'makeup') return cat.includes('مكياج') || cat.includes('شفاه') || cat.includes('روج') || cat.includes('تنت') || cat.includes('makeup');
-    if (activeCategory === 'body-care') return cat.includes('جسم') || cat.includes('نعومة') || cat.includes('عناية') || cat.includes('body');
-    if (activeCategory === 'perfumes') return cat.includes('عطر') || cat.includes('عطور') || cat.includes('perfume');
+    const name = (p.nameAr || '').toLowerCase();
+
+    if (activeCategory === 'hair-accessories') {
+      return cat.includes('إكسسوارات الشعر') || cat === 'hair-accessories' || /توك|توكة|توكه|ربط(ة|ه|ات)\s*شعر|استك|طوق|شريط\s*ر(أ|ا)س|عصاب|مشبك|مشابك|شابك|كليبس|بندان|باندانا|سكرانشي|scrunch|فيونك|كلبس|بنس|هير\s*بيس|دبابيس|مشط|تاج/i.test(name);
+    }
+    if (activeCategory === 'look-accessories') {
+      return cat.includes('إكسسوارات الإطلالة') || cat === 'look-accessories' || /حزام|أحزمة|احزمة|نظار|حقيب|شنط|محفظ|محافظ|ساع(ة|ه|ات)|watch|bag|handbag|crossbody|سكارف|شال|إشارب|ايشارب|كاب|قبع|إبزيم|ابزيم|بروش/i.test(name);
+    }
+    if (activeCategory === 'jewelry') {
+      return (cat.includes('مجوهرات اليد والعنق') || cat === 'jewelry') && !/حزام|احزمة/i.test(name) || (!/حزام|احزمة/i.test(name) && /سلسل|سلاسل|قلاد|عقد|كولي|خاتم|خواتم|اسور|أساور|سوار|انسيال|حلق|أقراط|اقراط|خلخال|خلاخل|دلاي|زركون|لؤلؤ/i.test(name));
+    }
+    if (activeCategory === 'makeup') {
+      return cat.includes('المكياج والجمال') || cat === 'makeup' || /روج|أحمر\s*(شفاه|خدود)|احمر\s*(شفاه|خدود)|شفاه|ليب|lip|مسكر|ماسكارا|mascara|كحل|ايلاينر|آيلاينر|محدد|طلاء\s*أظافر|مانيكير|اظافر|أظافر|بلاشر|بلش|مورد|كونسيلر|فاونديشن|كريم\s*اساس|بودر|ايشادو|ظلال|هايلايتر|كونتور|برايمر|مكياج|makeup|فرش\s*مكياج|بيوتي\s*بلندر|منظم\s*مكياج|رموش|يولو|توب\s*كوت|بيس\s*شيلد|شيجلام|sheglam/i.test(name);
+    }
+    if (activeCategory === 'body-care') {
+      return cat.includes('العناية بالجسم') || cat === 'body-care' || (!/توك|حزام|سلسل|روج|عطر/i.test(name) && /لوشن|مرطب|كريم|غسول|سيروم|زيت|مقشر|سكراب|صابون|شاور|ماسك|قناع|فازلين|مزيل\s*عرق|ديودورنت|جل\s*الصبار|واقي\s*شمس|صن\s*بلوك|شامبو|بلسم|عناية/i.test(name));
+    }
+    if (activeCategory === 'perfumes') {
+      return cat.includes('العطور الفاخرة') || cat === 'perfumes' || /عطر|عطور|برفان|بارفيوم|parfum|perfume|مسك|عود|بخور|كولونيا|او\s*(دي|دو)|eau\s*d|بودي\s*ميست|رذاذ/i.test(name);
+    }
     return cat.includes(activeCategory);
   });
 
