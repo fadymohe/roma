@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790733328670,
+    "nameAr": "LC واكيكي شنطة كتف للنساء من الجلد الصناعي",
+    "slug": "prod-1790733328670",
+    "descriptionAr": "LC واكيكي حقائب اكسسوارات - للنساء",
+    "price": 659,
+    "compareAtPrice": 824,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790733327514_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790733327514_2.jpg",
+      "/uploads/prod_amz_1790733327514_3.jpg",
+      "/uploads/prod_amz_1790733327514_4.jpg",
+      "/uploads/prod_amz_1790733327514_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790733328670",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790733324081,
     "nameAr": "LC واكيكي شنطة كتف للنساء من الجلد الصناعي",
     "slug": "prod-1790733324081",
