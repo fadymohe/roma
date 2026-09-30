@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790733554682,
+    "nameAr": "شنطة كتف توت للنساء من ايه ار باجز مع جيوب متعددة، شنطة يد بسحاب للاغلاق للعمل والجامعة والاستخدام اليومي",
+    "slug": "prod-1790733554682",
+    "descriptionAr": "مستحضر فاخر عالي الجودة متوفر لدى متجر روما، مصمم بتركيبة مميزة وآمنة تلبي احتياجاتك اليومية بعناية فائقة.",
+    "price": 399,
+    "compareAtPrice": 499,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790733553276_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790733553276_2.jpg",
+      "/uploads/prod_amz_1790733553276_3.jpg",
+      "/uploads/prod_amz_1790733553276_4.jpg",
+      "/uploads/prod_amz_1790733553276_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790733554682",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790733550559,
     "nameAr": "شنطة كتف انيقة وعملية للنساء - شنطة يد عصرية للاستخدام اليومي. مقاس - H60",
     "slug": "prod-1790733550559",
