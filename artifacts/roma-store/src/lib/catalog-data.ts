@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790735631210,
+    "nameAr": "شنطه يد كروس محفظه",
+    "slug": "prod-1790735631210",
+    "descriptionAr": "شنطه يد كروس محفظه صغيره",
+    "price": 190,
+    "compareAtPrice": 238,
+    "category": "العناية بالجسم (Body Care)",
+    "imageUrl": "/uploads/prod_amz_1790735630712_1.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790735631210",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790735625723,
     "nameAr": "شنطة كروس للنساء من الجلد الطبيعي بحزام عريض، شنطة كتف بتصميم عصري للكاميرا بسوستة علوية",
     "slug": "prod-1790735625723",
