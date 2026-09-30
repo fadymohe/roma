@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790735688998,
+    "nameAr": "حلق فينيكس ذهبي للنساء – أقراط بشكل جناح الطائر ستايل مميز Statement أنيق",
+    "slug": "prod-1790735688998",
+    "descriptionAr": "أضيفي لمظهرك لمسة فريدة تعبّر عن القوة والجمال مع حلق بتصميم جناح طائر الفينيكس الأسطوري، رمز التجدد والتألق. تصميمه الجريء والأنيق يجعله قطعة لافتة تخطف الأنظار من أول نظرة.",
+    "price": 550,
+    "compareAtPrice": 688,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790735687383_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790735687383_2.jpg",
+      "/uploads/prod_amz_1790735687383_3.jpg",
+      "/uploads/prod_amz_1790735687383_4.jpg",
+      "/uploads/prod_amz_1790735687383_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790735688998",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790735684038,
     "nameAr": "شنطة كروس للنساء من تشانس - 442",
     "slug": "prod-1790735684038",
