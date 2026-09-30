@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790736228648,
+    "nameAr": "خاتم زفاف كلاسيكي بلون ذهبي رفيع بعرض رفيع للنساء لحفلات الزفاف والخطوبة واكسسوارات المجوهرات",
+    "slug": "prod-1790736228648",
+    "descriptionAr": "خاتم زفاف كلاسيكي بلون ذهبي رفيع بعرض رفيع للنساء لحفلات الزفاف والخطوبة واكسسوارات المجوهرات",
+    "price": 129,
+    "compareAtPrice": 161,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790736227227_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790736227227_2.jpg",
+      "/uploads/prod_amz_1790736227227_3.jpg",
+      "/uploads/prod_amz_1790736227227_4.jpg",
+      "/uploads/prod_amz_1790736227227_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790736228648",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790736223887,
     "nameAr": "خاتم مفتوح على شكل قلب قابل للتعديل للنساء، مزين بكريستالات زركونيا، مثالي للخطوبة، وذكرى الزواج، وكهدية لمناسبات متنوعة ، عيد الحب، عيد الميلاد، من فيروز جوليري.",
     "slug": "prod-1790736223887",
