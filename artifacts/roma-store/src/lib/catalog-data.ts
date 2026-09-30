@@ -90,6 +90,34 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790738381651,
+    "nameAr": "بنس شعر كارت-28 قطعه",
+    "slug": "prod-1790738381651",
+    "descriptionAr": "منتجات عاليه الجوده بالوان واشكال انيقه\n\n✨ *أبرز المميزات:*\n• العلامة التجارية: بوب بين\n• رقم المصنّع: 11111111111239\n• النوع: زهور ودبابيس شعر",
+    "price": 15,
+    "compareAtPrice": 19,
+    "category": "العناية بالشعر (Hair Care)",
+    "imageUrl": "/uploads/prod_amz_1790738380557_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790738380557_2.jpg",
+      "/uploads/prod_amz_1790738380557_3.jpg",
+      "/uploads/prod_amz_1790738380557_4.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790738381651",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790738370900,
     "nameAr": "12 مشبك شعر معدني قابل للثني ملون للأطفال - صغيرة الحجم مقاس 4 سم، اكسسوارات شعر للفتيات من ماي توب تريندز® (صغيرة، أسود)",
     "slug": "prod-1790738370900",
