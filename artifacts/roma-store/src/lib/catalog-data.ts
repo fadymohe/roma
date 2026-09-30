@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732552014,
+    "nameAr": "ساعة للنساء مزينة بأحجار الراين، بسوار قطعة واحدة وعرض تناظري",
+    "slug": "prod-1790732552014",
+    "descriptionAr": "الفئة المستهدفة: النساء، المناسبة: كاجوال، النوع: ساعة",
+    "price": 299,
+    "compareAtPrice": 374,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790732551093_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790732551093_2.jpg",
+      "/uploads/prod_amz_1790732551093_3.jpg",
+      "/uploads/prod_amz_1790732551093_4.jpg",
+      "/uploads/prod_amz_1790732551093_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732552014",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732544496,
     "nameAr": "مجموعة ساعات كوارتز فاخرة انيقة للنساء من 4 قطع، مقترنة بمجوهرات فضية (تتضمن 1 ساعة يد بأرقام رومانية مرصعة بالماس (ذهبي)",
     "slug": "prod-1790732544496",
