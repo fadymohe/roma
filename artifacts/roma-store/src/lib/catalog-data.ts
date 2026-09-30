@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790738857194,
+    "nameAr": "طقم فيونكة شعر للنساء",
+    "slug": "prod-1790738857194",
+    "descriptionAr": "تم تصميمه وفقًا لمعايير الصناعة السائدة، وهو يحقق درجات عالية في جانب المنفعة. المادة عالية الجودة المستخدمة في هيكلها تجعلها متينة.\n\n✨ *أبرز المميزات:*\n• فئة المنتج: منتج العناية بالشعر\n• طقم فيونكة شعر للنساء\n• وظائف سلسة\n• تصميم أنيق",
+    "price": 65,
+    "compareAtPrice": 81,
+    "category": "العناية بالشعر (Hair Care)",
+    "imageUrl": "/uploads/prod_amz_1790738854988_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790738854988_2.jpg",
+      "/uploads/prod_amz_1790738854988_3.jpg",
+      "/uploads/prod_amz_1790738854988_4.jpg",
+      "/uploads/prod_amz_1790738854988_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790738857194",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790738841774,
     "nameAr": "مشابك شعر للبنات بتصميمات متعددة من دافني، 11 قطعة - متعددة الألوان - طقم من 2 قطعة",
     "slug": "prod-1790738841774",
