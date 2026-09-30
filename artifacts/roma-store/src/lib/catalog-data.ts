@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790739165623,
+    "nameAr": "شريط رأس رياضي أسود معدني للجنسين من اويم، شريط رأس طويل للشعر الأسود للرجال والنساء",
+    "slug": "prod-1790739165623",
+    "descriptionAr": "شريط رأس رياضي أسود معدني للجنسين من او اي ام، شريط رأس طويل للشعر الأسود للرجال والنساء\n\n✨ *أبرز المميزات:*\n• العلامة التجارية: -\n• النوع: طوق رأس.",
+    "price": 23,
+    "compareAtPrice": 29,
+    "category": "العناية بالشعر (Hair Care)",
+    "imageUrl": "/uploads/prod_amz_1790739164740_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790739164740_2.jpg",
+      "/uploads/prod_amz_1790739164740_3.jpg",
+      "/uploads/prod_amz_1790739164740_4.jpg",
+      "/uploads/prod_amz_1790739164740_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790739165623",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790739160125,
     "nameAr": "كارت توك شعر أطفال بتصميمات كيوت ملونة - 6 قطع",
     "slug": "prod-1790739160125",
