@@ -1,5 +1,34 @@
 [
   {
+    "id": 1790732454832,
+    "nameAr": "ساعة يد للنساء من ريس بمينا اخضر R2054-LGN",
+    "slug": "prod-1790732454832",
+    "descriptionAr": "ساعات ريس هي علامة تجارية عصرية من داش ووتشز",
+    "price": 2200,
+    "compareAtPrice": 2750,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790732453596_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790732453596_2.jpg",
+      "/uploads/prod_amz_1790732453596_3.jpg",
+      "/uploads/prod_amz_1790732453596_4.jpg",
+      "/uploads/prod_amz_1790732453596_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732454832",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732419364,
     "nameAr": "او دو برفان سوبريماسي كوليكتورز من افنان 100 مل",
     "slug": "prod-1790732419364",
