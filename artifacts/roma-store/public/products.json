@@ -1,5 +1,33 @@
 [
   {
+    "id": 1790729972227,
+    "nameAr": "Nuveracosmetics Whitening Roll on Duo Deodorant Sweets 60ml",
+    "slug": "prod-1790729972227",
+    "descriptionAr": "Introducing the Nuveracosmetics Whitening Roll on Duo in the delightful Sweets scent — a powerful 3-in-1 deodorant, whitening, and moisturising solution packed into a convenient 60ml roll-on. Formulated with a potent blend of Alpha Arbutin and Niacinamide, this roll-on works to visibly brighten and even out underarm skin tone with regular use. Enriched with Licorice Extract and Zn Ricinoleate, it helps neutralise odour while keeping skin feeling soft and nourished throughout the day. Enjoy up to 48 hours of advanced protection, so you can stay fresh and confident from morning to night. The paraben-free formula makes it a thoughtful choice for those who prefer cleaner beauty products. Whether you are heading to work or a social gathering, this roll-on delivers reliable freshness and a subtle, sweet fragrance. Simply apply to clean, dry underarms for best results. A must-have addition to your daily grooming routine.\n\n✨ *أبرز المميزات:*\n• DUAL-ACTION FORMULA: Combines Alpha Arbutin and Niacinamide to help visibly brighten and even out underarm skin tone.\n• 48-HOUR ADVANCED PROTECTION: Provides long-lasting deodorant protection for up to 48 hours, keeping you fresh all day.\n• SKIN-NOURISHING INGREDIENTS: Enriched with Licorice Extract and Zn Ricinoleate to moisturise and care for delicate underarm skin.\n• PARABEN-FREE FORMULA: Free from parabens, making it a gentle choice suitable for everyday use on sensitive skin.\n• CONVENIENT ROLL-ON: Easy-to-use 60ml roll-on applicator delivers a smooth, even application with a sweet scent.",
+    "price": 180,
+    "compareAtPrice": 225,
+    "category": "العناية بالجسم (Body Care)",
+    "imageUrl": "/uploads/prod_amz_1790729971860_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790729971860_2.jpg",
+      "/uploads/prod_amz_1790729971860_3.jpg",
+      "/uploads/prod_amz_1790729971860_4.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790729972227",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790729959130,
     "nameAr": "مرطب جل كريم سيبيو كونترول من نوفيراكوزميتيكس، موازنة الزيت، يتكون من خليط الزنك بي سي ايه ومركب سيراميد للتحكم في اللمعان، 50 مل",
     "slug": "prod-1790729959130",
