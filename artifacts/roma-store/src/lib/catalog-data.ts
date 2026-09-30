@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790732461047,
+    "nameAr": "ساعة يد للنساء من ريس بمينا فضي R2055-TRS",
+    "slug": "prod-1790732461047",
+    "descriptionAr": "ساعات ريس هي علامة تجارية عصرية من داش ووتشز",
+    "price": 2575,
+    "compareAtPrice": 3219,
+    "category": "إكسسوارات ومجوهرات (Accessories)",
+    "imageUrl": "/uploads/prod_amz_1790732460677_1.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790732461047",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790732454832,
     "nameAr": "ساعة يد للنساء من ريس بمينا اخضر R2054-LGN",
     "slug": "prod-1790732454832",
