@@ -90,6 +90,35 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790735597949,
+    "nameAr": "Roulens Small Crossbody Bag for Women,Cell Phone Purse Women's Shoulder Handbags Wallet Purse with Credit Card Slots",
+    "slug": "prod-1790735597949",
+    "descriptionAr": "ROULENS Other Information Weight: 0.68lb Size: 7.6\"(19.5cm)L x 2\"(5cm)W x 4.8\"(12cm)H Style: Crossbody Bag/Cell Phone Crossbody Purses/Wallet Purse/Shoulder Bag/Handbags Capacity: The size design is enough to hold everything you need for everyday use, such as phones, wallets, napkin paper, lipsticks, coins, cards, keys, etc. This crossbody phone wallet comes with a removable and adjustable single shoulder strap, it can work as a crossbody bag or single shoulder bag.",
+    "price": 450,
+    "compareAtPrice": 563,
+    "category": "المكياج والجمال (Makeup)",
+    "imageUrl": "/uploads/prod_amz_1790735597323_1.jpg",
+    "additionalImages": [
+      "/uploads/prod_amz_1790735597323_2.jpg",
+      "/uploads/prod_amz_1790735597323_3.jpg",
+      "/uploads/prod_amz_1790735597323_4.jpg",
+      "/uploads/prod_amz_1790735597323_5.jpg"
+    ],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790735597949",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790735594850,
     "nameAr": "Roulens Small Crossbody Bag for Women,Cell Phone Purse Women's Shoulder Handbags Wallet Purse with Credit Card Slots",
     "slug": "prod-1790735594850",
