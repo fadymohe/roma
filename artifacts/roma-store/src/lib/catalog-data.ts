@@ -90,6 +90,30 @@ export const CATEGORIES: Category[] = [
 
 export const PRODUCTS: Product[] = [
   {
+    "id": 1790735561593,
+    "nameAr": "شنطة وتربروف للنساء يد وكروس و كتف مقدمة من تشانس - 460",
+    "slug": "prod-1790735561593",
+    "descriptionAr": "شنطة مصنوعة من افضل خامات الوتربروف درجة اولى ممكن تتلبس كتف و كروس و يد و معاها بوك للمفاتيح او الكوينز شنطة خفيفة فى الوزن و شيك جدا مقاسها مناسب و واسعة و تشيل حاجات كتير",
+    "price": 495,
+    "compareAtPrice": 619,
+    "category": "العناية بالجسم (Body Care)",
+    "imageUrl": "/uploads/prod_amz_1790735561419_1.jpg",
+    "additionalImages": [],
+    "rating": 5,
+    "reviewCount": 1,
+    "badge": "جديد",
+    "stock": 50,
+    "variants": [
+      {
+        "id": 1,
+        "nameAr": "الحجم القياسي",
+        "hex": "#D4A5A5",
+        "sku": "RM-1790735561593",
+        "stock": 50
+      }
+    ]
+  },
+  {
     "id": 1790735550548,
     "nameAr": "شنطة وتربروف للنساء يد وكروس و كتف مقدمة من تشانس - 460",
     "slug": "prod-1790735550548",
