@@ -138,7 +138,7 @@ export default function Shop() {
   };
 
   const categoryFilters = [
-    { id: '', label: isAr ? 'جميع المستحضرات' : 'All Products' },
+    { id: '', label: isAr ? 'جميع المنتجات' : 'All Products' },
     { id: 'hair-accessories', label: isAr ? 'إكسسوارات الشعر' : 'Hair Accessories' },
     { id: 'look-accessories', label: isAr ? 'إكسسوارات الإطلالة' : 'Look Accessories' },
     { id: 'jewelry', label: isAr ? 'مجوهرات اليد والعنق' : 'Jewelry' },
@@ -161,10 +161,10 @@ export default function Shop() {
         </p>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-white/10 pb-6">
-        {/* Category Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap py-2">
+      {/* Filter and Search Section */}
+      <div className="mb-8 space-y-4 border-b border-white/10 pb-6">
+        {/* Category Filter Pills - Full width flex-wrap to ensure every category is completely visible */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           {categoryFilters.map((f) => {
             const active = category === f.id;
             return (
@@ -172,10 +172,10 @@ export default function Shop() {
                 type="button"
                 key={f.id}
                 onClick={() => handleCategoryChange(f.id)}
-                className={`shrink-0 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm ${
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95 ${
                   active
-                    ? 'bg-[#D4A5A5] text-[#0A0A0A]'
-                    : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white'
+                    ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md ring-2 ring-[#D4A5A5]/40'
+                    : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white hover:border-white/20'
                 }`}
               >
                 {f.label}
@@ -184,42 +184,52 @@ export default function Shop() {
           })}
         </div>
 
-        {/* Search & Sort Controls */}
-        <div className="flex items-center gap-3">
-          <form onSubmit={handleSearchSubmit} className="relative flex-1 sm:w-64">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={t('nav.search_placeholder')}
-              className="w-full rounded-xl border border-white/10 bg-[#141414] py-2 pl-9 pr-4 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[#A1A1AA]" />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A1A1AA] hover:text-white"
-              >
-                <X className="size-3.5" />
-              </button>
+        {/* Search & Sort Controls Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+          <div className="text-xs text-zinc-400 font-medium">
+            {isAr ? (
+              <span>إجمالي المعروض: <strong className="text-white font-bold">{products.length}</strong> منتج</span>
+            ) : (
+              <span>Total: <strong className="text-white font-bold">{products.length}</strong> products</span>
             )}
-          </form>
+          </div>
 
-          {/* Sort dropdown */}
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e: any) => setSortBy(e.target.value)}
-              className="appearance-none rounded-xl border border-white/10 bg-[#141414] py-2 pl-8 pr-4 text-xs font-semibold text-white outline-none focus:border-[#D4A5A5] cursor-pointer"
-            >
-              <option value="featured" className="bg-[#141414] text-white">{isAr ? 'الأكثر تميزاً' : 'Featured'}</option>
-              <option value="name-asc" className="bg-[#141414] text-white">{isAr ? 'الترتيب: أبجدياً (أ - ي)' : 'Name: A to Z'}</option>
-              <option value="price-low" className="bg-[#141414] text-white">{isAr ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
-              <option value="price-high" className="bg-[#141414] text-white">{isAr ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
-              <option value="rating" className="bg-[#141414] text-white">{isAr ? 'الأعلى تقييماً' : 'Highest Rated'}</option>
-            </select>
-            <ArrowUpDown className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-[#A1A1AA]" />
+          <div className="flex items-center gap-3">
+            <form onSubmit={handleSearchSubmit} className="relative flex-1 sm:w-64">
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder={t('nav.search_placeholder')}
+                className="w-full rounded-xl border border-white/10 bg-[#141414] py-2 pl-9 pr-4 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[#A1A1AA]" />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A1A1AA] hover:text-white"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </form>
+
+            {/* Sort dropdown */}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e: any) => setSortBy(e.target.value)}
+                className="appearance-none rounded-xl border border-white/10 bg-[#141414] py-2 pl-8 pr-4 text-xs font-semibold text-white outline-none focus:border-[#D4A5A5] cursor-pointer"
+              >
+                <option value="featured" className="bg-[#141414] text-white">{isAr ? 'الأكثر تميزاً' : 'Featured'}</option>
+                <option value="name-asc" className="bg-[#141414] text-white">{isAr ? 'الترتيب: أبجدياً (أ - ي)' : 'Name: A to Z'}</option>
+                <option value="price-low" className="bg-[#141414] text-white">{isAr ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
+                <option value="price-high" className="bg-[#141414] text-white">{isAr ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
+                <option value="rating" className="bg-[#141414] text-white">{isAr ? 'الأعلى تقييماً' : 'Highest Rated'}</option>
+              </select>
+              <ArrowUpDown className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-[#A1A1AA]" />
+            </div>
           </div>
         </div>
       </div>

@@ -135,7 +135,7 @@ export default function Home() {
   }
 
   const categoryPills = [
-    { id: 'all', label: isAr ? 'الكل' : 'All Products' },
+    { id: 'all', label: isAr ? 'جميع المنتجات' : 'All Products' },
     { id: 'hair-accessories', label: isAr ? 'إكسسوارات الشعر' : 'Hair Accessories' },
     { id: 'look-accessories', label: isAr ? 'إكسسوارات الإطلالة' : 'Look Accessories' },
     { id: 'jewelry', label: isAr ? 'مجوهرات اليد والعنق' : 'Jewelry' },
@@ -225,17 +225,17 @@ export default function Home() {
           </div>
 
           {/* Category Filter Pills and Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {featuredProducts.length > 0 && (
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap py-2">
+              <div className="flex flex-wrap items-center gap-2 py-1">
                 {categoryPills.map((pill) => (
                   <button
                     key={pill.id}
                     type="button"
                     onClick={() => setActiveCategory(pill.id)}
-                    className={`shrink-0 whitespace-nowrap rounded-xl px-4 py-1.5 text-xs font-bold transition-all shadow-xs ${
+                    className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 ${
                       activeCategory === pill.id
-                        ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md'
+                        ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md ring-2 ring-[#D4A5A5]/40'
                         : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white'
                     }`}
                   >
