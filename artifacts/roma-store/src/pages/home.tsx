@@ -1,4 +1,4 @@
-import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck, Flame, ChevronLeft, ChevronRight, Timer, ShieldCheck, Truck, Gem } from 'lucide-react';
+import { Crown, Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck, Flame, ChevronLeft, ChevronRight, Timer, ShieldCheck, Truck, Gem } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -197,7 +197,7 @@ export default function Home() {
             {/* Editorial Copy & CTAs */}
             <div className="lg:col-span-7 space-y-5 md:space-y-6 text-right">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4A5A5]/10 border border-[#D4A5A5]/30 text-[#D4A5A5] text-xs font-bold shadow-xs">
-                <Sparkles className="size-3.5 text-[#D4A5A5] animate-pulse" />
+                <Crown className="size-4 text-[#D4A5A5] fill-[#D4A5A5]/20 shrink-0" />
                 <span>{isAr ? 'كولكشن الموسم الملكي الحصري' : 'Exclusive Royal Season Collection'}</span>
               </div>
 
@@ -266,8 +266,8 @@ export default function Home() {
             </div>
 
             {/* Right Column: Luxury Floating Showcase Card with 3s Auto-rotating Carousel */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
-              <div className="relative w-full max-w-sm aspect-square rounded-3xl bg-gradient-to-tr from-[#1E1E1E] to-[#121212] border border-white/10 p-4 sm:p-5 flex flex-col items-center justify-center shadow-2xl group overflow-hidden">
+            <div className="lg:col-span-5 relative flex items-center justify-center py-6 px-3 sm:px-6">
+              <div className="relative w-full max-w-sm aspect-square rounded-3xl bg-gradient-to-tr from-[#1E1E1E] to-[#121212] border border-white/10 p-4 sm:p-5 flex flex-col items-center justify-center shadow-2xl group">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(212,165,165,0.18),transparent_70%)] pointer-events-none rounded-3xl z-10" />
 
                 {/* Animated Image Container with smooth transitions every 3s */}
@@ -305,15 +305,15 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Floating Glassmorphism Badges */}
-                <div className="absolute -bottom-3 -right-2 sm:-right-4 rounded-2xl bg-[#141414]/95 border border-white/15 px-3.5 py-2 backdrop-blur-md shadow-2xl flex items-center gap-2 z-30">
-                  <div className="size-2 rounded-full bg-emerald-400 animate-ping" />
-                  <span className="text-[11px] font-bold text-white font-mono">300+ {isAr ? 'منتج متاح فوري' : 'In Stock'}</span>
+                {/* Floating Glassmorphism Badges - Positioned without clipping */}
+                <div className="absolute -bottom-3 -right-2 sm:-right-4 rounded-2xl bg-[#141414]/95 border border-white/20 px-3.5 py-2 backdrop-blur-md shadow-[0_12px_28px_rgba(0,0,0,0.85)] flex items-center gap-2 z-30 whitespace-nowrap select-none">
+                  <div className="size-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+                  <span className="text-[11px] sm:text-xs font-bold text-white font-mono">300+ {isAr ? 'منتج متاح فوري' : 'In Stock'}</span>
                 </div>
 
-                <div className="absolute -top-3 -left-2 sm:-left-4 rounded-2xl bg-[#141414]/95 border border-white/15 px-3.5 py-2 backdrop-blur-md shadow-2xl flex items-center gap-1.5 z-30">
-                  <Star className="size-3.5 fill-amber-400 text-amber-400" />
-                  <span className="text-[11px] font-bold text-white">4.9 ★ {isAr ? 'تقييم العميلات' : 'Client Rating'}</span>
+                <div className="absolute -top-3 -left-2 sm:-left-4 rounded-2xl bg-[#141414]/95 border border-white/20 px-3.5 py-2 backdrop-blur-md shadow-[0_12px_28px_rgba(0,0,0,0.85)] flex items-center gap-1.5 z-30 whitespace-nowrap select-none">
+                  <Star className="size-3.5 sm:size-4 fill-amber-400 text-amber-400 shrink-0" />
+                  <span className="text-[11px] sm:text-xs font-bold text-white">4.9 ★ {isAr ? 'تقييم العميلات' : 'Client Rating'}</span>
                 </div>
               </div>
             </div>
