@@ -18,43 +18,110 @@ export default function Home() {
     (p) => p && typeof p.price === 'number' && p.price <= 10
   );
 
-  // 2. Amazon products for the "الأكثر طلباً" section
-  const amazonProducts = featuredProducts.filter((p) => {
-    if (!p) return false;
-    const hasAmzImg = (p.imageUrl || '').includes('amz') || (p.additionalImages || []).some((img: string) => img.includes('amz'));
-    const isAmz = (p as any).source === 'amazon' || Boolean((p as any).amazonUrl) || hasAmzImg;
-    return isAmz;
-  });
+  // Helper to score true Amazon bestsellers by demand, rating, and brand appeal
+  const getBestsellerScore = (product: any): number => {
+    if (!product) return 0;
+    let score = 0;
+    const name = (product.nameAr || '').toLowerCase();
+    const price = Number(product.price) || 0;
 
-  const bestsellersSource = amazonProducts.length > 0 ? amazonProducts : featuredProducts;
+    // Real Amazon bestsellers are desirable, quality products (30 - 900 EGP)
+    if (price >= 35 && price <= 900) score += 20;
+    if (price >= 50 && price <= 500) score += 15;
+    if (price > 10) score += 10;
+    else score -= 150; // Keep under 10 items in the under 10 section
 
-  // Filter bestsellers based on selected tab pill
-  const displayedProducts = bestsellersSource.filter((p) => {
-    if (!p) return false;
-    if (activeCategory === 'all') return true;
-    const cat = (p.category || '').toLowerCase();
-    const name = (p.nameAr || '').toLowerCase();
+    if (product.compareAtPrice && product.compareAtPrice > price) score += 15;
 
-    if (activeCategory === 'hair-accessories') {
-      return cat.includes('إكسسوارات الشعر') || cat === 'hair-accessories' || /توك|توكة|توكه|ربط(ة|ه|ات)\s*شعر|استك|طوق|شريط\s*ر(أ|ا)س|عصاب|مشبك|مشابك|شابك|كليبس|بندان|باندانا|سكرانشي|scrunch|فيونك|كلبس|بنس|هير\s*بيس|دبابيس|مشط|تاج/i.test(name);
+    // High-demand Amazon bestseller keywords across fragrances, jewelry, skincare, cosmetics
+    if (/ماء\s*الذهب|لطافة|امير\s*العود|فانيليا|عطر|برفان|parfum/i.test(name)) score += 35;
+    if (/توليب|زركون|فان\s*كليف|سوار|خاتم|قلادة|عقد|لؤلؤ|ذهب/i.test(name)) score += 30;
+    if (/يولو|لونا|شيجلام|sheglam|جل\s*سائل|ماسكارا|روج|ليب/i.test(name)) score += 25;
+    if (/سيروبيب|الفيف|لوريال|كيراتين|شامبو|سيروم|لوشن|ايفا/i.test(name)) score += 25;
+    if (/طقم|مجموعة|باكيت|بوكس|قطع/i.test(name)) score += 20;
+    if (/حزام|شنطة|حقيبة|ساعة/i.test(name)) score += 20;
+
+    if (Array.isArray(product.additionalImages) && product.additionalImages.length > 0) {
+      score += Math.min(product.additionalImages.length * 5, 20);
     }
-    if (activeCategory === 'look-accessories') {
-      return cat.includes('إكسسوارات الإطلالة') || cat === 'look-accessories' || /حزام|أحزمة|احزمة|نظار|حقيب|شنط|محفظ|محافظ|ساع(ة|ه|ات)|watch|bag|handbag|crossbody|سكارف|شال|إشارب|ايشارب|كاب|قبع|إبزيم|ابزيم|بروش/i.test(name);
+
+    return score;
+  };
+
+  // Candidates for Amazon Bestsellers (excludes cheap under 10 items)
+  const bestsellersCandidates = featuredProducts.filter(
+    (p) => p && typeof p.price === 'number' && p.price > 10
+  );
+
+  // 2. Amazon Bestsellers Selection
+  let displayedProducts: any[] = [];
+
+  if (activeCategory === 'all') {
+    // Interleave top-scoring products across major categories for a balanced, luxurious showcase
+    const isPerfume = (c: string, n: string) => (c.includes('عطر') || /عطر|برفان|parfum|كولونيا|بودي\s*ميست|رذاذ/i.test(n));
+    const isJewelry = (c: string, n: string) => !isPerfume(c, n) && !/حزام/i.test(n) && (c.includes('مجوهرات') || /سوار|خاتم|سلس|قلاد|عقد|انسيال|حلق|أقراط|اقراط|خلخال|زركون/i.test(n));
+    const isMakeup = (c: string, n: string) => !isPerfume(c, n) && (c.includes('مكياج') || /أظافر|روج|ليب|مسكر|ماسكارا|كحل|بلش|بلاشر|فاونديشن|بودر|شيجلام|يولو/i.test(n));
+    const isCare = (c: string, n: string) => !isPerfume(c, n) && !isJewelry(c, n) && (c.includes('عناية') || /لوشن|شامبو|سيروم|كريم|مرطب|غسول|فازلين/i.test(n));
+    const isLook = (c: string, n: string) => !isPerfume(c, n) && (c.includes('إطلالة') || c.includes('اطلالة') || /حزام|أحزمة|احزمة|ساعة|ساعات|شنط|حقيب|محفظ/i.test(n));
+    const isHair = (c: string, n: string) => !isPerfume(c, n) && !/حزام/i.test(n) && (c.includes('شعر') || /توك|طوق|دبابيس|مشبك|مشابك|كليبس|باندان|سكرانشي/i.test(n));
+
+    const categoriesDef = [
+      { name: 'العطور الفاخرة', fn: isPerfume },
+      { name: 'مجوهرات اليد والعنق', fn: isJewelry },
+      { name: 'المكياج والجمال', fn: isMakeup },
+      { name: 'العناية بالجسم والنعومة', fn: isCare },
+      { name: 'إكسسوارات الإطلالة', fn: isLook },
+      { name: 'إكسسوارات الشعر', fn: isHair },
+    ];
+
+    const categoryPools = categoriesDef.map((cat) =>
+      bestsellersCandidates
+        .filter((p) => cat.fn((p.category || '').toLowerCase(), (p.nameAr || '').toLowerCase()))
+        .sort((a, b) => getBestsellerScore(b) - getBestsellerScore(a))
+    );
+
+    const interleaved: any[] = [];
+    const seenIds = new Set<string>();
+
+    for (let i = 0; i < 6; i++) {
+      categoryPools.forEach((pool) => {
+        if (pool[i] && !seenIds.has(pool[i].id)) {
+          seenIds.add(pool[i].id);
+          interleaved.push(pool[i]);
+        }
+      });
     }
-    if (activeCategory === 'jewelry') {
-      return (cat.includes('مجوهرات اليد والعنق') || cat === 'jewelry') && !/حزام|احزمة/i.test(name) || (!/حزام|احزمة/i.test(name) && /سلسل|سلاسل|قلاد|عقد|كولي|خاتم|خواتم|اسور|أساور|سوار|انسيال|حلق|أقراط|اقراط|خلخال|خلاخل|دلاي|زركون|لؤلؤ/i.test(name));
-    }
-    if (activeCategory === 'makeup') {
-      return cat.includes('المكياج والجمال') || cat === 'makeup' || /روج|أحمر\s*(شفاه|خدود)|احمر\s*(شفاه|خدود)|شفاه|ليب|lip|مسكر|ماسكارا|mascara|كحل|ايلاينر|آيلاينر|محدد|طلاء\s*أظافر|مانيكير|اظافر|أظافر|بلاشر|بلش|مورد|كونسيلر|فاونديشن|كريم\s*اساس|بودر|ايشادو|ظلال|هايلايتر|كونتور|برايمر|مكياج|makeup|فرش\s*مكياج|بيوتي\s*بلندر|منظم\s*مكياج|رموش|يولو|توب\s*كوت|بيس\s*شيلد|شيجلام|sheglam/i.test(name);
-    }
-    if (activeCategory === 'body-care') {
-      return cat.includes('العناية بالجسم') || cat === 'body-care' || (!/توك|حزام|سلسل|روج|عطر/i.test(name) && /لوشن|مرطب|كريم|غسول|سيروم|زيت|مقشر|سكراب|صابون|شاور|ماسك|قناع|فازلين|مزيل\s*عرق|ديودورنت|جل\s*الصبار|واقي\s*شمس|صن\s*بلوك|شامبو|بلسم|عناية/i.test(name));
-    }
-    if (activeCategory === 'perfumes') {
-      return cat.includes('العطور الفاخرة') || cat === 'perfumes' || /عطر|عطور|برفان|بارفيوم|parfum|perfume|مسك|عود|بخور|كولونيا|او\s*(دي|دو)|eau\s*d|بودي\s*ميست|رذاذ/i.test(name);
-    }
-    return cat.includes(activeCategory);
-  });
+
+    displayedProducts = interleaved.length > 0 ? interleaved : bestsellersCandidates.sort((a, b) => getBestsellerScore(b) - getBestsellerScore(a));
+  } else {
+    // When a specific category is chosen, filter by category and sort by bestseller score
+    displayedProducts = bestsellersCandidates
+      .filter((p) => {
+        const cat = (p.category || '').toLowerCase();
+        const name = (p.nameAr || '').toLowerCase();
+
+        if (activeCategory === 'hair-accessories') {
+          return !/عطر|حزام/i.test(name) && (cat.includes('إكسسوارات الشعر') || cat === 'hair-accessories' || /توك|توكة|توكه|ربط(ة|ه|ات)\s*شعر|استك|طوق|شريط\s*ر(أ|ا)س|عصاب|مشبك|مشابك|شابك|كليبس|بندان|باندانا|سكرانشي|scrunch|فيونك|كلبس|بنس|هير\s*بيس|دبابيس|مشط|تاج/i.test(name));
+        }
+        if (activeCategory === 'look-accessories') {
+          return !/عطر/i.test(name) && (cat.includes('إكسسوارات الإطلالة') || cat === 'look-accessories' || /حزام|أحزمة|احزمة|نظار|حقيب|شنط|محفظ|محافظ|ساع(ة|ه|ات)|watch|bag|handbag|crossbody|سكارف|شال|إشارب|ايشارب|كاب|قبع|إبزيم|ابزيم|بروش/i.test(name));
+        }
+        if (activeCategory === 'jewelry') {
+          return !/عطر|حزام/i.test(name) && ((cat.includes('مجوهرات اليد والعنق') || cat === 'jewelry') || /سلسل|سلاسل|قلاد|عقد|كولي|خاتم|خواتم|اسور|أساور|سوار|انسيال|حلق|أقراط|اقراط|خلخال|خلاخل|دلاي|زركون|لؤلؤ/i.test(name));
+        }
+        if (activeCategory === 'makeup') {
+          return !/عطر/i.test(name) && (cat.includes('المكياج والجمال') || cat === 'makeup' || /روج|أحمر\s*(شفاه|خدود)|احمر\s*(شفاه|خدود)|شفاه|ليب|lip|مسكر|ماسكارا|mascara|كحل|ايلاينر|آيلاينر|محدد|طلاء\s*أظافر|مانيكير|اظافر|أظافر|بلاشر|بلش|مورد|كونسيلر|فاونديشن|كريم\s*اساس|بودر|ايشادو|ظلال|هايلايتر|كونتور|برايمر|مكياج|makeup|فرش\s*مكياج|بيوتي\s*بلندر|منظم\s*مكياج|رموش|يولو|توب\s*كوت|بيس\s*شيلد|شيجلام|sheglam/i.test(name));
+        }
+        if (activeCategory === 'body-care') {
+          return !/عطر|حزام/i.test(name) && (cat.includes('العناية بالجسم') || cat === 'body-care' || /لوشن|مرطب|كريم|غسول|سيروم|زيت|مقشر|سكراب|صابون|شاور|ماسك|قناع|فازلين|مزيل\s*عرق|ديودورنت|جل\s*الصبار|واقي\s*شمس|صن\s*بلوك|شامبو|بلسم|عناية/i.test(name));
+        }
+        if (activeCategory === 'perfumes') {
+          return cat.includes('العطور الفاخرة') || cat === 'perfumes' || /عطر|عطور|برفان|بارفيوم|parfum|perfume|مسك|عود|بخور|كولونيا|او\s*(دي|دو)|eau\s*d|بودي\s*ميست|رذاذ/i.test(name);
+        }
+        return cat.includes(activeCategory);
+      })
+      .sort((a, b) => getBestsellerScore(b) - getBestsellerScore(a));
+  }
 
   const categoryPills = [
     { id: 'all', label: isAr ? 'الكل' : 'All Products' },
