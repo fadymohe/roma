@@ -151,18 +151,18 @@ export default function Home() {
 
         {/* Product Cards Smooth Slider / Flow or Lavish Empty State */}
         {displayedProducts.length > 0 ? (
-          <div className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x scroll-smooth">
+          <div className="flex items-stretch gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x scroll-smooth">
             {displayedProducts.map((p, i) => (
-              <div key={p.id} className="w-[240px] sm:w-[270px] md:w-[290px] shrink-0 snap-start">
+              <div key={p.id} className="w-[240px] sm:w-[270px] md:w-[290px] shrink-0 snap-start flex">
                 <ProductCard product={p} index={i} />
               </div>
             ))}
 
             {/* Discover More Card in Slider */}
-            <div className="w-[200px] sm:w-[240px] shrink-0 snap-start flex items-stretch">
+            <div className="w-[200px] sm:w-[240px] shrink-0 snap-start flex">
               <Link
                 href="/shop"
-                className="flex flex-col items-center justify-center text-center p-6 w-full rounded-3xl border border-dashed border-white/15 hover:border-[#D4A5A5] bg-[#141414]/50 hover:bg-[#141414] transition group"
+                className="flex flex-col items-center justify-center text-center p-6 w-full h-full rounded-3xl border border-dashed border-white/15 hover:border-[#D4A5A5] bg-[#141414]/50 hover:bg-[#141414] transition group"
               >
                 <div className="size-12 rounded-full bg-[#D4A5A5]/10 text-[#D4A5A5] flex items-center justify-center mb-3 group-hover:scale-110 transition">
                   <ShoppingBag className="size-5" />

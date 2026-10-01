@@ -187,6 +187,28 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.8);
   }
+
+  /* Fixed 2-line clamp with uniform height for product titles across all cards */
+  .line-clamp-2-fixed {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.35;
+    height: 2.5rem;
+    max-height: 2.5rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .line-clamp-2-fixed {
+    height: 2.75rem !important;
+    max-height: 2.75rem !important;
+  }
 }
 
 .roma-reveal { animation: roma-reveal .6s cubic-bezier(.2,.75,.25,1) both; }
