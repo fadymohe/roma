@@ -61,6 +61,46 @@ export function StoreShell({ children }: { children: ReactNode }) {
     <div className="min-h-[100dvh] bg-[#0A0A0A] text-[#F9FAFB] flex flex-col" dir={dir}>
       {/* Main Sticky Header */}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0A0A0A]/95 backdrop-blur-md transition-all">
+        {/* Luxury Top Marquee Announcement Bar */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#111] via-[#161212] to-[#111] border-b border-white/10 py-1.5 text-[11px] font-medium text-zinc-300 select-none">
+          <div className="animate-marquee whitespace-nowrap flex items-center gap-8">
+            {[1, 2].map((k) => (
+              <div key={k} className="flex items-center gap-8 shrink-0">
+                <span className="flex items-center gap-1.5 text-zinc-200">
+                  <Truck className="size-3 text-[#D4A5A5]" />
+                  <span>{isAr ? 'شحن مجاني للطلبات بقيمة 500 ج.م وأكثر' : 'Free Shipping on orders 500+ EGP'}</span>
+                </span>
+                <span className="text-[#D4A5A5]/40">•</span>
+                <span className="flex items-center gap-1.5 text-zinc-200">
+                  <ShieldCheck className="size-3 text-emerald-400" />
+                  <span>{isAr ? 'منتجات أصلية ومطابقة للصور 100%' : '100% Authentic & Exact to Images'}</span>
+                </span>
+                <span className="text-[#D4A5A5]/40">•</span>
+                <span className="flex items-center gap-1.5 text-zinc-200">
+                  <CheckCircle2 className="size-3 text-[#D4A5A5]" />
+                  <span>{isAr ? 'الدفع عند الاستلام مع إمكانية المعاينة' : 'Cash on Delivery with Inspection'}</span>
+                </span>
+                <span className="text-[#D4A5A5]/40">•</span>
+                <a
+                  href="https://wa.me/201505566849"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-zinc-200 hover:text-emerald-400 transition"
+                >
+                  <MessageCircle className="size-3 text-emerald-400" />
+                  <span>{isAr ? 'طلب واستفسار فوري عبر واتساب (01505566849)' : 'Instant WhatsApp: 01505566849'}</span>
+                </a>
+                <span className="text-[#D4A5A5]/40">•</span>
+                <span className="flex items-center gap-1.5 text-zinc-200">
+                  <Sparkles className="size-3 text-[#D4A5A5]" />
+                  <span>{isAr ? 'أفخم العطور والمجوهرات ومستحضرات التجميل' : 'Haute Perfumery, Jewelry & Cosmetics'}</span>
+                </span>
+                <span className="text-[#D4A5A5]/40">•</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* ========================================================================= */}
         {/* MOBILE TOP BAR (< md): Clean, Luxury, Never Overflows Screen Width        */}
         {/* ========================================================================= */}

@@ -1,5 +1,5 @@
-import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck, Flame, ChevronLeft, ChevronRight, Timer, ShieldCheck, Truck, Gem } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'wouter';
 import { ProductCard } from '@/components/product-card';
 import { CATEGORIES, TESTIMONIALS, useLiveProducts, DEFAULT_PRODUCTS } from '@/lib/catalog-data';
@@ -8,6 +8,26 @@ import { useLanguage } from '@/lib/language-context';
 export default function Home() {
   const { t, isAr, dir } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
+
+  const [timeLeft, setTimeLeft] = useState({ hours: '05', minutes: '42', seconds: '18' });
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+      const diff = Math.max(0, endOfDay.getTime() - now.getTime());
+
+      const h = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+      const m = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0');
+      const s = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+      setTimeLeft({ hours: h, minutes: m, seconds: s });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const bestsellersSliderRef = useRef<HTMLDivElement>(null);
   const under10SliderRef = useRef<HTMLDivElement>(null);
@@ -146,6 +166,114 @@ export default function Home() {
 
   return (
     <div dir={dir} className="space-y-10 md:space-y-16 py-4 md:py-8 text-[#F9FAFB]">
+
+      {/* ========================================================================= */}
+      {/* LUXURY EDITORIAL HERO BANNER: Atmospheric, Regal, High-Conversion          */}
+      {/* ========================================================================= */}
+      <section className="roma-container relative">
+        <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-[#181818] via-[#121212] to-[#0A0A0A] p-6 sm:p-10 md:p-14 shadow-2xl">
+          {/* Subtle Ambient Radial Glows */}
+          <div className="pointer-events-none absolute -top-24 right-1/4 size-96 rounded-full bg-[#D4A5A5]/15 blur-[120px]" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/4 size-80 rounded-full bg-rose-500/10 blur-[100px]" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Editorial Copy & CTAs */}
+            <div className="lg:col-span-7 space-y-5 md:space-y-6 text-right">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4A5A5]/10 border border-[#D4A5A5]/30 text-[#D4A5A5] text-xs font-bold shadow-xs">
+                <Sparkles className="size-3.5 text-[#D4A5A5] animate-pulse" />
+                <span>{isAr ? 'كولكشن الموسم الملكي الحصري' : 'Exclusive Royal Season Collection'}</span>
+              </div>
+
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.2] tracking-tight">
+                {isAr ? (
+                  <>
+                    سحر الأنوثة الملكية <br />
+                    <span className="bg-gradient-to-r from-[#D4A5A5] via-[#F3D5D5] to-white bg-clip-text text-transparent">
+                      بإطلالة تأسر القلوب
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Royal Elegance <br />
+                    <span className="bg-gradient-to-r from-[#D4A5A5] via-[#F3D5D5] to-white bg-clip-text text-transparent">
+                      Unveiled For You
+                    </span>
+                  </>
+                )}
+              </h1>
+
+              <p className="text-xs sm:text-sm md:text-base text-zinc-300 leading-relaxed font-light max-w-xl">
+                {isAr
+                  ? 'مجموعات استثنائية من أرقى العطور الفاخرة، المجوهرات المطلية بحرفية، ومستحضرات الجمال الطبيعية المختارة بعناية لتمنحكِ ثقة وجاذبية لا تُنسى.'
+                  : 'Exceptional collections of high-end perfumery, handcrafted fine jewelry, and velvet botanical cosmetics for your timeless allure.'}
+              </p>
+
+              {/* CTAs Button Row */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link
+                  href="/shop"
+                  className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#D4A5A5] to-[#C89595] text-[#0A0A0A] font-extrabold text-xs sm:text-sm shadow-xl shadow-[#D4A5A5]/20 hover:brightness-110 active:scale-95 transition-all duration-300 group"
+                >
+                  <span>{isAr ? 'تسوقي التشكيلة الكاملة' : 'Explore All Collections'}</span>
+                  <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1 rtl:rotate-0 ltr:rotate-180" />
+                </Link>
+
+                <a
+                  href="#under-10-section"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('under-10-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3.5 rounded-2xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-white font-bold text-xs sm:text-sm transition-all active:scale-95"
+                >
+                  <Flame className="size-4 text-rose-400 animate-pulse" />
+                  <span>{isAr ? 'عروض تحت 10 جنيه' : 'Under 10 EGP Deals'}</span>
+                </a>
+              </div>
+
+              {/* Trust Indicators Checklist */}
+              <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/10 text-[11px] sm:text-xs text-zinc-400">
+                <div className="flex items-center gap-1.5">
+                  <Truck className="size-3.5 text-[#D4A5A5] shrink-0" />
+                  <span>{isAr ? 'توصيل سريع' : 'Fast Shipping'}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />
+                  <span>{isAr ? 'دفع عند الاستلام' : 'Cash on Delivery'}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Gem className="size-3.5 text-[#D4A5A5] shrink-0" />
+                  <span>{isAr ? 'جودة أصلية 100%' : '100% Genuine'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Luxury Floating Showcase Card */}
+            <div className="lg:col-span-5 relative flex items-center justify-center">
+              <div className="relative w-full max-w-sm aspect-square rounded-3xl bg-gradient-to-tr from-[#1E1E1E] to-[#121212] border border-white/10 p-6 flex flex-col items-center justify-center shadow-2xl group">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(212,165,165,0.2),transparent_70%)] pointer-events-none rounded-3xl" />
+                
+                <img
+                  src="https://m.media-amazon.com/images/I/41K-X1r9YkL._AC_.jpg"
+                  alt="ROMA Bestseller Luxury Perfume"
+                  className="max-h-60 sm:max-h-64 object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] transition-transform duration-700 group-hover:scale-105 select-none"
+                />
+
+                {/* Floating Glassmorphism Badges */}
+                <div className="absolute -bottom-3 -right-2 sm:-right-4 rounded-2xl bg-[#141414]/90 border border-white/15 px-3.5 py-2 backdrop-blur-md shadow-xl flex items-center gap-2">
+                  <div className="size-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="text-[11px] font-bold text-white font-mono">300+ {isAr ? 'منتج متاح فوري' : 'In Stock'}</span>
+                </div>
+
+                <div className="absolute -top-3 -left-2 sm:-left-4 rounded-2xl bg-[#141414]/90 border border-white/15 px-3.5 py-2 backdrop-blur-md shadow-xl flex items-center gap-1.5">
+                  <Star className="size-3.5 fill-amber-400 text-amber-400" />
+                  <span className="text-[11px] font-bold text-white">4.9 ★ {isAr ? 'تقييم العميلات' : 'Client Rating'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Categories Visual Grid */}
       <section className="roma-container relative">
@@ -358,13 +486,25 @@ export default function Home() {
 
       {/* Under 10 EGP Section - قسم منتجات تحت 10 جنيه */}
       {under10Products.length > 0 && (
-        <section className="roma-container">
+        <section id="under-10-section" className="roma-container scroll-mt-24">
           <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <span className="text-xs md:text-sm font-semibold text-rose-400 flex items-center gap-1.5">
-                <Flame className="size-3.5 text-rose-400 animate-pulse" />
-                <span>{isAr ? 'عروض التوفير الخارقة' : 'Super Saver Deals'}</span>
-              </span>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="text-xs md:text-sm font-semibold text-rose-400 flex items-center gap-1.5">
+                  <Flame className="size-3.5 text-rose-400 animate-pulse" />
+                  <span>{isAr ? 'عروض التوفير الخارقة' : 'Super Saver Deals'}</span>
+                </span>
+
+                {/* Live Countdown Badge */}
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 text-[11px] font-mono font-bold shadow-xs">
+                  <Timer className="size-3 text-rose-400 animate-pulse" />
+                  <span>{isAr ? 'ينتهي العرض خلال:' : 'Ends in:'}</span>
+                  <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.hours}h</span>:
+                  <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.minutes}m</span>:
+                  <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.seconds}s</span>
+                </div>
+              </div>
+
               <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
                 {t('section.under_10_title')}
               </h2>

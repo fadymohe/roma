@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { Heart, ShoppingBag, Star, Check } from 'lucide-react';
+import { Heart, ShoppingBag, Star, Check, MessageCircle } from 'lucide-react';
 import type { Product } from '@/lib/catalog-data';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
@@ -159,7 +159,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Pricing & Add to Bag CTA */}
-        <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between gap-2 shrink-0">
+        <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between gap-1.5 shrink-0">
           <div className="flex flex-col justify-center min-h-[36px] shrink-0">
             <span className="text-sm sm:text-base font-extrabold font-mono text-[#D4A5A5] tracking-tight leading-none">
               {formatPrice(product.price)}
@@ -175,28 +175,47 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          <button
-            type="button"
-            data-testid={`btn-add-cart-${product.id}`}
-            onClick={handleAddToCart}
-            className={`flex items-center justify-center gap-1.5 rounded-xl px-3 sm:px-3.5 py-2 text-xs font-bold transition-all active:scale-95 shadow-md shrink-0 h-9 ${
-              isAdding
-                ? 'bg-emerald-500 text-white shadow-emerald-500/20'
-                : 'bg-white hover:bg-zinc-100 text-zinc-950 shadow-md hover:shadow-lg hover:shadow-white/10 border border-white/20'
-            }`}
-          >
-            {isAdding ? (
-              <>
-                <Check className="size-3.5 text-white" />
-                <span className="inline">{isAr ? 'تمت' : 'Added'}</span>
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="size-3.5 text-zinc-950" strokeWidth={2.2} />
-                <span className="inline text-zinc-950 font-bold whitespace-nowrap">{t('product.add_to_cart')}</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Quick WhatsApp Inquiry / Order */}
+            <a
+              href={`https://wa.me/201505566849?text=${encodeURIComponent(
+                isAr
+                  ? `مرحباً روما ستور، أود طلب أو الاستفسار عن هذا المنتج:\n• ${displayName}\n• السعر: ${product.price} ج.م`
+                  : `Hello ROMA Store, I would like to order this item:\n• ${displayName}\n• Price: ${product.price} EGP`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={isAr ? 'طلب واستفسار مباشر عبر واتساب' : 'Quick WhatsApp Order'}
+              className="size-9 rounded-xl flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/25 transition-all active:scale-95 shadow-sm"
+              aria-label="WhatsApp"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MessageCircle className="size-4" />
+            </a>
+
+            <button
+              type="button"
+              data-testid={`btn-add-cart-${product.id}`}
+              onClick={handleAddToCart}
+              className={`flex items-center justify-center gap-1.5 rounded-xl px-2.5 sm:px-3.5 py-2 text-xs font-bold transition-all active:scale-95 shadow-md shrink-0 h-9 ${
+                isAdding
+                  ? 'bg-emerald-500 text-white shadow-emerald-500/30'
+                  : 'bg-white hover:bg-zinc-100 text-zinc-950 shadow-md hover:shadow-lg hover:shadow-white/10 border border-white/20'
+              }`}
+            >
+              {isAdding ? (
+                <>
+                  <Check className="size-3.5 text-white stroke-[3]" />
+                  <span className="inline font-bold">{isAr ? 'تمت' : 'Added'}</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="size-3.5 text-zinc-950" strokeWidth={2.2} />
+                  <span className="inline text-zinc-950 font-bold whitespace-nowrap">{t('product.add_to_cart')}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </article>
