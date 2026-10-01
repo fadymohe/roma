@@ -73,6 +73,7 @@ for (const dir of [UPLOADS_DIR, DIST_UPLOADS_DIR]) {
 
 // In-memory sessions for multi-step wizards
 const sessions = new Map();
+const adminProductSearches = new Map(); // chatId -> query string
 
 // Helper to call Telegram API via native fetch with automatic retry
 async function tg(method, body = {}, retries = 2) {
@@ -260,13 +261,14 @@ function getMainKeyboard() {
       ],
       [
         { text: '🏷️ إدارة المنتجات والمخزون', callback_data: 'nav_list_prod' },
+        { text: '🔍 بحث في المنتجات', callback_data: 'nav_search_prod' },
+      ],
+      [
         { text: '📦 متابعة الطلبات', callback_data: 'nav_orders_all' },
-      ],
-      [
         { text: '🛒 السلات المتروكة', callback_data: 'nav_check_abandoned' },
-        { text: '📊 تقرير الإيرادات والمبيعات', callback_data: 'nav_stats' },
       ],
       [
+        { text: '📊 تقرير الإيرادات والمبيعات', callback_data: 'nav_stats' },
         { text: '🌐 زيارة متجر Roma', url: 'https://roma-eg.my' },
       ],
     ],
@@ -560,8 +562,42 @@ async function handleUpdate(update) {
 
     // Navigation: List Products
     if (data === 'nav_list_prod') {
+      adminProductSearches.delete(chatId);
       await tg('answerCallbackQuery', { callback_query_id: cb.id });
-      return sendProductsList(chatId);
+      return sendProductsList(chatId, 0, '');
+    }
+
+    // Navigation: Search Products
+    if (data === 'nav_search_prod') {
+      sessions.set(userId, { step: 'SEARCH_PRODUCT' });
+      await tg('answerCallbackQuery', { callback_query_id: cb.id });
+      const total = getProducts().length;
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text:
+          `🔍 *البحث في منتجات المتجر (${total} منتج)*:\n\n` +
+          `أرسل الآن *اسم المنتج* أو *جزء من الاسم* أو *كود المنتج* أو *التصنيف*:\n` +
+          `*(مثال: \`توكة\` أو \`سيروم\` أو \`شعر\` أو \`1790739165623\`)*`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔙 إلغاء والعودة لقائمة المنتجات', callback_data: 'nav_list_prod' }],
+          ],
+        },
+      });
+    }
+
+    // Product Pagination
+    if (data.startsWith('prod_page_')) {
+      const page = parseInt(data.replace('prod_page_', ''), 10) || 0;
+      const currentQuery = adminProductSearches.get(chatId) || '';
+      await tg('answerCallbackQuery', { callback_query_id: cb.id });
+      return sendProductsList(chatId, page, currentQuery);
+    }
+
+    if (data === 'prod_noop') {
+      await tg('answerCallbackQuery', { callback_query_id: cb.id });
+      return;
     }
 
     // Navigation: Check Abandoned Carts
@@ -884,8 +920,29 @@ async function handleUpdate(update) {
       });
     }
 
-    if (text === '/products') {
-      return sendProductsList(chatId);
+    if (text === '/products' || text === '/prods' || text === '/المنتجات') {
+      adminProductSearches.delete(chatId);
+      return sendProductsList(chatId, 0, '');
+    }
+
+    if (text.startsWith('/search') || text.startsWith('/find') || text.startsWith('/بحث')) {
+      const q = text.replace(/^(\/search|\/find|\/بحث)\s*/i, '').trim();
+      if (q) {
+        adminProductSearches.set(chatId, q);
+        return sendProductsList(chatId, 0, q);
+      }
+      sessions.set(userId, { step: 'SEARCH_PRODUCT' });
+      const total = getProducts().length;
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text: `🔍 *البحث في منتجات المتجر (${total} منتج)*:\n\nأرسل الآن اسم المنتج أو جزء منه للبحث عنه مباشرة:`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔙 إلغاء والعودة لقائمة المنتجات', callback_data: 'nav_list_prod' }],
+          ],
+        },
+      });
     }
 
     if (text === '/orders') {
@@ -906,6 +963,14 @@ async function handleUpdate(update) {
     // Step machine for adding or editing
     const session = sessions.get(userId);
     if (session) {
+      // Search product step
+      if (session.step === 'SEARCH_PRODUCT') {
+        sessions.delete(userId);
+        const query = text.trim();
+        adminProductSearches.set(chatId, query);
+        return sendProductsList(chatId, 0, query);
+      }
+
       // Amazon URL input step
       if (session.step === 'AMAZON_URL') {
         if (text.includes('http')) {
@@ -1116,9 +1181,9 @@ async function handleUpdate(update) {
 
 // ----------------- Product & Order Renderers -----------------
 
-async function sendProductsList(chatId) {
-  const products = getProducts();
-  if (products.length === 0) {
+async function sendProductsList(chatId, page = 0, query = '') {
+  const allProducts = getProducts();
+  if (allProducts.length === 0) {
     return tg('sendMessage', {
       chat_id: chatId,
       text: 'لا توجد منتجات مسجلة في المتجر حالياً.',
@@ -1126,17 +1191,70 @@ async function sendProductsList(chatId) {
     });
   }
 
+  const cleanQuery = (query || '').trim().toLowerCase();
+  const filtered = cleanQuery
+    ? allProducts.filter((p) => {
+        const name = (p.nameAr || '').toLowerCase();
+        const cat = (p.category || '').toLowerCase();
+        const desc = (p.descriptionAr || '').toLowerCase();
+        const id = String(p.id || '');
+        const slug = (p.slug || '').toLowerCase();
+        return name.includes(cleanQuery) || cat.includes(cleanQuery) || desc.includes(cleanQuery) || id.includes(cleanQuery) || slug.includes(cleanQuery);
+      })
+    : allProducts;
+
+  if (filtered.length === 0) {
+    return tg('sendMessage', {
+      chat_id: chatId,
+      text: `🔍 *لم نجد أي منتجات مطابقة للبحث:* \`${query}\`\n\nجرّب البحث بكلمة أو كود آخر، أو استعرض جميع منتجات المتجر:`,
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '🔍 تجربة بحث آخر', callback_data: 'nav_search_prod' }],
+          [{ text: '📋 عرض كل المنتجات', callback_data: 'nav_list_prod' }],
+          [{ text: '🔙 القائمة الرئيسية', callback_data: 'nav_menu' }],
+        ],
+      },
+    });
+  }
+
+  const PAGE_SIZE = 6;
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+  const safePage = Math.max(0, Math.min(page, totalPages - 1));
+  const slice = filtered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+
   const buttons = [];
-  products.slice(0, 15).forEach((p) => {
+  slice.forEach((p) => {
+    const titleSnippet = (p.nameAr || '').length > 34 ? (p.nameAr || '').slice(0, 31) + '...' : p.nameAr;
     buttons.push([
-      { text: `📦 ${p.nameAr} (${p.price} ج.م - ${p.stock ?? 50} ق)`, callback_data: `edit_price_${p.id}` },
+      { text: `📦 ${titleSnippet}`, callback_data: `edit_price_${p.id}` },
     ]);
     buttons.push([
-      { text: `✏️ السعر`, callback_data: `edit_price_${p.id}` },
-      { text: `📊 المخزون`, callback_data: `edit_stock_${p.id}` },
+      { text: `💰 ${p.price} ج (تعديل)`, callback_data: `edit_price_${p.id}` },
+      { text: `📊 ${p.stock ?? 50} ق (مخزون)`, callback_data: `edit_stock_${p.id}` },
       { text: `🗑️ حذف`, callback_data: `del_prod_${p.id}` },
     ]);
   });
+
+  // Pagination navigation row
+  if (totalPages > 1) {
+    const navRow = [];
+    if (safePage > 0) {
+      navRow.push({ text: '⬅️ السابق', callback_data: `prod_page_${safePage - 1}` });
+    }
+    navRow.push({ text: `📄 ${safePage + 1} / ${totalPages}`, callback_data: 'prod_noop' });
+    if (safePage < totalPages - 1) {
+      navRow.push({ text: 'التالي ➡️', callback_data: `prod_page_${safePage + 1}` });
+    }
+    buttons.push(navRow);
+  }
+
+  // Quick Action Buttons: Search, Cancel Search, Add, Menu
+  const searchRow = [{ text: '🔍 بحث عن منتج', callback_data: 'nav_search_prod' }];
+  if (cleanQuery) {
+    searchRow.push({ text: '❌ إلغاء البحث وعرض الكل', callback_data: 'nav_list_prod' });
+  }
+  buttons.push(searchRow);
 
   buttons.push([
     { text: '📦 سحب منتج من أمازون 🛒', callback_data: 'nav_amazon_prod' },
@@ -1144,9 +1262,18 @@ async function sendProductsList(chatId) {
   ]);
   buttons.push([{ text: '🔙 القائمة الرئيسية', callback_data: 'nav_menu' }]);
 
+  let headerText = `🏷️ *إدارة المنتجات والمخزون*\n`;
+  if (cleanQuery) {
+    headerText += `🔍 *نتائج البحث عن:* "${query}"\n`;
+    headerText += `📊 وُجد *${filtered.length}* منتج من أصل *${allProducts.length}* (صفحة ${safePage + 1} من ${totalPages}):\n\n`;
+  } else {
+    headerText += `📊 إجمالي المنتجات: *${allProducts.length}* منتج (صفحة ${safePage + 1} من ${totalPages}):\n\n`;
+  }
+  headerText += `اضغط على *السعر* أو *المخزون* للتعديل الفوري، أو *حذف* للإزالة:`;
+
   return tg('sendMessage', {
     chat_id: chatId,
-    text: `🏷️ *قائمة منتجات ومخزون متجر Roma (${products.length} منتج)*:\nاختر إجراء لتعديل السعر أو الكمية:`,
+    text: headerText,
     parse_mode: 'Markdown',
     reply_markup: { inline_keyboard: buttons },
   });

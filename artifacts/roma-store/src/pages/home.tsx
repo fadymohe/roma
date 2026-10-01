@@ -1,4 +1,4 @@
-import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck } from 'lucide-react';
+import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck, Flame } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { ProductCard } from '@/components/product-card';
@@ -13,8 +13,23 @@ export default function Home() {
   const liveProducts = useLiveProducts();
   const featuredProducts = liveProducts.length > 0 ? liveProducts : DEFAULT_PRODUCTS;
 
-  // Filter products based on selected tab pill
-  const displayedProducts = featuredProducts.filter((p) => {
+  // 1. Under 10 EGP products
+  const under10Products = featuredProducts.filter(
+    (p) => p && typeof p.price === 'number' && p.price <= 10
+  );
+
+  // 2. Amazon products for the "الأكثر طلباً" section
+  const amazonProducts = featuredProducts.filter((p) => {
+    if (!p) return false;
+    const hasAmzImg = (p.imageUrl || '').includes('amz') || (p.additionalImages || []).some((img: string) => img.includes('amz'));
+    const isAmz = (p as any).source === 'amazon' || Boolean((p as any).amazonUrl) || hasAmzImg;
+    return isAmz;
+  });
+
+  const bestsellersSource = amazonProducts.length > 0 ? amazonProducts : featuredProducts;
+
+  // Filter bestsellers based on selected tab pill
+  const displayedProducts = bestsellersSource.filter((p) => {
     if (!p) return false;
     if (activeCategory === 'all') return true;
     const cat = (p.category || '').toLowerCase();
@@ -115,17 +130,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Bestsellers & Featured Products Section */}
+      {/* Bestsellers Section - الأكثر طلباً (Amazon Products) */}
       <section className="roma-container">
         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <span className="text-xs md:text-sm font-semibold text-[#D4A5A5] flex items-center gap-1.5">
               <Sparkles className="size-3.5 text-[#D4A5A5] animate-pulse" />
-              <span>{isAr ? 'المختارات الأكثر تألقاً' : 'Most Coveted Bestsellers'}</span>
+              <span>{isAr ? 'المختارات الأكثر طلباً' : 'Most Wanted Picks'}</span>
             </span>
             <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
               {t('section.bestsellers_title')}
             </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+              {t('section.bestsellers_subtitle')}
+            </p>
           </div>
 
           {/* Category Filter Pills */}
@@ -149,7 +167,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Product Cards Smooth Slider / Flow or Lavish Empty State */}
+        {/* Product Cards Smooth Slider */}
         {displayedProducts.length > 0 ? (
           <div className="flex items-stretch gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x scroll-smooth">
             {displayedProducts.map((p, i) => (
@@ -206,6 +224,61 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* Under 10 EGP Section - قسم منتجات تحت 10 جنيه */}
+      {under10Products.length > 0 && (
+        <section className="roma-container">
+          <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="text-xs md:text-sm font-semibold text-rose-400 flex items-center gap-1.5">
+                <Flame className="size-3.5 text-rose-400 animate-pulse" />
+                <span>{isAr ? 'عروض التوفير الخارقة' : 'Super Saver Deals'}</span>
+              </span>
+              <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
+                {t('section.under_10_title')}
+              </h2>
+              <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+                {t('section.under_10_subtitle')}
+              </p>
+            </div>
+
+            <Link
+              href="/shop"
+              className="group inline-flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-white px-3.5 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 transition-all duration-300 self-start md:self-auto"
+            >
+              <span>{isAr ? 'عرض جميع العروض' : 'View All Deals'}</span>
+              <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1 rtl:rotate-0 ltr:rotate-180" />
+            </Link>
+          </div>
+
+          {/* Under 10 Products Smooth Slider */}
+          <div className="flex items-stretch gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x scroll-smooth">
+            {under10Products.map((p, i) => (
+              <div key={p.id} className="w-[240px] sm:w-[270px] md:w-[290px] shrink-0 snap-start flex">
+                <ProductCard product={p} index={i} />
+              </div>
+            ))}
+
+            {/* Discover More Card in Under 10 Slider */}
+            <div className="w-[200px] sm:w-[240px] shrink-0 snap-start flex">
+              <Link
+                href="/shop"
+                className="flex flex-col items-center justify-center text-center p-6 w-full h-full rounded-3xl border border-dashed border-rose-500/20 hover:border-rose-400 bg-[#141414]/50 hover:bg-[#141414] transition group"
+              >
+                <div className="size-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                  <Flame className="size-5" />
+                </div>
+                <span className="text-xs font-bold text-white group-hover:text-rose-400 transition">
+                  {isAr ? 'تصفح كل عروض المتجر' : 'Browse All Deals'}
+                </span>
+                <span className="text-[10px] text-zinc-400 mt-1">
+                  {isAr ? 'اكتشفي المزيد ←' : 'Discover More →'}
+                </span>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Client Testimonials & Social Proof - Elevated Luxury with Micro-Animations */}
       <section className="roma-container">

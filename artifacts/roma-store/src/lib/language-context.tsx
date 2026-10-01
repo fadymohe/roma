@@ -70,8 +70,10 @@ const translations: Record<Language, Record<string, string>> = {
     // Categories Section
     'section.categories_title': 'اكتشفي المجموعات',
     'section.categories_subtitle': 'مستحضرات صممت بعناية فائقة لتبرز أبهى تفاصيل أنوثتك',
-    'section.bestsellers_title': 'الأكثر طلباً وتألقاً',
-    'section.bestsellers_subtitle': 'المستحضرات التي نالت ثقة آلاف السيدات في مصر',
+    'section.bestsellers_title': 'الأكثر طلباً',
+    'section.bestsellers_subtitle': 'المنتجات الأكثر طلباً ومبيعاً على أمازون متوفرة بمتجرنا للتوصيل الفوري',
+    'section.under_10_title': 'منتجات تحت 10 جنيه',
+    'section.under_10_subtitle': 'عروض استثنائية وتوفير حقيقي بأسعار تبدأ من 1 جنيه فقط',
 
     // Product Card & Actions
     'product.add_to_cart': 'إضافة للسلة',
@@ -217,8 +219,10 @@ const translations: Record<Language, Record<string, string>> = {
     // Categories Section
     'section.categories_title': 'Explore Royal Collections',
     'section.categories_subtitle': 'Artisan formulations crafted to celebrate your authentic elegance',
-    'section.bestsellers_title': 'Most Coveted Bestsellers',
-    'section.bestsellers_subtitle': 'Iconic products loved and trusted by thousands of women across Egypt',
+    'section.bestsellers_title': 'Most Wanted',
+    'section.bestsellers_subtitle': 'Top requested Amazon bestsellers available for instant delivery',
+    'section.under_10_title': 'Under 10 EGP Collection',
+    'section.under_10_subtitle': 'Unbeatable super saver deals starting from just 1 EGP',
 
     // Product Card & Actions
     'product.add_to_cart': 'Add to Bag',
