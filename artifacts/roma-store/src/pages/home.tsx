@@ -1,13 +1,30 @@
 import { Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck, Flame, ChevronLeft, ChevronRight, Timer, ShieldCheck, Truck, Gem } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'wouter';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ProductCard } from '@/components/product-card';
 import { CATEGORIES, TESTIMONIALS, useLiveProducts, DEFAULT_PRODUCTS } from '@/lib/catalog-data';
 import { useLanguage } from '@/lib/language-context';
 
+const HERO_SHOWCASE_IMAGES = [
+  { src: '/hero/hero-1.jpg', alt: 'مستحضرات تجميل وأحمر شفاه فاخر' },
+  { src: '/hero/hero-2.jpg', alt: 'مجموعة تحديد وتجميل الشفاه الوردية' },
+  { src: '/hero/hero-3.jpg', alt: 'باليت ظلال عيون ومستحضرات احترافية' },
+  { src: '/hero/hero-4.jpg', alt: 'كريم الأساس والتغطية المخملية' },
+];
+
 export default function Home() {
   const { t, isAr, dir } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
+  const [currentHeroImageIdx, setCurrentHeroImageIdx] = useState(0);
+
+  // Auto-switch hero showcase image every 3 seconds
+  useEffect(() => {
+    const heroTimer = setInterval(() => {
+      setCurrentHeroImageIdx((prev) => (prev + 1) % HERO_SHOWCASE_IMAGES.length);
+    }, 3000);
+    return () => clearInterval(heroTimer);
+  }, []);
 
   const [timeLeft, setTimeLeft] = useState({ hours: '05', minutes: '42', seconds: '18' });
 
@@ -248,24 +265,53 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Column: Luxury Floating Showcase Card */}
+            {/* Right Column: Luxury Floating Showcase Card with 3s Auto-rotating Carousel */}
             <div className="lg:col-span-5 relative flex items-center justify-center">
-              <div className="relative w-full max-w-sm aspect-square rounded-3xl bg-gradient-to-tr from-[#1E1E1E] to-[#121212] border border-white/10 p-6 flex flex-col items-center justify-center shadow-2xl group">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(212,165,165,0.2),transparent_70%)] pointer-events-none rounded-3xl" />
-                
-                <img
-                  src="https://m.media-amazon.com/images/I/41K-X1r9YkL._AC_.jpg"
-                  alt="ROMA Bestseller Luxury Perfume"
-                  className="max-h-60 sm:max-h-64 object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] transition-transform duration-700 group-hover:scale-105 select-none"
-                />
+              <div className="relative w-full max-w-sm aspect-square rounded-3xl bg-gradient-to-tr from-[#1E1E1E] to-[#121212] border border-white/10 p-4 sm:p-5 flex flex-col items-center justify-center shadow-2xl group overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(212,165,165,0.18),transparent_70%)] pointer-events-none rounded-3xl z-10" />
+
+                {/* Animated Image Container with smooth transitions every 3s */}
+                <div className="relative w-full h-full rounded-2xl overflow-hidden flex items-center justify-center bg-[#0E0E0E]">
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={currentHeroImageIdx}
+                      src={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].src}
+                      alt={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].alt}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.05 }}
+                      transition={{ duration: 0.6, ease: 'easeInOut' }}
+                      className="w-full h-full object-cover rounded-2xl select-none"
+                    />
+                  </AnimatePresence>
+
+                  {/* Subtle luxury vignette gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25 pointer-events-none" />
+
+                  {/* Dots Indicator for Active Slide */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15">
+                    {HERO_SHOWCASE_IMAGES.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentHeroImageIdx(idx)}
+                        aria-label={`Show image ${idx + 1}`}
+                        className={`transition-all duration-300 rounded-full cursor-pointer ${
+                          idx === currentHeroImageIdx
+                            ? 'w-5 h-1.5 bg-[#D4A5A5] shadow-[0_0_8px_rgba(212,165,165,0.8)]'
+                            : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
 
                 {/* Floating Glassmorphism Badges */}
-                <div className="absolute -bottom-3 -right-2 sm:-right-4 rounded-2xl bg-[#141414]/90 border border-white/15 px-3.5 py-2 backdrop-blur-md shadow-xl flex items-center gap-2">
+                <div className="absolute -bottom-3 -right-2 sm:-right-4 rounded-2xl bg-[#141414]/95 border border-white/15 px-3.5 py-2 backdrop-blur-md shadow-2xl flex items-center gap-2 z-30">
                   <div className="size-2 rounded-full bg-emerald-400 animate-ping" />
                   <span className="text-[11px] font-bold text-white font-mono">300+ {isAr ? 'منتج متاح فوري' : 'In Stock'}</span>
                 </div>
 
-                <div className="absolute -top-3 -left-2 sm:-left-4 rounded-2xl bg-[#141414]/90 border border-white/15 px-3.5 py-2 backdrop-blur-md shadow-xl flex items-center gap-1.5">
+                <div className="absolute -top-3 -left-2 sm:-left-4 rounded-2xl bg-[#141414]/95 border border-white/15 px-3.5 py-2 backdrop-blur-md shadow-2xl flex items-center gap-1.5 z-30">
                   <Star className="size-3.5 fill-amber-400 text-amber-400" />
                   <span className="text-[11px] font-bold text-white">4.9 ★ {isAr ? 'تقييم العميلات' : 'Client Rating'}</span>
                 </div>

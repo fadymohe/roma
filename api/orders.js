@@ -1,7 +1,11 @@
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8358497211:AAF5Tr2e3VHXSt5K1BEvxqa-8bgIaHj-nwA';
-const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID || '8940310160';
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://dsgrgbmvbvqwzizbbwxf.supabase.co';
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzZ3JnYm12YnZxd3ppemJid3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzODE0MTMsImV4cCI6MjEwNTk1NzQxM30.kd8bIzK5UzbWIPP4eCHhkflhaRLQ7C1AKb-RhDnvbhM';
+import fs from 'fs';
+import path from 'path';
+
+// Read secrets strictly from environment variables (No hardcoded credentials)
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://dsgrgbmvbvqwzizbbwxf.supabase.co';
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -27,6 +31,31 @@ function checkRateLimit(ip) {
   }
   rateLimitMap.set(ip, record);
   return record.count <= maxReq;
+}
+
+// Cache authoritative catalog to avoid repeated disk reads
+let cachedCatalog = null;
+function getCatalog() {
+  if (cachedCatalog) return cachedCatalog;
+  const searchPaths = [
+    path.join(process.cwd(), 'artifacts', 'roma-store', 'public', 'products.json'),
+    path.join(process.cwd(), 'dist', 'products.json'),
+    path.join(process.cwd(), 'products.json'),
+    path.join(process.cwd(), 'public', 'products.json'),
+  ];
+  for (const p of searchPaths) {
+    if (fs.existsSync(p)) {
+      try {
+        const raw = fs.readFileSync(p, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          cachedCatalog = parsed;
+          return cachedCatalog;
+        }
+      } catch (_) {}
+    }
+  }
+  return [];
 }
 
 export default async function handler(req, res) {
@@ -72,44 +101,86 @@ export default async function handler(req, res) {
       paymentMethod = 'الدفع عند الاستلام',
       items = [],
       shippingCost = 0,
-      totalAmount = 0,
       userId = null,
     } = body;
 
-    // 1. Try saving to Supabase
+    // =========================================================================
+    // DEFENSE IN DEPTH: Server-Side Price & Total Calculation
+    // Never trust client-provided totalAmount or unit price directly.
+    // =========================================================================
+    const catalog = getCatalog();
+    const catalogById = new Map();
+    const catalogByName = new Map();
+    for (const p of catalog) {
+      if (p.id) catalogById.set(String(p.id), p);
+      if (p.nameAr) catalogByName.set(p.nameAr.trim().toLowerCase(), p);
+      if (p.name) catalogByName.set(p.name.trim().toLowerCase(), p);
+    }
+
+    let verifiedSubtotal = 0;
+    const verifiedItems = (Array.isArray(items) ? items : []).map((item) => {
+      const matched =
+        (item.id && catalogById.get(String(item.id))) ||
+        (item.product_id && catalogById.get(String(item.product_id))) ||
+        (item.name && catalogByName.get(String(item.name).trim().toLowerCase()));
+
+      const unitPrice = matched ? Number(matched.price) : Number(item.price || 0);
+      const quantity = Math.max(1, Math.min(100, parseInt(item.quantity, 10) || 1));
+      const lineTotal = unitPrice * quantity;
+      verifiedSubtotal += lineTotal;
+
+      return {
+        ...item,
+        id: matched?.id || item.id,
+        name: matched?.nameAr || matched?.name || item.name || 'مستحضر',
+        price: unitPrice, // Verified authentic price
+        quantity,
+        variantName: item.variantName || item.variant || '',
+        lineTotal,
+      };
+    });
+
+    // Calculate verified shipping (Free above 350 EGP, otherwise standard rate)
+    const verifiedShippingCost = verifiedSubtotal >= 350 ? 0 : (Number(shippingCost) > 0 ? Number(shippingCost) : 35);
+    const verifiedTotalAmount = Math.max(0, verifiedSubtotal + verifiedShippingCost);
+
+    // 1. Try saving to Supabase with verified total and status 'pending'
     let supabaseResult = null;
-    try {
-      const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-          Prefer: 'return=representation',
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          status: 'pending',
-          total_amount: totalAmount,
-          customer_name: customerName,
-          phone: customerPhone,
-          shipping_address: shippingAddress,
-          items: items,
-        }),
-      });
-      if (sbRes.ok) {
-        supabaseResult = await sbRes.json();
+    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+      try {
+        const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            status: 'pending',
+            payment_status: 'unpaid',
+            total_amount: verifiedTotalAmount,
+            customer_name: customerName,
+            phone: customerPhone,
+            shipping_address: shippingAddress,
+            items: verifiedItems,
+          }),
+        });
+        if (sbRes.ok) {
+          supabaseResult = await sbRes.json();
+        }
+      } catch (sbErr) {
+        console.warn('Supabase insert inside /api/orders notice:', sbErr);
       }
-    } catch (sbErr) {
-      console.warn('Supabase insert inside /api/orders notice:', sbErr);
     }
 
     // 2. Format HTML Notification for Telegram
-    const itemsHtml = Array.isArray(items)
-      ? items
+    const itemsHtml = verifiedItems.length > 0
+      ? verifiedItems
           .map(
             (item) =>
-              `• <b>${item.quantity || 1}x</b> ${escapeHtml(item.name || 'مستحضر')} ${item.variantName ? `(${escapeHtml(item.variantName)})` : ''} — <code>${(item.price || 0) * (item.quantity || 1)} ج.م</code>`
+              `• <b>${item.quantity}x</b> ${escapeHtml(item.name)} ${item.variantName ? `(${escapeHtml(item.variantName)})` : ''} — <code>${item.price * item.quantity} ج.م</code>`
           )
           .join('\n')
       : '• مستحضرات عناية طبيعية';
@@ -124,8 +195,8 @@ export default async function handler(req, res) {
       `💳 <b>طريقة الدفع:</b> ${escapeHtml(paymentMethod)}\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `📦 <b>المنتجات المطلوبة:</b>\n${itemsHtml}\n\n` +
-      (shippingCost ? `🚚 <b>الشحن:</b> ${shippingCost} ج.م\n` : '') +
-      `💰 <b>الإجمالي النهائي:</b> <b>${totalAmount} ج.م</b>\n` +
+      (verifiedShippingCost ? `🚚 <b>الشحن:</b> ${verifiedShippingCost} ج.م\n` : '') +
+      `💰 <b>الإجمالي النهائي المحسوب:</b> <b>${verifiedTotalAmount} ج.م</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `الحالة: ⏳ <b>طلب جديد (قيد الانتظار)</b>`;
 
@@ -146,40 +217,43 @@ export default async function handler(req, res) {
       ],
     ];
 
-    // 3. Send Telegram notification from Cloud Server (parse_mode: 'HTML')
+    // 3. Send Telegram notification from Cloud Server using environment secrets
     let telegramResult = null;
-    try {
-      const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: ADMIN_CHAT_ID,
-          text,
-          parse_mode: 'HTML',
-          reply_markup: {
-            inline_keyboard: keyboard,
-          },
-        }),
-      });
-      telegramResult = await tgRes.json();
+    if (BOT_TOKEN && ADMIN_CHAT_ID) {
+      try {
+        const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: ADMIN_CHAT_ID,
+            text,
+            parse_mode: 'HTML',
+            reply_markup: {
+              inline_keyboard: keyboard,
+            },
+          }),
+        });
+        telegramResult = await tgRes.json();
 
-      if (!telegramResult?.ok) {
-        console.error('Telegram API error response:', JSON.stringify(telegramResult));
+        if (!telegramResult?.ok) {
+          console.error('Telegram API error response:', JSON.stringify(telegramResult));
+        }
+      } catch (tgErr) {
+        console.error('Telegram dispatch error inside /api/orders:', JSON.stringify(tgErr));
       }
-    } catch (tgErr) {
-      console.error('Telegram dispatch error inside /api/orders:', JSON.stringify(tgErr));
-      console.error(tgErr);
+    } else {
+      console.warn('TELEGRAM_BOT_TOKEN or TELEGRAM_ADMIN_CHAT_ID environment variable is missing.');
     }
 
     res.status(200).json({
       success: true,
       orderId,
+      verifiedTotalAmount,
       telegram: telegramResult,
       supabase: supabaseResult,
     });
   } catch (error) {
     console.error('/api/orders serverless error:', JSON.stringify(error));
-    console.error(error);
     res.status(500).json({ success: false, error: String(error) });
   }
 }

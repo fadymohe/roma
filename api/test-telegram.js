@@ -1,5 +1,5 @@
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8358497211:AAF5Tr2e3VHXSt5K1BEvxqa-8bgIaHj-nwA';
-const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID || '8940310160';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -11,6 +11,10 @@ function escapeHtml(str) {
 }
 
 export default async function handler(req, res) {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json({ error: 'Endpoint not found' });
+  }
+
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');

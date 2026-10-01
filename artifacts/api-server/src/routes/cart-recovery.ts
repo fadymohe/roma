@@ -8,8 +8,8 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABA
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8358497211:AAF5Tr2e3VHXSt5K1BEvxqa-8bgIaHj-nwA";
-const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID || "8940310160";
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
 
 /**
  * Abandoned Cart Recovery Logic

@@ -253,8 +253,7 @@ router.get("/test-telegram", async (_req: Request, res: Response): Promise<void>
     const telegramResult = await notifyMerchantNewOrder(dummyOrder);
     res.status(200).json({
       success: true,
-      message: "Test order alert dispatched successfully to Telegram Chat ID 8940310160!",
-      targetChatId: "8940310160",
+      message: "Test order alert dispatched successfully!",
       dummyOrder,
       telegramResult,
     });

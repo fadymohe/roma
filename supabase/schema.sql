@@ -49,7 +49,7 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'phone', ''),
     COALESCE(NEW.raw_user_meta_data->>'city', 'Cairo'),
     COALESCE(NEW.raw_user_meta_data->>'address_line', ''),
-    COALESCE((NEW.raw_user_meta_data->>'is_admin')::boolean, FALSE)
+    FALSE -- STRICT: Prevent privilege escalation from client raw_user_meta_data
   )
   ON CONFLICT (id) DO UPDATE SET
     full_name = EXCLUDED.full_name,
@@ -63,6 +63,24 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Prevent users from self-promoting to is_admin = true via UPDATE
+CREATE OR REPLACE FUNCTION public.prevent_self_admin_escalation()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.is_admin IS DISTINCT FROM OLD.is_admin THEN
+    IF NOT (public.is_admin() OR auth.role() = 'service_role') THEN
+      RAISE EXCEPTION 'Access Denied: Only administrators can modify admin privileges.';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_protect_admin_flag ON public.profiles;
+CREATE TRIGGER trg_protect_admin_flag
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.prevent_self_admin_escalation();
 
 -- ==============================================================================
 -- 4. CATEGORIES TABLE
@@ -261,9 +279,15 @@ CREATE POLICY "Users can view own orders or admin view all"
   ON public.orders FOR SELECT
   USING (user_id = auth.uid() OR public.is_admin());
 
-CREATE POLICY "Customers can place orders"
+-- 3. Strict Customer Order Placement: Prevent client tampering with status, payment_status, or user identity
+DROP POLICY IF EXISTS "Customers can place orders" ON public.orders;
+CREATE POLICY "Strict Customer Order Placement"
   ON public.orders FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    status = 'pending'
+    AND payment_status = 'unpaid'
+    AND (auth.uid() IS NULL OR user_id = auth.uid())
+  );
 
 CREATE POLICY "Only admin or backend service role updates order status"
   ON public.orders FOR UPDATE
