@@ -94,8 +94,8 @@ export const PRODUCTS: Product[] = [
     "nameAr": "شريط رأس رياضي أسود معدني للجنسين من اويم، شريط رأس طويل للشعر الأسود للرجال والنساء",
     "slug": "prod-1790739165623",
     "descriptionAr": "شريط رأس رياضي أسود معدني للجنسين من او اي ام، شريط رأس طويل للشعر الأسود للرجال والنساء\n\n✨ *أبرز المميزات:*\n• العلامة التجارية: -\n• النوع: طوق رأس.",
-    "price": 23,
-    "compareAtPrice": 29,
+    "price": 1,
+    "compareAtPrice": 1,
     "category": "إكسسوارات الشعر",
     "imageUrl": "/uploads/prod_amz_1790739164740_1.jpg",
     "additionalImages": [
