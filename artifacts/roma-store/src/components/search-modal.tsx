@@ -94,19 +94,6 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
           </button>
         </form>
 
-        {/* AI Engine Status Bar */}
-        <div className="flex items-center justify-between px-4 py-2 bg-[#121212] border-b border-white/5 text-xs">
-          <div className="flex items-center gap-1.5 text-[#D4A5A5] font-semibold text-[11px]">
-            <Sparkles className="size-3.5 animate-pulse" />
-            <span>{isAr ? 'بحث ذكي بالذكاء الاصطناعي والتخمين التلقائي' : 'AI-Powered Smart Search & Guessing'}</span>
-          </div>
-          {query.trim() && (
-            <span className="text-[11px] text-zinc-400">
-              {isAr ? `${searchSummary.totalFound} نتيجة` : `${searchSummary.totalFound} results`}
-            </span>
-          )}
-        </div>
-
         {/* Filter tags */}
         <div className="flex gap-2 overflow-x-auto p-3 border-b border-white/10 bg-[#141414] no-scrollbar">
           {quickTags.map((tag) => (

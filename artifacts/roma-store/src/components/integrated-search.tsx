@@ -96,7 +96,7 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
             setQuery(e.target.value);
             setIsOpen(true);
           }}
-          placeholder={isAr ? 'بحث ذكي: اكتبي عطر، سيروم، روج، سلسلة...' : 'Smart search: perfume, serum, makeup...'}
+          placeholder={isAr ? 'ابحثي عن عطر، سيروم، روج، إكسسوار...' : 'Search for perfume, serum, jewelry...'}
           className="w-full bg-transparent py-2 px-1 text-xs sm:text-sm text-white placeholder:text-zinc-500 outline-none"
         />
 
@@ -126,22 +126,10 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
       {/* Real-time Inline Results Dropdown */}
       {isOpen && (
         <div
-          className={`absolute left-0 right-0 mt-2 z-50 rounded-2xl border border-[#D4A5A5]/25 bg-[#141414]/98 backdrop-blur-2xl shadow-2xl p-3 text-white overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150 ${
+          className={`absolute left-0 right-0 mt-2 z-50 rounded-2xl border border-white/15 bg-[#141414]/98 backdrop-blur-2xl shadow-2xl p-3 text-white overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150 ${
             variant === 'mobile' ? 'w-full' : 'min-w-[360px] md:min-w-[450px]'
           }`}
         >
-          {/* AI Search Status Badge */}
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-[11px]">
-            <div className="flex items-center gap-1.5 text-[#D4A5A5] font-semibold">
-              <Sparkles className="size-3.5 animate-pulse text-[#D4A5A5]" />
-              <span>{isAr ? 'محرك البحث الذكي (AI)' : 'AI Smart Search Engine'}</span>
-            </div>
-            {query.trim() && (
-              <span className="text-[10px] text-zinc-400">
-                {isAr ? `${searchSummary.totalFound} نتيجة دقيقة` : `${searchSummary.totalFound} results`}
-              </span>
-            )}
-          </div>
 
           {/* Quick Category Filter Pills */}
           <div className="flex items-center gap-1.5 pb-2.5 mb-2 border-b border-white/10 overflow-x-auto no-scrollbar">
@@ -317,10 +305,7 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
 
           {/* Bottom Footer / View All Link */}
           {displayResults.length > 0 && (
-            <div className="pt-2 mt-2 border-t border-white/10 flex items-center justify-between px-1">
-              <span className="text-[10px] text-zinc-500">
-                {isAr ? 'ترتيب ذكي حسب المطابقة الدقيقة' : 'Smart AI relevance sorting'}
-              </span>
+            <div className="pt-2 mt-2 border-t border-white/10 text-center">
               <button
                 type="button"
                 onClick={() => {
@@ -328,7 +313,7 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
                   setLocation(`/shop?search=${encodeURIComponent(query.trim())}`);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="text-[11px] font-bold text-[#D4A5A5] hover:underline flex items-center gap-1"
+                className="text-[11px] font-bold text-[#D4A5A5] hover:underline"
               >
                 {isAr ? 'عرض كافة النتائج بالمتجر ←' : 'View all results in shop →'}
               </button>

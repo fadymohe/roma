@@ -245,16 +245,13 @@ export default function Shop() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs sm:text-sm font-bold text-white">
-                  {isAr ? 'نتائج البحث الذكي لـ:' : 'Smart search for:'} <span className="text-[#D4A5A5]">"{search}"</span>
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 font-bold">
-                  {isAr ? 'ذكاء اصطناعي AI' : 'AI Powered'}
+                  {isAr ? 'نتائج البحث عن:' : 'Search results for:'} <span className="text-[#D4A5A5]">"{search}"</span>
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400 mt-0.5">
                 {isAr
-                  ? `تم العثور على ${products.length} منتج مرتبة بالأعلى دقة ومطابقة لمقصدك.`
-                  : `Found ${products.length} products ranked by precision intent.`}
+                  ? `تم العثور على ${products.length} منتج.`
+                  : `Found ${products.length} products.`}
               </p>
             </div>
           </div>
