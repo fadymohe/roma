@@ -1,9 +1,10 @@
-import { Search, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Search, X, SlidersHorizontal, ArrowUpDown, Sparkles, Lightbulb } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
 import { ProductCard } from '@/components/product-card';
 import { CATEGORIES, useLiveProducts, DEFAULT_PRODUCTS } from '@/lib/catalog-data';
 import { useLanguage } from '@/lib/language-context';
+import { smartSearchProducts } from '@/lib/smart-search';
 
 export default function Shop() {
   const [wouterLocation] = useLocation();
@@ -95,13 +96,8 @@ export default function Shop() {
     }
 
     if (search.trim()) {
-      const q = search.toLowerCase().trim();
-      list = list.filter((p) => {
-        const ar = (p.nameAr || '').toLowerCase();
-        const en = (p.nameEn || '').toLowerCase();
-        const descAr = (p.descriptionAr || '').toLowerCase();
-        return ar.includes(q) || en.includes(q) || descAr.includes(q);
-      });
+      const summary = smartSearchProducts(list, search);
+      list = summary.results;
     }
 
     if (sortBy === 'price-low') {
@@ -116,6 +112,11 @@ export default function Shop() {
 
     return list;
   }, [rawProducts, category, search, sortBy]);
+
+  const searchSummary = useMemo(() => {
+    if (!search.trim()) return null;
+    return smartSearchProducts(rawProducts, search);
+  }, [rawProducts, search]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,6 +234,52 @@ export default function Shop() {
           </div>
         </div>
       </div>
+
+      {/* AI Smart Search Indicator Banner */}
+      {search.trim() && (
+        <div className="mb-6 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-[#D4A5A5]/15 via-[#181818] to-[#141414] border border-[#D4A5A5]/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-xl bg-[#D4A5A5]/20 flex items-center justify-center text-[#D4A5A5] shrink-0 border border-[#D4A5A5]/30">
+              <Sparkles className="size-4 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-bold text-white">
+                  {isAr ? 'نتائج البحث الذكي لـ:' : 'Smart search for:'} <span className="text-[#D4A5A5]">"{search}"</span>
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 font-bold">
+                  {isAr ? 'ذكاء اصطناعي AI' : 'AI Powered'}
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                {isAr
+                  ? `تم العثور على ${products.length} منتج مرتبة بالأعلى دقة ومطابقة لمقصدك.`
+                  : `Found ${products.length} products ranked by precision intent.`}
+              </p>
+            </div>
+          </div>
+
+          {searchSummary?.suggestedQuery && searchSummary.suggestedQuery !== search.trim() && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs">
+              <Lightbulb className="size-3.5 text-[#D4A5A5]" />
+              <span className="text-zinc-300 text-[11px]">{isAr ? 'هل تقصد:' : 'Did you mean:'}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch(searchSummary.suggestedQuery!);
+                  setSearchInput(searchSummary.suggestedQuery!);
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('search', searchSummary.suggestedQuery!);
+                  window.history.pushState({}, '', url.toString());
+                }}
+                className="text-[#D4A5A5] font-bold hover:underline"
+              >
+                "{searchSummary.suggestedQuery}"
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Product Results Grid */}
       {products.length === 0 ? (

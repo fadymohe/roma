@@ -129,7 +129,7 @@ export default function Home() {
     );
 
     const interleaved: any[] = [];
-    const seenIds = new Set<string>();
+    const seenIds = new Set<string | number>();
 
     for (let i = 0; i < 6; i++) {
       categoryPools.forEach((pool) => {

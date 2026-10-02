@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Product, Variant } from '@workspace/api-client-react';
+import type { Product, Variant } from '@/lib/catalog-data';
 import { supabase } from '@/lib/supabase';
 
 export type CartLine = {

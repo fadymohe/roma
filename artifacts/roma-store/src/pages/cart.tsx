@@ -314,7 +314,7 @@ export default function CartPage() {
           .update({ status: 'converted' })
           .eq('user_id', user.id)
           .eq('status', 'active')
-          .catch(() => {});
+          .then(null, () => {});
       }
 
       // 5. Save address & points if user logged in

@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Search, X, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
-import { useLiveProducts, DEFAULT_PRODUCTS } from '@/lib/catalog-data';
+import { Search, X, ArrowLeft, ArrowRight, Sparkles, Tag, Compass, Lightbulb } from 'lucide-react';
+import { useLiveProducts, DEFAULT_PRODUCTS, Product } from '@/lib/catalog-data';
 import { useLanguage } from '@/lib/language-context';
 import { Link, useLocation } from 'wouter';
+import { smartSearchProducts, getHighlightedParts } from '@/lib/smart-search';
 
 export interface IntegratedSearchProps {
   className?: string;
@@ -20,6 +21,7 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -34,30 +36,29 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
 
   const quickTags = [
     { label: isAr ? 'الكل' : 'All', value: 'all' },
+    { label: isAr ? 'عطور فاخرة' : 'Perfumes', value: 'perfume' },
     { label: isAr ? 'إكسسوارات شعر' : 'Hair', value: 'hair' },
     { label: isAr ? 'مكياج' : 'Makeup', value: 'makeup' },
-    { label: isAr ? 'عطور' : 'Perfumes', value: 'perfume' },
     { label: isAr ? 'عناية' : 'Skincare', value: 'care' },
   ];
 
-  const filtered = useMemo(() => {
-    if (!query.trim() && selectedCategory === 'all') return [];
+  // Popular smart recommendations when input is focused or empty
+  const smartTrendingChips = [
+    { label: isAr ? 'عطور فاخرة' : 'Luxury Perfumes', q: isAr ? 'عطر' : 'perfume' },
+    { label: isAr ? 'سيروم لوريال' : 'Loreal Serum', q: isAr ? 'سيروم' : 'serum' },
+    { label: isAr ? 'روج مات' : 'Matte Lipstick', q: isAr ? 'روج' : 'lipstick' },
+    { label: isAr ? 'سلاسل أنيقة' : 'Necklaces', q: isAr ? 'سلسلة' : 'necklace' },
+    { label: isAr ? 'توك وشعر' : 'Hair Accessories', q: isAr ? 'توكة' : 'hair' },
+  ];
 
-    return allProducts.filter((product) => {
-      const q = query.toLowerCase().trim();
-      const name = (product.nameAr + ' ' + (product.nameEn || '') + ' ' + (product.descriptionAr || '')).toLowerCase();
-      const matchesText = !q || name.includes(q);
-
-      const cat = (product.category || '').toLowerCase();
-      let matchesCat = true;
-      if (selectedCategory === 'hair') matchesCat = cat.includes('شعر') || cat.includes('hair');
-      else if (selectedCategory === 'makeup') matchesCat = cat.includes('مكياج') || cat.includes('makeup') || cat.includes('روج');
-      else if (selectedCategory === 'perfume') matchesCat = cat.includes('عطر') || cat.includes('perfume');
-      else if (selectedCategory === 'care') matchesCat = cat.includes('عناية') || cat.includes('جسم') || cat.includes('skin');
-
-      return matchesText && matchesCat;
-    }).slice(0, 6);
+  // Execute AI smart search
+  const searchSummary = useMemo(() => {
+    return smartSearchProducts(allProducts, query, selectedCategory);
   }, [query, selectedCategory, allProducts]);
+
+  const displayResults = useMemo(() => {
+    return searchSummary.results.slice(0, 6);
+  }, [searchSummary.results]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,18 +69,25 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
     }
   };
 
+  const handleApplySuggestion = (suggestion: string) => {
+    setQuery(suggestion);
+    setIsOpen(true);
+    inputRef.current?.focus();
+  };
+
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
       {/* Integrated Search Input Form */}
       <form
         onSubmit={handleSubmit}
-        className="relative flex items-center w-full rounded-full bg-[#141414] border border-white/10 hover:border-[#D4A5A5]/40 focus-within:border-[#D4A5A5] focus-within:ring-2 focus-within:ring-[#D4A5A5]/20 transition-all duration-200 shadow-inner"
+        className="relative flex items-center w-full rounded-full bg-[#141414] border border-white/10 hover:border-[#D4A5A5]/40 focus-within:border-[#D4A5A5] focus-within:ring-2 focus-within:ring-[#D4A5A5]/20 transition-all duration-200 shadow-inner group"
       >
-        <div className="ps-3.5 pe-1.5 flex items-center pointer-events-none text-[#D4A5A5]">
-          <Search className="size-4" strokeWidth={1.75} />
+        <div className="ps-3.5 pe-1.5 flex items-center pointer-events-none text-[#D4A5A5] transition-transform group-focus-within:scale-110">
+          <Search className="size-4" strokeWidth={2} />
         </div>
 
         <input
+          ref={inputRef}
           type="text"
           value={query}
           autoFocus={autoFocus}
@@ -88,7 +96,7 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
             setQuery(e.target.value);
             setIsOpen(true);
           }}
-          placeholder={isAr ? 'ابحثي عن سيروم، عطر، مكياج، إكسسوار...' : 'Search for perfume, serum, jewelry...'}
+          placeholder={isAr ? 'بحث ذكي: اكتبي عطر، سيروم، روج، سلسلة...' : 'Smart search: perfume, serum, makeup...'}
           className="w-full bg-transparent py-2 px-1 text-xs sm:text-sm text-white placeholder:text-zinc-500 outline-none"
         />
 
@@ -97,9 +105,10 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
             type="button"
             onClick={() => {
               setQuery('');
-              setIsOpen(false);
+              setSelectedCategory('all');
+              inputRef.current?.focus();
             }}
-            className="p-1 me-1 text-zinc-400 hover:text-white rounded-full transition"
+            className="p-1 me-1 text-zinc-400 hover:text-white rounded-full transition hover:bg-white/10"
             aria-label="Clear"
           >
             <X className="size-3.5" />
@@ -108,19 +117,32 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
 
         <button
           type="submit"
-          className="me-1 px-3 py-1.5 rounded-full bg-[#D4A5A5]/15 hover:bg-[#D4A5A5] text-[#D4A5A5] hover:text-[#0A0A0A] text-xs font-bold transition active:scale-95 shrink-0"
+          className="me-1 px-3 py-1.5 rounded-full bg-[#D4A5A5]/15 hover:bg-[#D4A5A5] text-[#D4A5A5] hover:text-[#0A0A0A] text-xs font-bold transition active:scale-95 shrink-0 flex items-center gap-1 shadow-sm"
         >
-          {isAr ? 'بحث' : 'Go'}
+          <span>{isAr ? 'بحث' : 'Go'}</span>
         </button>
       </form>
 
       {/* Real-time Inline Results Dropdown */}
-      {isOpen && (query.trim().length > 0 || selectedCategory !== 'all') && (
+      {isOpen && (
         <div
-          className={`absolute left-0 right-0 mt-2 z-50 rounded-2xl border border-white/15 bg-[#141414]/98 backdrop-blur-2xl shadow-2xl p-3 text-white overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150 ${
-            variant === 'mobile' ? 'w-full' : 'min-w-[340px] md:min-w-[420px]'
+          className={`absolute left-0 right-0 mt-2 z-50 rounded-2xl border border-[#D4A5A5]/25 bg-[#141414]/98 backdrop-blur-2xl shadow-2xl p-3 text-white overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150 ${
+            variant === 'mobile' ? 'w-full' : 'min-w-[360px] md:min-w-[450px]'
           }`}
         >
+          {/* AI Search Status Badge */}
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-[11px]">
+            <div className="flex items-center gap-1.5 text-[#D4A5A5] font-semibold">
+              <Sparkles className="size-3.5 animate-pulse text-[#D4A5A5]" />
+              <span>{isAr ? 'محرك البحث الذكي (AI)' : 'AI Smart Search Engine'}</span>
+            </div>
+            {query.trim() && (
+              <span className="text-[10px] text-zinc-400">
+                {isAr ? `${searchSummary.totalFound} نتيجة دقيقة` : `${searchSummary.totalFound} results`}
+              </span>
+            )}
+          </div>
+
           {/* Quick Category Filter Pills */}
           <div className="flex items-center gap-1.5 pb-2.5 mb-2 border-b border-white/10 overflow-x-auto no-scrollbar">
             {quickTags.map((tag) => (
@@ -130,7 +152,7 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
                 onClick={() => setSelectedCategory(tag.value)}
                 className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition shrink-0 ${
                   selectedCategory === tag.value
-                    ? 'bg-[#D4A5A5] text-[#0A0A0A]'
+                    ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-sm'
                     : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
                 }`}
               >
@@ -139,21 +161,101 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
             ))}
           </div>
 
+          {/* AI "Did You Mean / هل تقصد" Suggestion Pill */}
+          {searchSummary.suggestedQuery && searchSummary.suggestedQuery !== query.trim() && (
+            <div className="flex items-center justify-between gap-2 p-2 mb-2 rounded-xl bg-[#D4A5A5]/10 border border-[#D4A5A5]/25 text-xs text-[#D4A5A5] animate-in fade-in">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Lightbulb className="size-3.5 shrink-0 text-[#D4A5A5]" />
+                <span className="truncate">
+                  {isAr ? 'تخمين ذكي: هل تقصد' : 'Smart guess: did you mean'}{' '}
+                  <strong className="text-white underline">"{searchSummary.suggestedQuery}"</strong>؟
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleApplySuggestion(searchSummary.suggestedQuery!)}
+                className="px-2.5 py-0.5 rounded-lg bg-[#D4A5A5] text-[#0A0A0A] font-bold text-[11px] hover:brightness-110 active:scale-95 shrink-0 transition"
+              >
+                {isAr ? 'نعم، طبّق' : 'Apply'}
+              </button>
+            </div>
+          )}
+
+          {/* Direct Category Intent Shortcut (e.g. When searching for "عطر", suggest visiting Luxury Perfumes) */}
+          {searchSummary.intent.categorySlug && query.trim().length >= 2 && (
+            <Link
+              href={`/shop?category=${searchSummary.intent.categorySlug}`}
+              onClick={() => {
+                setIsOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center justify-between p-2 mb-2 rounded-xl bg-gradient-to-r from-[#D4A5A5]/15 via-white/5 to-transparent border border-[#D4A5A5]/20 hover:border-[#D4A5A5]/50 transition text-xs group"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="size-6 rounded-md bg-[#D4A5A5]/20 flex items-center justify-center text-[#D4A5A5] shrink-0">
+                  <Compass className="size-3.5" />
+                </div>
+                <span className="text-zinc-200 text-[11px] truncate">
+                  {isAr ? `تصفح قسم: ` : `Explore category: `}
+                  <strong className="text-[#D4A5A5]">{searchSummary.intent.categoryAr}</strong>
+                </span>
+              </div>
+              <span className="text-[10px] text-[#D4A5A5] font-bold flex items-center gap-1 shrink-0 group-hover:translate-x-[-2px] transition-transform">
+                {isAr ? 'دخول القسم ←' : 'View →'}
+              </span>
+            </Link>
+          )}
+
           {/* Results List */}
           <div className="max-h-[340px] overflow-y-auto space-y-1.5 no-scrollbar">
-            {filtered.length === 0 ? (
-              <div className="py-8 text-center text-zinc-400">
-                <Sparkles className="size-6 mx-auto mb-2 text-[#D4A5A5]/60" />
-                <p className="text-xs font-medium text-zinc-300">
-                  {isAr ? `لم نجد نتائج مطابقة لـ "${query}"` : `No results found for "${query}"`}
+            {!query.trim() && selectedCategory === 'all' ? (
+              // Empty search state - Smart Trending suggestions
+              <div className="py-4 px-2">
+                <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-2.5">
+                  <Tag className="size-3.5 text-[#D4A5A5]" />
+                  <span>{isAr ? 'الأكثر بحثاً الآن بالمحل:' : 'Popular searches right now:'}</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {smartTrendingChips.map((chip, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleApplySuggestion(chip.q)}
+                      className="px-2.5 py-1 rounded-full text-[11px] bg-white/5 hover:bg-[#D4A5A5]/20 hover:text-[#D4A5A5] border border-white/10 text-zinc-300 transition"
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : displayResults.length === 0 ? (
+              // No results found state
+              <div className="py-7 text-center text-zinc-400">
+                <Sparkles className="size-7 mx-auto mb-2 text-[#D4A5A5]/60" />
+                <p className="text-xs font-semibold text-zinc-300">
+                  {isAr ? `لم نجد نتائج مطابقة لـ "${query}"` : `No matches found for "${query}"`}
                 </p>
-                <p className="text-[11px] text-zinc-500 mt-1">
-                  {isAr ? 'جربي البحث باسم آخر أو اضغطي زر البحث لعرض كل المنتجات.' : 'Try another keyword or view all in shop.'}
+                <p className="text-[11px] text-zinc-500 mt-1 max-w-[260px] mx-auto">
+                  {isAr ? 'جربي البحث بكلمة أخرى أو اختاري أحد الاقتراحات السريعة أدناه:' : 'Try another keyword or choose a suggestion below:'}
                 </p>
+                <div className="flex flex-wrap justify-center gap-1.5 mt-3">
+                  {smartTrendingChips.slice(0, 3).map((chip, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleApplySuggestion(chip.q)}
+                      className="px-2.5 py-1 rounded-full text-[10px] bg-[#D4A5A5]/10 text-[#D4A5A5] border border-[#D4A5A5]/20 hover:bg-[#D4A5A5] hover:text-[#0A0A0A] transition"
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
-              filtered.map((product) => {
+              displayResults.map((product) => {
                 const displayName = isAr ? product.nameAr : (product.nameEn || product.nameAr);
+                const titleParts = getHighlightedParts(displayName, query);
+
                 return (
                   <Link
                     key={product.id}
@@ -162,23 +264,38 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
                       setIsOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="flex items-center justify-between gap-3 rounded-xl p-2 transition hover:bg-white/5 group border border-transparent hover:border-white/10"
+                    className="flex items-center justify-between gap-3 rounded-xl p-2 transition hover:bg-white/5 group border border-transparent hover:border-[#D4A5A5]/20"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="size-11 rounded-lg bg-[#1C1C1C] border border-white/5 flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-inner">
+                      <div className="size-11 rounded-lg bg-[#1C1C1C] border border-white/10 flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-inner group-hover:border-[#D4A5A5]/40 transition">
                         <img
                           src={product.imageUrl}
                           alt={displayName}
                           className="size-full object-contain transition-transform group-hover:scale-105"
+                          loading="lazy"
                         />
                       </div>
                       <div className="min-w-0">
                         <h4 className="text-xs font-bold text-white truncate group-hover:text-[#D4A5A5] transition">
-                          {displayName}
+                          {titleParts.map((part, i) => (
+                            <span
+                              key={i}
+                              className={part.isMatch ? 'text-[#D4A5A5] underline decoration-[#D4A5A5]/40' : ''}
+                            >
+                              {part.text}
+                            </span>
+                          ))}
                         </h4>
-                        <span className="text-[10px] text-zinc-400 block truncate">
-                          {product.category || (isAr ? 'عناية وجمال' : 'Cosmetics')}
-                        </span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[10px] text-zinc-400 block truncate">
+                            {product.category || (isAr ? 'عناية وجمال' : 'Cosmetics')}
+                          </span>
+                          {product.badge && (
+                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D4A5A5]/15 text-[#D4A5A5] border border-[#D4A5A5]/30">
+                              {product.badge}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -198,8 +315,12 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
             )}
           </div>
 
-          {filtered.length > 0 && (
-            <div className="pt-2 mt-2 border-t border-white/10 text-center">
+          {/* Bottom Footer / View All Link */}
+          {displayResults.length > 0 && (
+            <div className="pt-2 mt-2 border-t border-white/10 flex items-center justify-between px-1">
+              <span className="text-[10px] text-zinc-500">
+                {isAr ? 'ترتيب ذكي حسب المطابقة الدقيقة' : 'Smart AI relevance sorting'}
+              </span>
               <button
                 type="button"
                 onClick={() => {
@@ -207,9 +328,9 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
                   setLocation(`/shop?search=${encodeURIComponent(query.trim())}`);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="text-[11px] font-bold text-[#D4A5A5] hover:underline"
+                className="text-[11px] font-bold text-[#D4A5A5] hover:underline flex items-center gap-1"
               >
-                {isAr ? 'عرض كافة النتائج في المتجر ←' : 'View all results in shop →'}
+                {isAr ? 'عرض كافة النتائج بالمتجر ←' : 'View all results in shop →'}
               </button>
             </div>
           )}
