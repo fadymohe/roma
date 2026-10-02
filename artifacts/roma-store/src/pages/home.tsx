@@ -26,19 +26,43 @@ export default function Home() {
     return () => clearInterval(heroTimer);
   }, []);
 
-  const [timeLeft, setTimeLeft] = useState({ hours: '05', minutes: '42', seconds: '18' });
+  const [timeLeft, setTimeLeft] = useState({ days: '07', hours: '00', minutes: '00', seconds: '00' });
 
   useEffect(() => {
-    const updateCountdown = () => {
-      const now = new Date();
-      const endOfDay = new Date();
-      endOfDay.setHours(23, 59, 59, 999);
-      const diff = Math.max(0, endOfDay.getTime() - now.getTime());
+    const STORAGE_KEY = 'roma_flash_sale_7d_target';
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
+    let targetTime: number;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        targetTime = parseInt(stored, 10);
+        if (isNaN(targetTime) || targetTime <= Date.now()) {
+          targetTime = Date.now() + SEVEN_DAYS_MS;
+          localStorage.setItem(STORAGE_KEY, String(targetTime));
+        }
+      } else {
+        targetTime = Date.now() + SEVEN_DAYS_MS;
+        localStorage.setItem(STORAGE_KEY, String(targetTime));
+      }
+    } catch {
+      targetTime = Date.now() + SEVEN_DAYS_MS;
+    }
+
+    const updateCountdown = () => {
+      const now = Date.now();
+      let diff = Math.max(0, targetTime - now);
+      if (diff === 0) {
+        targetTime = Date.now() + SEVEN_DAYS_MS;
+        try { localStorage.setItem(STORAGE_KEY, String(targetTime)); } catch {}
+        diff = SEVEN_DAYS_MS;
+      }
+
+      const d = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
       const h = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
       const m = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0');
       const s = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
-      setTimeLeft({ hours: h, minutes: m, seconds: s });
+      setTimeLeft({ days: d, hours: h, minutes: m, seconds: s });
     };
 
     updateCountdown();
@@ -545,6 +569,7 @@ export default function Home() {
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 text-[11px] font-mono font-bold shadow-xs">
                   <Timer className="size-3 text-rose-400 animate-pulse" />
                   <span>{isAr ? 'ينتهي العرض خلال:' : 'Ends in:'}</span>
+                  <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.days}d</span>:
                   <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.hours}h</span>:
                   <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.minutes}m</span>:
                   <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.seconds}s</span>
@@ -583,7 +608,7 @@ export default function Home() {
               </div>
 
               <Link
-                href="/shop"
+                href="/shop?maxPrice=10"
                 className="group inline-flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-white px-3.5 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 transition-all duration-300"
               >
                 <span>{isAr ? 'عرض جميع العروض' : 'View All Deals'}</span>

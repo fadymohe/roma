@@ -42,6 +42,39 @@ export interface Category {
   imageUrl: string;
 }
 
+/**
+ * Calculates discount percent and compareAtPrice.
+ * For all products under 200 EGP, generates a consistent random discount between 10% and 25%.
+ */
+export function getProductDiscount(product: { id: number | string; price: number; compareAtPrice?: number | null }): {
+  discountPercent: number | null;
+  compareAtPrice: number | null;
+} {
+  if (!product || typeof product.price !== 'number') {
+    return { discountPercent: null, compareAtPrice: null };
+  }
+
+  // All products under 200 EGP get a random discount between 10% and 25%
+  if (product.price < 200) {
+    const idNum = typeof product.id === 'number'
+      ? product.id
+      : (parseInt(String(product.id).replace(/\D/g, ''), 10) || 77);
+    const pseudo = Math.abs((idNum * 9301 + 49297) % 233280);
+    const percent = 10 + (pseudo % 16); // 10% to 25%
+    const originalPrice = product.compareAtPrice && product.compareAtPrice > product.price
+      ? product.compareAtPrice
+      : Math.round(product.price / (1 - percent / 100));
+    return { discountPercent: percent, compareAtPrice: originalPrice };
+  }
+
+  if (product.compareAtPrice && product.compareAtPrice > product.price) {
+    const percent = Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100);
+    return { discountPercent: percent, compareAtPrice: product.compareAtPrice };
+  }
+
+  return { discountPercent: null, compareAtPrice: null };
+}
+
 export const CATEGORIES: Category[] = [
   { 
     id: 1, 

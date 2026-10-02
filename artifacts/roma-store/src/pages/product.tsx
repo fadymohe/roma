@@ -25,7 +25,7 @@ import { Link, useParams, useLocation } from 'wouter';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
-import { DEFAULT_PRODUCTS, useLiveProducts, type Product } from '@/lib/catalog-data';
+import { DEFAULT_PRODUCTS, useLiveProducts, getProductDiscount, type Product } from '@/lib/catalog-data';
 import { ProductCard } from '@/components/product-card';
 
 export default function ProductPage() {
@@ -58,6 +58,7 @@ export default function ProductPage() {
   const displayIngredients = isAr ? product.ingredientsAr : (product.ingredientsEn || product.ingredientsAr);
   const displayHowToUse = isAr ? product.howToUseAr : (product.howToUseEn || product.howToUseAr);
   const displayBadge = isAr ? product.badge : (product.badgeEn || product.badge);
+  const { discountPercent, compareAtPrice: effectiveCompareAtPrice } = getProductDiscount(product);
 
   const galleryImages = [
     product.imageUrl,
@@ -313,14 +314,14 @@ export default function ProductPage() {
               <span className="text-3xl md:text-4xl font-extrabold font-mono-brand text-[#D4A5A5]">
                 {formatPrice(product.price)}
               </span>
-              {product.compareAtPrice && (
+              {effectiveCompareAtPrice && effectiveCompareAtPrice > product.price && (
                 <span className="text-base text-[#A1A1AA] line-through font-mono-brand opacity-60">
-                  {formatPrice(product.compareAtPrice)}
+                  {formatPrice(effectiveCompareAtPrice)}
                 </span>
               )}
-              {product.compareAtPrice && (
-                <span className="rounded-full bg-[#D4A5A5] px-2.5 py-0.5 text-xs font-bold text-[#0A0A0A] shadow-xs">
-                  {isAr ? `وفرتي ${product.compareAtPrice - product.price} ج.م` : `Save ${product.compareAtPrice - product.price} EGP`}
+              {effectiveCompareAtPrice && effectiveCompareAtPrice > product.price && (
+                <span className="rounded-full bg-rose-500 text-white px-2.5 py-0.5 text-xs font-bold shadow-xs">
+                  {discountPercent ? `-${discountPercent}%` : (isAr ? `وفرتي ${effectiveCompareAtPrice - product.price} ج.م` : `Save ${effectiveCompareAtPrice - product.price} EGP`)}
                 </span>
               )}
             </div>

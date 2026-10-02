@@ -26,9 +26,19 @@ export default function Shop() {
     }
   };
 
+  const getUrlMaxPrice = () => {
+    try {
+      const p = new URLSearchParams(window.location.search).get('maxPrice');
+      return p ? Number(p) : null;
+    } catch {
+      return null;
+    }
+  };
+
   const [category, setCategory] = useState(getUrlCategory);
   const [search, setSearch] = useState(getUrlSearch);
   const [searchInput, setSearchInput] = useState(getUrlSearch);
+  const [maxPrice, setMaxPrice] = useState<number | null>(getUrlMaxPrice);
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating' | 'name-asc'>('featured');
 
   useEffect(() => {
@@ -39,7 +49,11 @@ export default function Shop() {
       if (urlSearch) {
         setSearch(urlSearch);
         setSearchInput(urlSearch);
+      } else {
+        setSearch('');
+        setSearchInput('');
       }
+      setMaxPrice(getUrlMaxPrice());
     };
 
     syncFromUrl();
@@ -95,6 +109,10 @@ export default function Shop() {
       });
     }
 
+    if (typeof maxPrice === 'number' && maxPrice > 0) {
+      list = list.filter((p) => typeof p.price === 'number' && p.price <= maxPrice);
+    }
+
     if (search.trim()) {
       const summary = smartSearchProducts(list, search);
       list = summary.results;
@@ -111,7 +129,7 @@ export default function Shop() {
     }
 
     return list;
-  }, [rawProducts, category, search, sortBy]);
+  }, [rawProducts, category, search, maxPrice, sortBy]);
 
   const searchSummary = useMemo(() => {
     if (!search.trim()) return null;
@@ -184,6 +202,29 @@ export default function Shop() {
             );
           })}
         </div>
+
+        {/* Active Price Filter Pill if applied */}
+        {maxPrice !== null && (
+          <div className="flex items-center gap-2 pt-1">
+            <span className="text-xs text-zinc-400">{isAr ? 'فلتر السعر النشط:' : 'Active price filter:'}</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold shadow-xs">
+              <span>{isAr ? `عروض أقل من ${maxPrice} ج.م` : `Deals under ${maxPrice} EGP`}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setMaxPrice(null);
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete('maxPrice');
+                  window.history.pushState({}, '', url.toString());
+                }}
+                className="hover:text-white p-0.5 rounded-full hover:bg-rose-500/30 transition cursor-pointer"
+                title={isAr ? 'إلغاء الفلتر' : 'Remove filter'}
+              >
+                <X className="size-3" />
+              </button>
+            </span>
+          </div>
+        )}
 
         {/* Search & Sort Controls Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
@@ -296,6 +337,10 @@ export default function Shop() {
               setCategory('');
               setSearch('');
               setSearchInput('');
+              setMaxPrice(null);
+              const url = new URL(window.location.href);
+              url.search = '';
+              window.history.pushState({}, '', url.toString());
             }}
             className="mt-3 inline-flex items-center rounded-xl bg-[#D4A5A5] px-5 py-2.5 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition"
           >

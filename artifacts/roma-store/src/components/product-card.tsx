@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'wouter';
 import { Heart, ShoppingBag, Star, Check, MessageCircle } from 'lucide-react';
 import type { Product } from '@/lib/catalog-data';
+import { getProductDiscount } from '@/lib/catalog-data';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
@@ -35,10 +36,8 @@ export function ProductCard({ product }: ProductCardProps) {
        (product.category?.replace(/\s*\([^)]*\)/g, '').trim() || 'إكسسوارات وعناية'))
     : (product.categoryEn || product.category || 'Beauty & Accessories');
 
-  const discountPercent =
-    product.compareAtPrice && product.compareAtPrice > product.price
-      ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
-      : null;
+  // Calculates random 10-25% discount for products < 200 EGP or product's own compareAtPrice
+  const { discountPercent, compareAtPrice: effectiveCompareAtPrice } = getProductDiscount(product);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -151,7 +150,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Product Title - Strict 2-line clamp with uniform height across all cards */}
           <Link
             href={`/product/${product.slug}`}
-            className="line-clamp-2-fixed text-xs sm:text-sm font-bold text-white hover:text-[#D4A5A5] transition-colors leading-snug"
+            className="line-clamp-2-fixed block text-xs sm:text-sm font-bold text-white hover:text-[#D4A5A5] transition-colors"
             title={displayName}
           >
             {displayName}
@@ -164,9 +163,9 @@ export function ProductCard({ product }: ProductCardProps) {
             <span className="text-sm sm:text-base font-extrabold font-mono text-[#D4A5A5] tracking-tight leading-none">
               {formatPrice(product.price)}
             </span>
-            {product.compareAtPrice && product.compareAtPrice > product.price ? (
+            {effectiveCompareAtPrice && effectiveCompareAtPrice > product.price ? (
               <span className="text-[11px] text-zinc-500 line-through font-mono mt-1 leading-none">
-                {formatPrice(product.compareAtPrice)}
+                {formatPrice(effectiveCompareAtPrice)}
               </span>
             ) : (
               <span className="text-[11px] invisible select-none mt-1 leading-none" aria-hidden="true">

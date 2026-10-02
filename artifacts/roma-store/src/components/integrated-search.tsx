@@ -19,7 +19,6 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
 
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,14 +33,6 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const quickTags = [
-    { label: isAr ? 'الكل' : 'All', value: 'all' },
-    { label: isAr ? 'عطور فاخرة' : 'Perfumes', value: 'perfume' },
-    { label: isAr ? 'إكسسوارات شعر' : 'Hair', value: 'hair' },
-    { label: isAr ? 'مكياج' : 'Makeup', value: 'makeup' },
-    { label: isAr ? 'عناية' : 'Skincare', value: 'care' },
-  ];
-
   // Popular smart recommendations when input is focused or empty
   const smartTrendingChips = [
     { label: isAr ? 'عطور فاخرة' : 'Luxury Perfumes', q: isAr ? 'عطر' : 'perfume' },
@@ -53,8 +44,8 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
 
   // Execute AI smart search
   const searchSummary = useMemo(() => {
-    return smartSearchProducts(allProducts, query, selectedCategory);
-  }, [query, selectedCategory, allProducts]);
+    return smartSearchProducts(allProducts, query, 'all');
+  }, [query, allProducts]);
 
   const displayResults = useMemo(() => {
     return searchSummary.results.slice(0, 6);
@@ -105,7 +96,6 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
             type="button"
             onClick={() => {
               setQuery('');
-              setSelectedCategory('all');
               inputRef.current?.focus();
             }}
             className="p-1 me-1 text-zinc-400 hover:text-white rounded-full transition hover:bg-white/10"
@@ -130,24 +120,6 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
             variant === 'mobile' ? 'w-full' : 'min-w-[360px] md:min-w-[450px]'
           }`}
         >
-
-          {/* Quick Category Filter Pills */}
-          <div className="flex items-center gap-1.5 pb-2.5 mb-2 border-b border-white/10 overflow-x-auto no-scrollbar">
-            {quickTags.map((tag) => (
-              <button
-                key={tag.value}
-                type="button"
-                onClick={() => setSelectedCategory(tag.value)}
-                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition shrink-0 ${
-                  selectedCategory === tag.value
-                    ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-sm'
-                    : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {tag.label}
-              </button>
-            ))}
-          </div>
 
           {/* AI "Did You Mean / هل تقصد" Suggestion Pill */}
           {searchSummary.suggestedQuery && searchSummary.suggestedQuery !== query.trim() && (
@@ -196,7 +168,7 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
 
           {/* Results List */}
           <div className="max-h-[340px] overflow-y-auto space-y-1.5 no-scrollbar">
-            {!query.trim() && selectedCategory === 'all' ? (
+            {!query.trim() ? (
               // Empty search state - Smart Trending suggestions
               <div className="py-4 px-2">
                 <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-2.5">

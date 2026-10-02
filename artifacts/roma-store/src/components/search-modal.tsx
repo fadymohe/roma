@@ -13,18 +13,9 @@ interface SearchModalProps {
 export function SearchModal({ open, onClose }: SearchModalProps) {
   const [, setLocation] = useLocation();
   const [query, setQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const liveProducts = useLiveProducts();
   const { isAr, formatPrice, dir } = useLanguage();
   const allProducts = liveProducts.length > 0 ? liveProducts : DEFAULT_PRODUCTS;
-
-  const quickTags = [
-    { label: isAr ? 'الكل' : 'All', value: 'all' },
-    { label: isAr ? 'عطور فاخرة' : 'Perfumes', value: 'perfume' },
-    { label: isAr ? 'إكسسوارات شعر' : 'Hair', value: 'hair' },
-    { label: isAr ? 'مكياج وجمال' : 'Makeup', value: 'makeup' },
-    { label: isAr ? 'عناية بالجسم' : 'Body Care', value: 'care' },
-  ];
 
   const smartTrendingChips = [
     { label: isAr ? 'عطور فاخرة' : 'Luxury Perfumes', q: isAr ? 'عطر' : 'perfume' },
@@ -35,8 +26,8 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   ];
 
   const searchSummary = useMemo(() => {
-    return smartSearchProducts(allProducts, query, selectedCategory);
-  }, [query, selectedCategory, allProducts]);
+    return smartSearchProducts(allProducts, query, 'all');
+  }, [query, allProducts]);
 
   if (!open) return null;
 
@@ -94,24 +85,6 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
           </button>
         </form>
 
-        {/* Filter tags */}
-        <div className="flex gap-2 overflow-x-auto p-3 border-b border-white/10 bg-[#141414] no-scrollbar">
-          {quickTags.map((tag) => (
-            <button
-              key={tag.value}
-              type="button"
-              onClick={() => setSelectedCategory(tag.value)}
-              className={`rounded-full px-4 py-1.5 text-xs whitespace-nowrap transition font-medium ${
-                selectedCategory === tag.value
-                  ? 'bg-[#D4A5A5] text-[#0A0A0A] font-bold shadow-sm'
-                  : 'bg-[#1C1C1C] text-zinc-400 hover:text-white border border-white/10'
-              }`}
-            >
-              {tag.label}
-            </button>
-          ))}
-        </div>
-
         {/* AI Typo / Did You Mean Suggestion */}
         {searchSummary.suggestedQuery && searchSummary.suggestedQuery !== query.trim() && (
           <div className="mx-3 mt-2.5 flex items-center justify-between gap-2 p-2.5 rounded-xl bg-[#D4A5A5]/10 border border-[#D4A5A5]/25 text-xs text-[#D4A5A5]">
@@ -156,7 +129,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 
         {/* Results */}
         <div className="max-h-[60vh] overflow-y-auto p-3 space-y-2 no-scrollbar">
-          {!query.trim() && selectedCategory === 'all' ? (
+          {!query.trim() ? (
             <div className="py-6 px-3">
               <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-3">
                 <Tag className="size-4 text-[#D4A5A5]" />
