@@ -323,9 +323,21 @@ router.post("/orders", async (req: Request, res: Response): Promise<void> => {
       });
     }
 
+    const subtotal = itemsDetailed.reduce((sum, it) => sum + it.price * it.quantity, 0);
+    const MIN_ORDER_AMOUNT = 200;
+
+    if (subtotal > 0 && subtotal < MIN_ORDER_AMOUNT) {
+      res.status(400).json({
+        error: `عذراً، الحد الأدنى للطلب هو ${MIN_ORDER_AMOUNT} ج.م`,
+        minOrderAmount: MIN_ORDER_AMOUNT,
+        currentSubtotal: subtotal,
+      });
+      return;
+    }
+
     const totalAmount = body.totalAmount
       ? Number(body.totalAmount)
-      : itemsDetailed.reduce((sum, it) => sum + it.price * it.quantity, 0);
+      : subtotal + shippingCost;
 
     const orderData = {
       orderId,

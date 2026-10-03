@@ -140,8 +140,46 @@ export default async function handler(req, res) {
       };
     });
 
-    // Calculate verified shipping (Free above 350 EGP, otherwise standard rate)
-    const verifiedShippingCost = verifiedSubtotal >= 350 ? 0 : (Number(shippingCost) > 0 ? Number(shippingCost) : 35);
+    // 1. Minimum Order Amount Validation (200 EGP)
+    const MIN_ORDER_AMOUNT = 200;
+    if (verifiedSubtotal < MIN_ORDER_AMOUNT) {
+      return res.status(400).json({
+        success: false,
+        error: `عذراً، الحد الأدنى للطلب هو ${MIN_ORDER_AMOUNT} ج.م`,
+        minOrderAmount: MIN_ORDER_AMOUNT,
+        subtotal: verifiedSubtotal,
+      });
+    }
+
+    // 2. Verified Shipping Calculation By Egyptian Governorate:
+    // - Cairo & Giza: 80 EGP
+    // - Delta & Canal & Alexandria: 90 EGP
+    // - Upper Egypt & Hurghada / Red Sea: 130 EGP
+    function resolveShippingByAddress(addr = '') {
+      const s = String(addr).toLowerCase();
+      // Cairo & Giza -> 80
+      if (s.includes('cairo') || s.includes('القاهرة') || s.includes('giza') || s.includes('الجيزة')) {
+        return 80;
+      }
+      // Upper Egypt & Hurghada / Red Sea / Frontier -> 130
+      const upperEgyptKeywords = [
+        'red_sea', 'بحر أحمر', 'البحر الأحمر', 'غردقة', 'الغردقة', 'hurghada',
+        'faiyum', 'الفيوم', 'beni_suef', 'بني سويف', 'minya', 'المنيا',
+        'asyut', 'أسيوط', 'sohag', 'سوهاج', 'qena', 'قنا', 'luxor', 'الأقصر',
+        'aswan', 'أسوان', 'sinai', 'سيناء', 'شرم', 'matrouh', 'مطروح', 'وادي جديد', 'new_valley'
+      ];
+      if (upperEgyptKeywords.some((k) => s.includes(k))) {
+        return 130;
+      }
+      // Delta & Alexandria & Canal -> 90
+      return 90;
+    }
+
+    const calculatedShipping = resolveShippingByAddress(shippingAddress);
+    const verifiedShippingCost = [80, 90, 130].includes(Number(shippingCost))
+      ? Number(shippingCost)
+      : calculatedShipping;
+
     const verifiedTotalAmount = Math.max(0, verifiedSubtotal + verifiedShippingCost);
 
     // 1. Try saving to Supabase with verified total and status 'pending'

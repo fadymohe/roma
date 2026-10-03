@@ -22,32 +22,7 @@ import { Link } from 'wouter';
 import { useAuth, type UserOrder } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
 import { supabase } from '@/lib/supabase';
-
-const GOVERNORATES = [
-  { id: 'cairo', nameAr: 'القاهرة', nameEn: 'Cairo' },
-  { id: 'giza', nameAr: 'الجيزة', nameEn: 'Giza' },
-  { id: 'alex', nameAr: 'الإسكندرية', nameEn: 'Alexandria' },
-  { id: 'qalyubia', nameAr: 'القليوبية', nameEn: 'Qalyubia' },
-  { id: 'dakahlia', nameAr: 'الدقهلية', nameEn: 'Dakahlia' },
-  { id: 'gharbia', nameAr: 'الغربية', nameEn: 'Gharbia' },
-  { id: 'sharqia', nameAr: 'الشرقية', nameEn: 'Sharqia' },
-  { id: 'monufia', nameAr: 'المنوفية', nameEn: 'Monufia' },
-  { id: 'beheira', nameAr: 'البحيرة', nameEn: 'Beheira' },
-  { id: 'damietta', nameAr: 'دمياط', nameEn: 'Damietta' },
-  { id: 'port_said', nameAr: 'بورسعيد', nameEn: 'Port Said' },
-  { id: 'ismailia', nameAr: 'الإسماعيلية', nameEn: 'Ismailia' },
-  { id: 'suez', nameAr: 'السويس', nameEn: 'Suez' },
-  { id: 'faiyum', nameAr: 'الفيوم', nameEn: 'Faiyum' },
-  { id: 'beni_suef', nameAr: 'بني سويف', nameEn: 'Beni Suef' },
-  { id: 'minya', nameAr: 'المنيا', nameEn: 'Minya' },
-  { id: 'asyut', nameAr: 'أسيوط', nameEn: 'Asyut' },
-  { id: 'sohag', nameAr: 'سوهاج', nameEn: 'Sohag' },
-  { id: 'qena', nameAr: 'قنا', nameEn: 'Qena' },
-  { id: 'luxor', nameAr: 'الأقصر', nameEn: 'Luxor' },
-  { id: 'aswan', nameAr: 'أسوان', nameEn: 'Aswan' },
-  { id: 'red_sea', nameAr: 'البحر الأحمر', nameEn: 'Red Sea' },
-  { id: 'sinai', nameAr: 'جنوب سيناء', nameEn: 'South Sinai' },
-];
+import { GOVERNORATES } from '@/lib/shipping';
 
 export default function AccountPage() {
   const { user, isAuthenticated, setAuthModalOpen, logout, fetchUserOrders } = useAuth();

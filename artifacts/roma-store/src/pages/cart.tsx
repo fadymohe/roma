@@ -31,32 +31,7 @@ import { useLanguage } from '@/lib/language-context';
 import { useLuxuryLoader } from '@/components/luxury-loader';
 import { notifyTelegramNewOrder } from '@/lib/telegram';
 import { uploadOrderToSupabase, supabase } from '@/lib/supabase';
-
-const GOVERNORATES = [
-  { id: 'cairo', nameAr: 'القاهرة', nameEn: 'Cairo' },
-  { id: 'giza', nameAr: 'الجيزة', nameEn: 'Giza' },
-  { id: 'alex', nameAr: 'الإسكندرية', nameEn: 'Alexandria' },
-  { id: 'qalyubia', nameAr: 'القليوبية', nameEn: 'Qalyubia' },
-  { id: 'dakahlia', nameAr: 'الدقهلية', nameEn: 'Dakahlia' },
-  { id: 'gharbia', nameAr: 'الغربية', nameEn: 'Gharbia' },
-  { id: 'sharqia', nameAr: 'الشرقية', nameEn: 'Sharqia' },
-  { id: 'monufia', nameAr: 'المنوفية', nameEn: 'Monufia' },
-  { id: 'beheira', nameAr: 'البحيرة', nameEn: 'Beheira' },
-  { id: 'damietta', nameAr: 'دمياط', nameEn: 'Damietta' },
-  { id: 'port_said', nameAr: 'بورسعيد', nameEn: 'Port Said' },
-  { id: 'ismailia', nameAr: 'الإسماعيلية', nameEn: 'Ismailia' },
-  { id: 'suez', nameAr: 'السويس', nameEn: 'Suez' },
-  { id: 'faiyum', nameAr: 'الفيوم', nameEn: 'Faiyum' },
-  { id: 'beni_suef', nameAr: 'بني سويف', nameEn: 'Beni Suef' },
-  { id: 'minya', nameAr: 'المنيا', nameEn: 'Minya' },
-  { id: 'asyut', nameAr: 'أسيوط', nameEn: 'Asyut' },
-  { id: 'sohag', nameAr: 'سوهاج', nameEn: 'Sohag' },
-  { id: 'qena', nameAr: 'قنا', nameEn: 'Qena' },
-  { id: 'luxor', nameAr: 'الأقصر', nameEn: 'Luxor' },
-  { id: 'aswan', nameAr: 'أسوان', nameEn: 'Aswan' },
-  { id: 'red_sea', nameAr: 'البحر الأحمر', nameEn: 'Red Sea' },
-  { id: 'sinai', nameAr: 'جنوب سيناء', nameEn: 'South Sinai' },
-];
+import { GOVERNORATES, MIN_ORDER_AMOUNT, getShippingRate, getGovernorate } from '@/lib/shipping';
 
 export default function CartPage() {
   const { lines, subtotal, setQuantity, remove, clear } = useCart();
@@ -92,12 +67,14 @@ export default function CartPage() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [couponSuccess, setCouponSuccess] = useState(false);
 
-  // Free shipping dynamic calculation (Threshold: 500 EGP)
-  const FREE_SHIPPING_THRESHOLD = 500;
-  const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
-  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
-  const shippingCost = isFreeShipping ? 0 : 35;
+  // Minimum Order Calculation (200 EGP)
+  const isMinOrderReached = subtotal >= MIN_ORDER_AMOUNT;
+  const remainingForMinOrder = Math.max(0, MIN_ORDER_AMOUNT - subtotal);
+  const minOrderProgress = Math.min(100, Math.round((subtotal / MIN_ORDER_AMOUNT) * 100));
+
+  // Dynamic Governorate Shipping Calculation (Cairo & Giza: 80, Delta: 90, Upper Egypt & Hurghada: 130)
+  const shippingCost = getShippingRate(governorate);
+  const selectedGov = getGovernorate(governorate);
 
   const [complete, setComplete] = useState<{ id: string; total: number; method: string } | null>(null);
 
@@ -151,6 +128,16 @@ export default function CartPage() {
   const submitOrder = async (event: FormEvent) => {
     event.preventDefault();
     if (isSubmitting) return;
+
+    // Minimum Order Amount Validation (200 EGP)
+    if (subtotal < MIN_ORDER_AMOUNT) {
+      setValidationError(
+        isAr
+          ? `عذراً، الحد الأدنى للطلب هو ${MIN_ORDER_AMOUNT} ج.م. يرجى إضافة منتجات إضافية بقيمة ${remainingForMinOrder} ج.م لتأكيد طلبكِ.`
+          : `Minimum order amount is ${MIN_ORDER_AMOUNT} EGP. Please add ${remainingForMinOrder} EGP more to proceed.`
+      );
+      return;
+    }
 
     // Strict input validation
     if (!name.trim()) {
@@ -460,23 +447,67 @@ export default function CartPage() {
   return (
     <div className="roma-container py-8 md:py-14 text-white" dir={dir}>
       {/* Top Free Shipping Progress Indicator */}
+      {/* Top Minimum Order & Shipping Information Indicator */}
       <div className="mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl">
-        <div className="flex items-center justify-between text-xs font-bold mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold mb-2.5">
           <div className="flex items-center gap-2 text-white">
-            <Truck className="size-4 text-[#D4A5A5]" />
+            {!isMinOrderReached ? (
+              <AlertCircle className="size-4 text-amber-400 shrink-0" />
+            ) : (
+              <Check className="size-4 text-emerald-400 shrink-0" />
+            )}
             <span>
-              {isFreeShipping
-                ? t('common.free_shipping_qualified')
-                : t('common.free_shipping_progress').replace('{remaining}', String(remainingForFreeShipping))}
+              {!isMinOrderReached
+                ? isAr
+                  ? `الحد الأدنى للطلب هو ${MIN_ORDER_AMOUNT} ج.م — أضيفي بقيمة ${remainingForMinOrder} ج.م إضافية لتأكيد الشراء`
+                  : `Minimum order amount is ${MIN_ORDER_AMOUNT} EGP — Add ${remainingForMinOrder} EGP more to proceed`
+                : isAr
+                ? `✨ تم استيفاء الحد الأدنى للطلب (${MIN_ORDER_AMOUNT} ج.م) بنجاح — يمكنك إتمام الطلب الآن`
+                : `✨ Minimum order requirement (${MIN_ORDER_AMOUNT} EGP) met! You can checkout now`}
             </span>
           </div>
-          <span className="font-mono-brand text-[#D4A5A5]">{freeShippingProgress}%</span>
+
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            {!isMinOrderReached && (
+              <Link
+                href="/shop"
+                className="text-[11px] font-semibold text-[#D4A5A5] hover:underline"
+              >
+                {isAr ? 'تصفح المنتجات ←' : 'Browse items →'}
+              </Link>
+            )}
+            <span className="font-mono-brand text-[#D4A5A5]">{minOrderProgress}%</span>
+          </div>
         </div>
+
         <div className="h-2 w-full rounded-full bg-[#1A1A1A] overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#D4A5A5] to-white transition-all duration-500"
-            style={{ width: `${freeShippingProgress}%` }}
+            className={`h-full rounded-full transition-all duration-500 ${
+              isMinOrderReached
+                ? 'bg-gradient-to-r from-[#D4A5A5] to-emerald-400'
+                : 'bg-gradient-to-r from-rose-500 via-amber-400 to-[#D4A5A5]'
+            }`}
+            style={{ width: `${minOrderProgress}%` }}
           />
+        </div>
+
+        {/* Shipping Rates Summary Badge */}
+        <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-zinc-400">
+          <div className="flex items-center gap-1.5 text-zinc-300">
+            <Truck className="size-3.5 text-[#D4A5A5]" />
+            <span className="font-medium">{isAr ? 'تكلفة الشحن حسب المحافظة:' : 'Shipping Rates:'}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 font-medium">
+            <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white">
+              {isAr ? 'القاهرة والجيزة: 80 ج.م' : 'Cairo & Giza: 80 EGP'}
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white">
+              {isAr ? 'الدلتا والقناة: 90 ج.م' : 'Delta: 90 EGP'}
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white">
+              {isAr ? 'الصعيد والغردقة: 130 ج.م' : 'Upper Egypt & Hurghada: 130 EGP'}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -581,13 +612,16 @@ export default function CartPage() {
               )}
 
               <div className="flex justify-between text-[#A1A1AA]">
-                <span>{isAr ? 'رسوم الشحن والتوصيل:' : 'Express Shipping:'}</span>
-                <span className="font-mono-brand text-white font-bold">
-                  {shippingCost === 0 ? (
-                    <span className="text-emerald-400 font-bold">{isAr ? 'شحن مجاني' : 'FREE'}</span>
-                  ) : (
-                    formatPrice(shippingCost)
+                <span>
+                  {isAr ? 'رسوم الشحن والتوصيل:' : 'Express Shipping:'}
+                  {selectedGov && (
+                    <span className="text-[11px] text-[#D4A5A5] ms-1">
+                      ({isAr ? selectedGov.nameAr : selectedGov.nameEn})
+                    </span>
                   )}
+                </span>
+                <span className="font-mono-brand text-white font-bold">
+                  {formatPrice(shippingCost)}
                 </span>
               </div>
 
@@ -691,7 +725,7 @@ export default function CartPage() {
                   >
                     {GOVERNORATES.map((g) => (
                       <option key={g.id} value={g.id} className="bg-[#141414] text-white">
-                        {isAr ? g.nameAr : g.nameEn}
+                        {isAr ? `${g.nameAr} — شحن ${g.rate} ج.م` : `${g.nameEn} — ${g.rate} EGP Shipping`}
                       </option>
                     ))}
                   </select>
@@ -998,20 +1032,48 @@ export default function CartPage() {
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#D4A5A5] hover:bg-[#C89595] py-4 px-6 text-sm font-bold text-[#0A0A0A] shadow-lg shadow-[#D4A5A5]/25 transition active:scale-[0.99] disabled:opacity-60"
+                disabled={isSubmitting || !isMinOrderReached}
+                className={`flex items-center justify-center gap-2 w-full rounded-2xl py-4 px-6 text-sm font-bold shadow-lg transition active:scale-[0.99] ${
+                  !isMinOrderReached
+                    ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed border border-white/10 opacity-70'
+                    : 'bg-[#D4A5A5] hover:bg-[#C89595] text-[#0A0A0A] shadow-[#D4A5A5]/25 disabled:opacity-60'
+                }`}
               >
-                <Lock className="size-4" />
-                <span>
-                  {isSubmitting
-                    ? isAr
-                      ? 'جاري تأكيد وتسجيل الطلب...'
-                      : 'Processing Order...'
-                    : isAr
-                    ? `تأكيد الطلب الآن (${formatPrice(total)})`
-                    : `Confirm Order Now (${formatPrice(total)})`}
-                </span>
+                {!isMinOrderReached ? (
+                  <>
+                    <AlertCircle className="size-4 text-amber-400" />
+                    <span>
+                      {isAr
+                        ? `الحد الأدنى للطلب 200 ج.م (متبقي ${formatPrice(remainingForMinOrder)})`
+                        : `Minimum Order 200 EGP (${formatPrice(remainingForMinOrder)} left)`}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="size-4" />
+                    <span>
+                      {isSubmitting
+                        ? isAr
+                          ? 'جاري تأكيد وتسجيل الطلب...'
+                          : 'Processing Order...'
+                        : isAr
+                        ? `تأكيد الطلب الآن (${formatPrice(total)})`
+                        : `Confirm Order Now (${formatPrice(total)})`}
+                    </span>
+                  </>
+                )}
               </button>
+
+              {!isMinOrderReached && (
+                <div className="mt-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 p-2.5 text-center text-xs text-amber-300 flex items-center justify-center gap-1.5">
+                  <AlertCircle className="size-3.5 shrink-0" />
+                  <span>
+                    {isAr
+                      ? `الحد الأدنى لإتمام الطلب هو 200 ج.م، يرجى إضافة منتجات بقيمة ${formatPrice(remainingForMinOrder)} إضافية لتفعيل الطلب.`
+                      : `Minimum order amount is 200 EGP. Please add ${formatPrice(remainingForMinOrder)} more to checkout.`}
+                  </span>
+                </div>
+              )}
             </div>
           </form>
         </div>

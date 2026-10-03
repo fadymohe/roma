@@ -19,9 +19,9 @@ const translations: Record<Language, Record<string, string>> = {
     'brand.name': 'روما | ROMA',
     'brand.tagline': 'مستحضرات تجميل فاخرة وعناية استثنائية بالمرأة المصرية',
     'brand.currency': 'ج.م',
-    'common.free_shipping_notice': 'شحن سريع مجاني لجميع محافظات مصر للطلبات فوق 500 ج.م ✨',
-    'common.free_shipping_progress': 'أضيفي بقيمة {remaining} ج.م إضافية للحصول على شحن مجاني!',
-    'common.free_shipping_qualified': 'مبروك! طلبكِ مؤهل الآن للشحن المجاني السريع 🚚✨',
+    'common.free_shipping_notice': 'الحد الأدنى للطلب 200 ج.م 🛍️ | الشحن: القاهرة والجيزة 80 ج • الدلتا 90 ج • الصعيد والغردقة 130 ج 🚚',
+    'common.free_shipping_progress': 'أضيفي بقيمة {remaining} ج.م إضافية لاستيفاء الحد الأدنى للطلب (200 ج.م)',
+    'common.free_shipping_qualified': '✨ تم استيفاء الحد الأدنى للطلب (200 ج.م) بنجاح! جاهز للتأكيد',
 
     // Navigation
     'nav.home': 'الرئيسية',
@@ -88,7 +88,7 @@ const translations: Record<Language, Record<string, string>> = {
     'product.size': 'الحجم:',
 
     // Product Details Page
-    'pdp.free_shipping_hint': 'شحن مجاني للطلبات فوق 500 ج.م',
+    'pdp.free_shipping_hint': 'توصيل فوري لكافة محافظات مصر من 80 ج.م',
     'pdp.fast_delivery_estimate': 'التوصيل المتوقع: خلال 24 - 48 ساعة للقاهرة والجيزة',
     'pdp.cod_available': 'الدفع عند الاستلام متاح (نقداً أو إنستاباي)',
     'pdp.easy_returns': 'استبدال واسترجاع خلال 14 يوماً وفق قانون حماية المستهلك',
@@ -174,9 +174,9 @@ const translations: Record<Language, Record<string, string>> = {
     'brand.name': 'ROMA Cosmetics',
     'brand.tagline': 'Bespoke Luxury Cosmetics & Fine Accessories for the Modern Woman',
     'brand.currency': 'EGP',
-    'common.free_shipping_notice': 'Free Express Delivery across Egypt on orders above 500 EGP ✨',
-    'common.free_shipping_progress': 'Add {remaining} EGP more to enjoy Free Express Delivery!',
-    'common.free_shipping_qualified': 'Congratulations! Your order qualifies for Free Express Delivery 🚚✨',
+    'common.free_shipping_notice': 'Minimum Order 200 EGP 🛍️ | Shipping: Cairo & Giza 80 EGP • Delta 90 EGP • Upper Egypt & Hurghada 130 EGP 🚚',
+    'common.free_shipping_progress': 'Add {remaining} EGP more to meet the 200 EGP minimum order',
+    'common.free_shipping_qualified': '✨ Minimum order requirement (200 EGP) met! Ready to checkout',
 
     // Navigation
     'nav.home': 'Home',
@@ -237,7 +237,7 @@ const translations: Record<Language, Record<string, string>> = {
     'product.size': 'Size:',
 
     // Product Details Page
-    'pdp.free_shipping_hint': 'Free Express Delivery on orders over 500 EGP',
+    'pdp.free_shipping_hint': 'Doorstep Express Delivery across Egypt from 80 EGP',
     'pdp.fast_delivery_estimate': 'Estimated Delivery: Within 24 - 48h (Cairo & Giza)',
     'pdp.cod_available': 'Cash on Delivery & InstaPay available at your doorstep',
     'pdp.easy_returns': '14-Day Returns & Exchanges compliant with Egyptian Consumer Law',

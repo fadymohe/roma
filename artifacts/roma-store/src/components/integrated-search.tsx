@@ -107,7 +107,7 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
 
         <button
           type="submit"
-          className="me-1 px-3 py-1.5 rounded-full bg-[#D4A5A5]/15 hover:bg-[#D4A5A5] text-[#D4A5A5] hover:text-[#0A0A0A] text-xs font-bold transition active:scale-95 shrink-0 flex items-center gap-1 shadow-sm"
+          className="me-1 px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-[#0A0A0A] text-xs font-bold transition active:scale-95 shrink-0 flex items-center gap-1 shadow-sm"
         >
           <span>{isAr ? 'بحث' : 'Go'}</span>
         </button>

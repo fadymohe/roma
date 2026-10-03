@@ -145,38 +145,53 @@ export default function PoliciesPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-5 rounded-2xl border border-white/10 bg-[#181818] space-y-2 hover:border-[#D4A5A5]/40 transition">
-                <span className="text-xs font-bold text-[#D4A5A5] block">
-                  {isAr ? 'القاهرة الكبرى والجيزة' : 'Cairo & Giza'}
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#D4A5A5] block">
+                    {isAr ? 'القاهرة الكبرى والجيزة' : 'Cairo & Giza'}
+                  </span>
+                  <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#D4A5A5]/10 text-[#D4A5A5] border border-[#D4A5A5]/25">
+                    {isAr ? '80 ج.م' : '80 EGP'}
+                  </span>
+                </div>
                 <strong className="text-base font-extrabold text-white block font-mono">
                   {isAr ? '٢٤ - ٤٨ ساعة عمل' : '24 - 48 Hours'}
                 </strong>
                 <p className="text-xs text-zinc-400 leading-relaxed font-normal">
-                  {isAr ? 'شحن سريع لباب المنزل مع إمكانية المعاينة قبل الاستلام' : 'Next-day courier with parcel inspection prior to payment'}
+                  {isAr ? 'شحن فوري لباب المنزل مع إمكانية المعاينة قبل الاستلام' : 'Next-day courier with parcel inspection prior to payment'}
                 </p>
               </div>
 
               <div className="p-5 rounded-2xl border border-white/10 bg-[#181818] space-y-2 hover:border-[#D4A5A5]/40 transition">
-                <span className="text-xs font-bold text-[#D4A5A5] block">
-                  {isAr ? 'الإسكندرية ومحافظات الدلتا' : 'Alexandria & Delta'}
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#D4A5A5] block">
+                    {isAr ? 'الإسكندرية ومحافظات الدلتا' : 'Alexandria & Delta'}
+                  </span>
+                  <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#D4A5A5]/10 text-[#D4A5A5] border border-[#D4A5A5]/25">
+                    {isAr ? '90 ج.م' : '90 EGP'}
+                  </span>
+                </div>
                 <strong className="text-base font-extrabold text-white block font-mono">
                   {isAr ? '٤٨ - ٧٢ ساعة عمل' : '48 - 72 Hours'}
                 </strong>
                 <p className="text-xs text-zinc-400 leading-relaxed font-normal">
-                  {isAr ? 'طنطا، المنصورة، الزقازيق، بورسعيد، السويس، الإسماعيلية' : 'Full express coverage to all primary Delta and Canal governorates'}
+                  {isAr ? 'طنطا، المنصورة، الزقازيق، كفر الشيخ، بورسعيد، السويس، الإسماعيلية' : 'Full express coverage to all primary Delta and Canal governorates'}
                 </p>
               </div>
 
               <div className="p-5 rounded-2xl border border-white/10 bg-[#181818] space-y-2 hover:border-[#D4A5A5]/40 transition">
-                <span className="text-xs font-bold text-[#D4A5A5] block">
-                  {isAr ? 'الصعيد والبحر الأحمر وسيناء' : 'Upper Egypt & Coastal'}
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#D4A5A5] block">
+                    {isAr ? 'الصعيد والغردقة وسيناء' : 'Upper Egypt & Hurghada'}
+                  </span>
+                  <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#D4A5A5]/10 text-[#D4A5A5] border border-[#D4A5A5]/25">
+                    {isAr ? '130 ج.م' : '130 EGP'}
+                  </span>
+                </div>
                 <strong className="text-base font-extrabold text-white block font-mono">
                   {isAr ? '٣ - ٥ أيام عمل' : '3 - 5 Business Days'}
                 </strong>
                 <p className="text-xs text-zinc-400 leading-relaxed font-normal">
-                  {isAr ? 'أسيوط، سوهاج، قنا، الأقصر، أسوان، الغردقة، شرم الشيخ' : 'Reliable delivery to all southern and frontier cities'}
+                  {isAr ? 'أسيوط، سوهاج، قنا، الأقصر، أسوان، الفيوم، بني سويف، المنيا، الغردقة، شرم الشيخ' : 'Reliable delivery to Upper Egypt, Hurghada, and Red Sea'}
                 </p>
               </div>
             </div>
@@ -184,10 +199,10 @@ export default function PoliciesPage() {
             <div className="p-4 rounded-2xl bg-gradient-to-r from-[#D4A5A5]/15 via-[#D4A5A5]/10 to-transparent border border-[#D4A5A5]/30 text-xs md:text-sm text-zinc-200 flex items-center gap-2.5">
               <Sparkles className="size-4 text-[#D4A5A5] shrink-0" />
               <span>
-                <strong className="text-white font-bold">{isAr ? 'ميزة الشحن المجاني: ' : 'Free Delivery Tier: '}</strong>
+                <strong className="text-white font-bold">{isAr ? 'الحد الأدنى للطلب: ' : 'Minimum Order Policy: '}</strong>
                 {isAr
-                  ? 'جميع الطلبات التي تتجاوز قيمتها ٥٠٠ ج.م مؤهلة تلقائياً للشحن المجاني السريع لجميع أنحاء جمهورية مصر العربية.'
-                  : 'All orders over 500 EGP automatically qualify for complimentary express shipping across Egypt.'}
+                  ? 'الحد الأدنى للطلب في متجر روما هو ٢٠٠ ج.م لضمان أعلى معايير الجودة والتغليف الملكي والشحن السريع لجميع محافظات مصر.'
+                  : 'The minimum order value at ROMA is 200 EGP to ensure the highest standards of royal packaging and express fulfillment across Egypt.'}
               </span>
             </div>
           </div>

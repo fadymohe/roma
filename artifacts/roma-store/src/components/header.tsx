@@ -68,8 +68,8 @@ export function Header({
             </span>
             <p className="truncate font-sans font-medium text-[11px] sm:text-[12px]">
               {isAr
-                ? 'شحن مجاني لكافة محافظات مصر للطلبات فوق 500 ج.م 🚚 | الدفع عند الاستلام متاح'
-                : 'Free Shipping Across Egypt for orders over 500 EGP 🚚 | Cash on Delivery Available'}
+                ? 'الحد الأدنى للطلب 200 ج.م 🛍️ | الشحن: القاهرة والجيزة 80 ج • الدلتا 90 ج • الصعيد والغردقة 130 ج 🚚'
+                : 'Minimum Order 200 EGP 🛍️ | Shipping: Cairo & Giza 80 EGP • Delta 90 EGP • Upper Egypt & Hurghada 130 EGP 🚚'}
             </p>
           </div>
 
