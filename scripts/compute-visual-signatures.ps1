@@ -7,126 +7,139 @@ $outputPath = "$PSScriptRoot/../artifacts/roma-store/src/lib/product-visual-sign
 $products = Get-Content -Raw -Path $productsJsonPath -Encoding UTF8 | ConvertFrom-Json
 
 $signatures = @()
+$seenFiles = @{}
 
-Write-Output "Processing $($products.Count) products with multi-hash algorithms..."
+Write-Output "Processing all images (main + all gallery images) for $($products.Count) products..."
 
 function Get-Luminance($r, $g, $b) {
     return ($r * 0.299) + ($g * 0.587) + ($b * 0.114)
 }
 
+$processedCount = 0
+
 foreach ($p in $products) {
-    $imgRel = $p.imageUrl
-    if (-not $imgRel) { continue }
-    
-    $fullPath = Join-Path $publicDir ($imgRel.TrimStart('/'))
-    if (-not (Test-Path $fullPath)) { continue }
-
-    try {
-        $fileBytes = [System.IO.File]::ReadAllBytes($fullPath)
-        $sha256 = [System.BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash($fileBytes)).Replace('-', '').ToLower()
-        $md5 = [System.BitConverter]::ToString([System.Security.Cryptography.MD5]::Create().ComputeHash($fileBytes)).Replace('-', '').ToLower()
-        $fileSize = $fileBytes.Length
-
-        $ms = New-Object System.IO.MemoryStream(,$fileBytes)
-        $srcBmp = [System.Drawing.Image]::FromStream($ms)
-        $origW = $srcBmp.Width
-        $origH = $srcBmp.Height
-        $aspect = [Math]::Round(($origW / [Math]::Max(1, $origH)), 3)
-
-        # 1. 16x16 thumbnail for color grid and average RGB
-        $thumb16 = New-Object System.Drawing.Bitmap 16, 16
-        $g = [System.Drawing.Graphics]::FromImage($thumb16)
-        $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-        $g.DrawImage($srcBmp, 0, 0, 16, 16)
-        $g.Dispose()
-
-        $grid16 = @()
-        $rSum = 0
-        $gSum = 0
-        $bSum = 0
-
-        for ($y = 0; $y -lt 16; $y++) {
-            for ($x = 0; $x -lt 16; $x++) {
-                $pixel = $thumb16.GetPixel($x, $y)
-                $rSum += $pixel.R
-                $gSum += $pixel.G
-                $bSum += $pixel.B
-                $q = (($pixel.R -shr 4) -shl 8) -bor (($pixel.G -shr 4) -shl 4) -bor ($pixel.B -shr 4)
-                $grid16 += $q
+    $imgList = @()
+    if ($p.imageUrl) { $imgList += $p.imageUrl }
+    if ($p.additionalImages) {
+        foreach ($ai in $p.additionalImages) {
+            if ($ai -and $imgList -notcontains $ai) {
+                $imgList += $ai
             }
-        }
-        $avgR = [Math]::Round($rSum / 256)
-        $avgG = [Math]::Round($gSum / 256)
-        $avgB = [Math]::Round($bSum / 256)
-
-        # 2. 9x8 dHash (Bilinear)
-        $thumb9x8 = New-Object System.Drawing.Bitmap 9, 8
-        $g2 = [System.Drawing.Graphics]::FromImage($thumb9x8)
-        $g2.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::Bilinear
-        $g2.DrawImage($srcBmp, 0, 0, 9, 8)
-        $g2.Dispose()
-
-        $dhashBits = ""
-        for ($y = 0; $y -lt 8; $y++) {
-            for ($x = 0; $x -lt 8; $x++) {
-                $p1 = $thumb9x8.GetPixel($x, $y)
-                $p2 = $thumb9x8.GetPixel($x + 1, $y)
-                $b1 = Get-Luminance $p1.R $p1.G $p1.B
-                $b2 = Get-Luminance $p2.R $p2.G $p2.B
-                if ($b1 -gt $b2) { $dhashBits += "1" } else { $dhashBits += "0" }
-            }
-        }
-
-        # 3. 8x8 aHash (Average Hash - High Quality Bicubic)
-        $thumb8x8 = New-Object System.Drawing.Bitmap 8, 8
-        $g3 = [System.Drawing.Graphics]::FromImage($thumb8x8)
-        $g3.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-        $g3.DrawImage($srcBmp, 0, 0, 8, 8)
-        $g3.Dispose()
-
-        $lums = @()
-        $totalLum = 0
-        for ($y = 0; $y -lt 8; $y++) {
-            for ($x = 0; $x -lt 8; $x++) {
-                $pixelColor = $thumb8x8.GetPixel($x, $y)
-                $lum = Get-Luminance $pixelColor.R $pixelColor.G $pixelColor.B
-                $lums += $lum
-                $totalLum += $lum
-            }
-        }
-        $avgLum = $totalLum / 64
-        $ahashBits = ""
-        foreach ($l in $lums) {
-            if ($l -gt $avgLum) { $ahashBits += "1" } else { $ahashBits += "0" }
-        }
-
-        $srcBmp.Dispose()
-        $thumb16.Dispose()
-        $thumb9x8.Dispose()
-        $thumb8x8.Dispose()
-        $ms.Dispose()
-
-        $fileName = [System.IO.Path]::GetFileName($fullPath)
-
-        $signatures += [PSCustomObject]@{
-            productId = [string]$p.id
-            nameAr = $p.nameAr
-            imageUrl = $p.imageUrl
-            fileName = $fileName
-            sha256 = $sha256
-            md5 = $md5
-            fileSize = $fileSize
-            aspectRatio = $aspect
-            avgR = $avgR
-            avgG = $avgG
-            avgB = $avgB
-            dhash = $dhashBits
-            ahash = $ahashBits
-            grid16 = $grid16
         }
     }
-    catch {
-        Write-Warning "Error processing $($p.id): $_"
+
+    foreach ($imgRel in $imgList) {
+        $fullPath = Join-Path $publicDir ($imgRel.TrimStart('/'))
+        if (-not (Test-Path $fullPath)) { continue }
+
+        $fileName = [System.IO.Path]::GetFileName($fullPath)
+        $uniqueKey = "$($p.id)|$fileName"
+        if ($seenFiles.ContainsKey($uniqueKey)) { continue }
+        $seenFiles[$uniqueKey] = $true
+
+        try {
+            $fileBytes = [System.IO.File]::ReadAllBytes($fullPath)
+            $sha256 = [System.BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash($fileBytes)).Replace('-', '').ToLower()
+            $md5 = [System.BitConverter]::ToString([System.Security.Cryptography.MD5]::Create().ComputeHash($fileBytes)).Replace('-', '').ToLower()
+            $fileSize = $fileBytes.Length
+
+            $ms = New-Object System.IO.MemoryStream(,$fileBytes)
+            $srcBmp = [System.Drawing.Image]::FromStream($ms)
+            $origW = $srcBmp.Width
+            $origH = $srcBmp.Height
+            $aspect = [Math]::Round(($origW / [Math]::Max(1, $origH)), 3)
+
+            # 1. 16x16 thumbnail for avg color
+            $thumb16 = New-Object System.Drawing.Bitmap 16, 16
+            $g = [System.Drawing.Graphics]::FromImage($thumb16)
+            $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::Bilinear
+            $g.DrawImage($srcBmp, 0, 0, 16, 16)
+            $g.Dispose()
+
+            $rSum = 0; $gSum = 0; $bSum = 0
+            for ($y = 0; $y -lt 16; $y++) {
+                for ($x = 0; $x -lt 16; $x++) {
+                    $px = $thumb16.GetPixel($x, $y)
+                    $rSum += $px.R
+                    $gSum += $px.G
+                    $bSum += $px.B
+                }
+            }
+            $avgR = [Math]::Round($rSum / 256)
+            $avgG = [Math]::Round($gSum / 256)
+            $avgB = [Math]::Round($bSum / 256)
+
+            # 2. 9x8 dHash
+            $thumb9x8 = New-Object System.Drawing.Bitmap 9, 8
+            $g2 = [System.Drawing.Graphics]::FromImage($thumb9x8)
+            $g2.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::Bilinear
+            $g2.DrawImage($srcBmp, 0, 0, 9, 8)
+            $g2.Dispose()
+
+            $dhashBits = ""
+            for ($y = 0; $y -lt 8; $y++) {
+                for ($x = 0; $x -lt 8; $x++) {
+                    $p1 = $thumb9x8.GetPixel($x, $y)
+                    $p2 = $thumb9x8.GetPixel($x + 1, $y)
+                    $b1 = Get-Luminance $p1.R $p1.G $p1.B
+                    $b2 = Get-Luminance $p2.R $p2.G $p2.B
+                    if ($b1 -gt $b2) { $dhashBits += "1" } else { $dhashBits += "0" }
+                }
+            }
+
+            # 3. 8x8 aHash
+            $thumb8x8 = New-Object System.Drawing.Bitmap 8, 8
+            $g3 = [System.Drawing.Graphics]::FromImage($thumb8x8)
+            $g3.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+            $g3.DrawImage($srcBmp, 0, 0, 8, 8)
+            $g3.Dispose()
+
+            $lums = @()
+            $totalLum = 0
+            for ($y = 0; $y -lt 8; $y++) {
+                for ($x = 0; $x -lt 8; $x++) {
+                    $pxColor = $thumb8x8.GetPixel($x, $y)
+                    $lum = Get-Luminance $pxColor.R $pxColor.G $pxColor.B
+                    $lums += $lum
+                    $totalLum += $lum
+                }
+            }
+            $avgLum = $totalLum / 64
+            $ahashBits = ""
+            foreach ($l in $lums) {
+                if ($l -gt $avgLum) { $ahashBits += "1" } else { $ahashBits += "0" }
+            }
+
+            $srcBmp.Dispose()
+            $thumb16.Dispose()
+            $thumb9x8.Dispose()
+            $thumb8x8.Dispose()
+            $ms.Dispose()
+
+            $signatures += [PSCustomObject]@{
+                productId = [string]$p.id
+                nameAr = $p.nameAr
+                imageUrl = $imgRel
+                fileName = $fileName
+                sha256 = $sha256
+                md5 = $md5
+                fileSize = $fileSize
+                aspectRatio = $aspect
+                avgR = $avgR
+                avgG = $avgG
+                avgB = $avgB
+                dhash = $dhashBits
+                ahash = $ahashBits
+            }
+
+            $processedCount++
+            if ($processedCount % 200 -eq 0) {
+                Write-Output "Processed $processedCount images..."
+            }
+        }
+        catch {
+            Write-Warning "Error processing $imgRel for $($p.id): $_"
+        }
     }
 }
 
@@ -169,8 +182,8 @@ if (Test-Path $heroDir) {
             $totalLum = 0
             for ($y = 0; $y -lt 8; $y++) {
                 for ($x = 0; $x -lt 8; $x++) {
-                    $p = $thumb8x8.GetPixel($x, $y)
-                    $lum = Get-Luminance $p.R $p.G $p.B
+                    $pxColor = $thumb8x8.GetPixel($x, $y)
+                    $lum = Get-Luminance $pxColor.R $pxColor.G $pxColor.B
                     $lums += $lum
                     $totalLum += $lum
                 }
@@ -207,7 +220,6 @@ if (Test-Path $heroDir) {
                 avgB = 140
                 dhash = $dhashBits
                 ahash = $ahashBits
-                grid16 = @()
             }
         }
         catch {
@@ -233,4 +245,4 @@ if (Test-Path (Split-Path $apiDistOut)) {
     [System.IO.File]::WriteAllText($apiDistOut, $jsonOut, [System.Text.Encoding]::UTF8)
 }
 
-Write-Output "Successfully generated $($signatures.Count) signatures with dHash and aHash to $outputPath!"
+Write-Output "Successfully generated $($signatures.Count) signatures (main + gallery images) to $outputPath!"
