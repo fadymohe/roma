@@ -225,7 +225,7 @@ export default function Home() {
         <div
           onMouseEnter={() => setIsHeroHovered(true)}
           onMouseLeave={() => setIsHeroHovered(false)}
-          className="group relative w-full h-[190px] sm:h-[260px] md:h-[330px] lg:h-[380px] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#0E0E0E] shadow-2xl select-none"
+          className="group relative w-full h-[220px] sm:h-[300px] md:h-[380px] lg:h-[430px] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#0E0E0E] shadow-2xl select-none"
         >
           {/* Entire banner is a link to the shop */}
           <Link
@@ -236,22 +236,34 @@ export default function Home() {
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={currentHeroImageIdx}
-                initial={{ opacity: 0, scale: 1.05 }}
+                initial={{ opacity: 0, scale: 1.02 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.85, ease: [0.25, 1, 0.5, 1] }}
-                className="absolute inset-0 w-full h-full"
+                exit={{ opacity: 0, scale: 0.99 }}
+                transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
+                className="absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden"
               >
+                {/* Ambient blurred backdrop to extend image colors across wide displays without cropping */}
+                <img
+                  src={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].src}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-60 scale-110 pointer-events-none"
+                />
+
+                {/* Subtle dark tint over blur */}
+                <div className="absolute inset-0 bg-black/30 pointer-events-none z-[1]" />
+
+                {/* Main sharp, fully visible product image without any cropping */}
                 <img
                   src={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].src}
                   alt={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].alt}
-                  className="w-full h-full object-cover object-center select-none"
+                  className="relative z-10 w-full h-full max-h-full object-contain object-center py-2 sm:py-3 drop-shadow-2xl select-none"
                 />
               </motion.div>
             </AnimatePresence>
 
             {/* Subtle luxury edge vignette */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20 z-10" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 z-10" />
             <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl md:rounded-3xl z-10" />
           </Link>
 
