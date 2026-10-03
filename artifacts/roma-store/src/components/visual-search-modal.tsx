@@ -6,6 +6,7 @@ import { useLanguage } from '@/lib/language-context';
 import { useLiveProducts, DEFAULT_PRODUCTS, Product, getProductDiscount } from '@/lib/catalog-data';
 import { useCart } from '@/hooks/use-cart';
 import { useLocation } from 'wouter';
+import bundledSignatures from '@/lib/product-visual-signatures.json';
 
 export interface VisualSearchModalProps {
   isOpen: boolean;
@@ -13,18 +14,20 @@ export interface VisualSearchModalProps {
 }
 
 interface ProductSignature {
-  productId: number;
+  productId: string | number;
   nameAr: string;
   imageUrl: string;
   fileName: string;
-  sha256: string;
-  md5: string;
-  fileSize: number;
-  aspectRatio: number;
+  sha256?: string;
+  md5?: string;
+  fileSize?: number;
+  aspectRatio?: number;
   avgR: number;
   avgG: number;
   avgB: number;
   dhash: string;
+  ahash?: string;
+  grid16?: number[];
 }
 
 interface MatchResult {
@@ -102,6 +105,58 @@ function computeDHash(img: HTMLImageElement): string {
   }
 }
 
+function computeAHash(img: HTMLImageElement): string {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 8;
+    canvas.height = 8;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+    ctx.drawImage(img, 0, 0, 8, 8);
+    const data = ctx.getImageData(0, 0, 8, 8).data;
+    let sum = 0;
+    const lums: number[] = [];
+    for (let i = 0; i < 64; i++) {
+      const idx = i * 4;
+      const lum = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+      lums.push(lum);
+      sum += lum;
+    }
+    const avg = sum / 64;
+    return lums.map((l) => (l > avg ? '1' : '0')).join('');
+  } catch {
+    return '';
+  }
+}
+
+function computeAverageRGB(img: HTMLImageElement): { r: number; g: number; b: number } {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 16;
+    canvas.height = 16;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return { r: 180, g: 180, b: 180 };
+    ctx.drawImage(img, 0, 0, 16, 16);
+    const data = ctx.getImageData(0, 0, 16, 16).data;
+    let rSum = 0;
+    let gSum = 0;
+    let bSum = 0;
+    for (let i = 0; i < 256; i++) {
+      const idx = i * 4;
+      rSum += data[idx];
+      gSum += data[idx + 1];
+      bSum += data[idx + 2];
+    }
+    return {
+      r: Math.round(rSum / 256),
+      g: Math.round(gSum / 256),
+      b: Math.round(bSum / 256),
+    };
+  } catch {
+    return { r: 180, g: 180, b: 180 };
+  }
+}
+
 export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
   const { isAr, formatPrice } = useLanguage();
   const [, setLocation] = useLocation();
@@ -119,7 +174,10 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [addedIds, setAddedIds] = useState<Record<number, boolean>>({});
 
-  const [signatures, setSignatures] = useState<ProductSignature[]>([]);
+  // Use statically bundled signatures for instant access with zero network dependency
+  const [signatures, setSignatures] = useState<ProductSignature[]>(() => {
+    return Array.isArray(bundledSignatures) ? (bundledSignatures as ProductSignature[]) : [];
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mount check for client portal
@@ -127,13 +185,13 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
     setMounted(true);
   }, []);
 
-  // Fetch precomputed visual signatures once when modal opens
+  // Sync with /product-visual-signatures.json if updated on server
   useEffect(() => {
     if (isOpen && signatures.length === 0) {
       fetch('/product-visual-signatures.json')
         .then((res) => res.json())
         .then((data: ProductSignature[]) => {
-          if (Array.isArray(data)) {
+          if (Array.isArray(data) && data.length > 0) {
             setSignatures(data);
           }
         })
@@ -210,10 +268,11 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
       }
 
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       img.onload = () => {
         try {
           const dhash = computeDHash(img);
+          const ahash = computeAHash(img);
+          const avgColor = computeAverageRGB(img);
 
           // 1. Direct SHA-256 match
           let matchedSig: ProductSignature | undefined;
@@ -230,45 +289,63 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
             );
           }
 
-          // 3. Precise Perceptual Hash (dHash) matching
-          let bestDHashSig: ProductSignature | undefined;
-          let minDistance = 64;
+          // 3. Multi-Hash Perceptual Matching (dHash + aHash + Color Distance)
+          let bestSig: ProductSignature | undefined;
+          let bestMinDist = 64;
+          let bestCombinedScore = 999;
+          let bestColorDist = 999;
 
-          if (dhash) {
-            for (const s of sigs) {
-              if (s.dhash) {
-                const dist = hammingDistance(dhash, s.dhash);
-                if (dist < minDistance) {
-                  minDistance = dist;
-                  bestDHashSig = s;
-                }
-              }
+          for (const s of sigs) {
+            const dDist = s.dhash ? hammingDistance(dhash, s.dhash) : 64;
+            const aDist = s.ahash ? hammingDistance(ahash, s.ahash) : 64;
+            const minDist = Math.min(dDist, aDist);
+            const colorDist =
+              Math.abs(avgColor.r - (s.avgR || 180)) +
+              Math.abs(avgColor.g - (s.avgG || 180)) +
+              Math.abs(avgColor.b - (s.avgB || 180));
+
+            const combinedScore = minDist * 3 + Math.min(30, colorDist / 5);
+
+            if (combinedScore < bestCombinedScore) {
+              bestCombinedScore = combinedScore;
+              bestMinDist = minDist;
+              bestColorDist = colorDist;
+              bestSig = s;
             }
           }
 
-          // If dHash difference is very small (<= 8 bits out of 64), it's the exact image
-          if (!matchedSig && minDistance <= 8 && bestDHashSig) {
-            matchedSig = bestDHashSig;
-          }
+          // Precise Validation:
+          // Must be an exact match OR within clear visual distance (<= 16 bits, or <= 20 with similar colors)
+          const isVisualMatch =
+            matchedSig !== undefined ||
+            bestMinDist <= 16 ||
+            (bestMinDist <= 20 && bestColorDist < 65);
 
-          // Strict Threshold:
-          // If minDistance is > 12 bits AND no exact hash/filename was found:
-          // THE PRODUCT DOES NOT EXIST IN THE STORE!
-          if (!matchedSig && minDistance > 12) {
+          if (!isVisualMatch || (!matchedSig && !bestSig)) {
             setIsNotFound(true);
             setIsScanning(false);
             return;
           }
 
-          // Determine target product ID
-          const primarySig = matchedSig || bestDHashSig;
+          const primarySig = matchedSig || bestSig;
           if (!primarySig) {
             setIsNotFound(true);
             setIsScanning(false);
             return;
           }
 
-          const targetProduct = allProducts.find((p) => p.id === primarySig.productId);
+          // Safely lookup product by ID (handles both string and number) or fallback by imageUrl / name
+          const targetProduct =
+            allProducts.find(
+              (p) => String(p.id).trim() === String(primarySig.productId).trim()
+            ) ||
+            allProducts.find(
+              (p) =>
+                primarySig.imageUrl &&
+                (p.imageUrl === primarySig.imageUrl || p.imageUrl.endsWith(primarySig.fileName))
+            ) ||
+            allProducts.find((p) => p.nameAr === primarySig.nameAr);
+
           if (!targetProduct) {
             setIsNotFound(true);
             setIsScanning(false);
@@ -279,13 +356,21 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
           let finalScore = 100;
           let isExact = true;
 
-          if (matchedSig) {
+          if (matchedSig || bestMinDist <= 4) {
             finalScore = 100;
             isExact = true;
+          } else if (bestMinDist <= 8) {
+            finalScore = 99;
+            isExact = true;
+          } else if (bestMinDist <= 12) {
+            finalScore = 96;
+            isExact = false;
+          } else if (bestMinDist <= 16) {
+            finalScore = 92;
+            isExact = false;
           } else {
-            // Scale based on dHash distance
-            finalScore = Math.max(88, Math.min(99, Math.round(100 - (minDistance / 64) * 50)));
-            isExact = minDistance <= 4;
+            finalScore = Math.max(88, Math.min(90, Math.round(100 - (bestMinDist / 64) * 40)));
+            isExact = false;
           }
 
           setExactMatch({
@@ -316,6 +401,11 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
         } finally {
           setIsScanning(false);
         }
+      };
+
+      img.onerror = () => {
+        setIsNotFound(true);
+        setIsScanning(false);
       };
 
       img.src = imageDataUrl;
