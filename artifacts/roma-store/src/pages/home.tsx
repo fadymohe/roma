@@ -17,14 +17,24 @@ export default function Home() {
   const { t, isAr, dir } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
   const [currentHeroImageIdx, setCurrentHeroImageIdx] = useState(0);
+  const [isHeroHovered, setIsHeroHovered] = useState(false);
 
-  // Auto-switch hero showcase image every 3 seconds
+  // Auto-switch hero showcase image every 4 seconds (pauses on hover)
   useEffect(() => {
+    if (isHeroHovered) return;
     const heroTimer = setInterval(() => {
       setCurrentHeroImageIdx((prev) => (prev + 1) % HERO_SHOWCASE_IMAGES.length);
-    }, 3000);
+    }, 4000);
     return () => clearInterval(heroTimer);
-  }, []);
+  }, [isHeroHovered]);
+
+  const handleNext = () => {
+    setCurrentHeroImageIdx((prev) => (prev + 1) % HERO_SHOWCASE_IMAGES.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentHeroImageIdx((prev) => (prev - 1 + HERO_SHOWCASE_IMAGES.length) % HERO_SHOWCASE_IMAGES.length);
+  };
 
   const [timeLeft, setTimeLeft] = useState({ days: '07', hours: '00', minutes: '00', seconds: '00' });
 
@@ -209,138 +219,88 @@ export default function Home() {
     <div dir={dir} className="space-y-10 md:space-y-16 py-4 md:py-8 text-[#F9FAFB]">
 
       {/* ========================================================================= */}
-      {/* LUXURY EDITORIAL HERO BANNER: Atmospheric, Regal, High-Conversion          */}
+      {/* FULL-BLEED LUXURY HERO BANNER CAROUSEL                                     */}
       {/* ========================================================================= */}
       <section className="roma-container relative">
-        <div className="relative overflow-hidden rounded-3xl md:rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-[#181818] via-[#121212] to-[#0A0A0A] p-6 sm:p-10 md:p-14 shadow-2xl">
-          {/* Subtle Ambient Radial Glows */}
-          <div className="pointer-events-none absolute -top-24 right-1/4 size-96 rounded-full bg-[#D4A5A5]/15 blur-[120px]" />
-          <div className="pointer-events-none absolute -bottom-24 left-1/4 size-80 rounded-full bg-rose-500/10 blur-[100px]" />
+        <div
+          onMouseEnter={() => setIsHeroHovered(true)}
+          onMouseLeave={() => setIsHeroHovered(false)}
+          className="group relative w-full h-[320px] sm:h-[440px] md:h-[540px] lg:h-[620px] rounded-3xl md:rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#0E0E0E] shadow-2xl select-none"
+        >
+          {/* Entire banner is a link to the shop */}
+          <Link
+            href="/shop"
+            className="block w-full h-full relative cursor-pointer overflow-hidden"
+            aria-label={isAr ? 'تسوقي التشكيلة الكاملة' : 'Shop All Products'}
+          >
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.div
+                key={currentHeroImageIdx}
+                initial={{ opacity: 0, scale: 1.06 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.9, ease: [0.25, 1, 0.5, 1] }}
+                className="absolute inset-0 w-full h-full"
+              >
+                <img
+                  src={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].src}
+                  alt={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].alt}
+                  className="w-full h-full object-cover object-center select-none"
+                />
+              </motion.div>
+            </AnimatePresence>
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Editorial Copy & CTAs */}
-            <div className="lg:col-span-7 space-y-5 md:space-y-6 text-right">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#D4A5A5]/10 border border-[#D4A5A5]/30 text-[#D4A5A5] text-xs font-bold shadow-xs">
-                <Crown className="size-4 text-[#D4A5A5] fill-[#D4A5A5]/20 shrink-0" />
-                <span>{isAr ? 'كولكشن الموسم الملكي الحصري' : 'Exclusive Royal Season Collection'}</span>
-              </div>
+            {/* Subtle luxury edge vignette */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/25 z-10" />
+            <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl md:rounded-[2.5rem] z-10" />
+          </Link>
 
-              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.2] tracking-tight">
-                {isAr ? (
-                  <>
-                    سحر الأنوثة الملكية <br />
-                    <span className="bg-gradient-to-r from-[#D4A5A5] via-[#F3D5D5] to-white bg-clip-text text-transparent">
-                      بإطلالة تأسر القلوب
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    Royal Elegance <br />
-                    <span className="bg-gradient-to-r from-[#D4A5A5] via-[#F3D5D5] to-white bg-clip-text text-transparent">
-                      Unveiled For You
-                    </span>
-                  </>
-                )}
-              </h1>
+          {/* Interactive Navigation Arrows */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handlePrev();
+            }}
+            aria-label="Previous slide"
+            className="absolute top-1/2 -translate-y-1/2 right-3 sm:right-6 z-20 size-10 sm:size-12 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-95 shadow-xl cursor-pointer"
+          >
+            <ChevronRight className="size-5 sm:size-6 text-white" />
+          </button>
 
-              <p className="text-xs sm:text-sm md:text-base text-zinc-300 leading-relaxed font-light max-w-xl">
-                {isAr
-                  ? 'مجموعات استثنائية من أرقى العطور الفاخرة، المجوهرات المطلية بحرفية، ومستحضرات الجمال الطبيعية المختارة بعناية لتمنحكِ ثقة وجاذبية لا تُنسى.'
-                  : 'Exceptional collections of high-end perfumery, handcrafted fine jewelry, and velvet botanical cosmetics for your timeless allure.'}
-              </p>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleNext();
+            }}
+            aria-label="Next slide"
+            className="absolute top-1/2 -translate-y-1/2 left-3 sm:left-6 z-20 size-10 sm:size-12 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-95 shadow-xl cursor-pointer"
+          >
+            <ChevronLeft className="size-5 sm:size-6 text-white" />
+          </button>
 
-              {/* CTAs Button Row */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Link
-                  href="/shop"
-                  className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#D4A5A5] to-[#C89595] text-[#0A0A0A] font-extrabold text-xs sm:text-sm shadow-xl shadow-[#D4A5A5]/20 hover:brightness-110 active:scale-95 transition-all duration-300 group"
-                >
-                  <span>{isAr ? 'تسوقي التشكيلة الكاملة' : 'Explore All Collections'}</span>
-                  <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1 rtl:rotate-0 ltr:rotate-180" />
-                </Link>
-
-                <a
-                  href="#under-10-section"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('under-10-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3.5 rounded-2xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-white font-bold text-xs sm:text-sm transition-all active:scale-95"
-                >
-                  <Flame className="size-4 text-rose-400 animate-pulse" />
-                  <span>{isAr ? 'عروض تحت 10 جنيه' : 'Under 10 EGP Deals'}</span>
-                </a>
-              </div>
-
-              {/* Trust Indicators Checklist */}
-              <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/10 text-[11px] sm:text-xs text-zinc-400">
-                <div className="flex items-center gap-1.5">
-                  <Truck className="size-3.5 text-[#D4A5A5] shrink-0" />
-                  <span>{isAr ? 'توصيل سريع' : 'Fast Shipping'}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />
-                  <span>{isAr ? 'دفع عند الاستلام' : 'Cash on Delivery'}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Gem className="size-3.5 text-[#D4A5A5] shrink-0" />
-                  <span>{isAr ? 'جودة أصلية 100%' : '100% Genuine'}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Luxury Floating Showcase Card with 3s Auto-rotating Carousel */}
-            <div className="lg:col-span-5 relative flex items-center justify-center py-6 px-3 sm:px-6">
-              <div className="relative w-full max-w-sm aspect-square rounded-3xl bg-gradient-to-tr from-[#1E1E1E] to-[#121212] border border-white/10 p-4 sm:p-5 flex flex-col items-center justify-center shadow-2xl group">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(212,165,165,0.18),transparent_70%)] pointer-events-none rounded-3xl z-10" />
-
-                {/* Animated Image Container with smooth transitions every 3s */}
-                <div className="relative w-full h-full rounded-2xl overflow-hidden flex items-center justify-center bg-[#0E0E0E]">
-                  <AnimatePresence mode="wait">
-                    <motion.img
-                      key={currentHeroImageIdx}
-                      src={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].src}
-                      alt={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].alt}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 1.05 }}
-                      transition={{ duration: 0.6, ease: 'easeInOut' }}
-                      className="w-full h-full object-cover rounded-2xl select-none"
-                    />
-                  </AnimatePresence>
-
-                  {/* Subtle luxury vignette gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25 pointer-events-none" />
-
-                  {/* Dots Indicator for Active Slide */}
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15">
-                    {HERO_SHOWCASE_IMAGES.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentHeroImageIdx(idx)}
-                        aria-label={`Show image ${idx + 1}`}
-                        className={`transition-all duration-300 rounded-full cursor-pointer ${
-                          idx === currentHeroImageIdx
-                            ? 'w-5 h-1.5 bg-[#D4A5A5] shadow-[0_0_8px_rgba(212,165,165,0.8)]'
-                            : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Floating Glassmorphism Badges - Positioned without clipping */}
-                <div className="absolute -bottom-3 -right-2 sm:-right-4 rounded-2xl bg-[#141414]/95 border border-white/20 px-3.5 py-2 backdrop-blur-md shadow-[0_12px_28px_rgba(0,0,0,0.85)] flex items-center gap-2 z-30 whitespace-nowrap select-none">
-                  <div className="size-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
-                  <span className="text-[11px] sm:text-xs font-bold text-white font-mono">300+ {isAr ? 'منتج متاح فوري' : 'In Stock'}</span>
-                </div>
-
-                <div className="absolute -top-3 -left-2 sm:-left-4 rounded-2xl bg-[#141414]/95 border border-white/20 px-3.5 py-2 backdrop-blur-md shadow-[0_12px_28px_rgba(0,0,0,0.85)] flex items-center gap-1.5 z-30 whitespace-nowrap select-none">
-                  <Star className="size-3.5 sm:size-4 fill-amber-400 text-amber-400 shrink-0" />
-                  <span className="text-[11px] sm:text-xs font-bold text-white">4.9 ★ {isAr ? 'تقييم العميلات' : 'Client Rating'}</span>
-                </div>
-              </div>
-            </div>
+          {/* Sleek Glassmorphic Pagination Indicators */}
+          <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-black/55 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 shadow-2xl">
+            {HERO_SHOWCASE_IMAGES.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setCurrentHeroImageIdx(idx);
+                }}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`transition-all duration-500 rounded-full cursor-pointer ${
+                  idx === currentHeroImageIdx
+                    ? 'w-7 sm:w-8 h-2 bg-gradient-to-r from-[#D4A5A5] to-rose-300 shadow-[0_0_12px_rgba(212,165,165,0.9)]'
+                    : 'w-2 h-2 bg-white/40 hover:bg-white/80'
+                }`}
+              />
+            ))}
           </div>
         </div>
       </section>
