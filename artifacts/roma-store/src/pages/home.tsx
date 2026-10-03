@@ -225,7 +225,7 @@ export default function Home() {
         <div
           onMouseEnter={() => setIsHeroHovered(true)}
           onMouseLeave={() => setIsHeroHovered(false)}
-          className="group relative w-full h-[320px] sm:h-[440px] md:h-[540px] lg:h-[620px] rounded-3xl md:rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#0E0E0E] shadow-2xl select-none"
+          className="group relative w-full h-[190px] sm:h-[260px] md:h-[330px] lg:h-[380px] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#0E0E0E] shadow-2xl select-none"
         >
           {/* Entire banner is a link to the shop */}
           <Link
@@ -236,10 +236,10 @@ export default function Home() {
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={currentHeroImageIdx}
-                initial={{ opacity: 0, scale: 1.06 }}
+                initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.9, ease: [0.25, 1, 0.5, 1] }}
+                transition={{ duration: 0.85, ease: [0.25, 1, 0.5, 1] }}
                 className="absolute inset-0 w-full h-full"
               >
                 <img
@@ -251,39 +251,12 @@ export default function Home() {
             </AnimatePresence>
 
             {/* Subtle luxury edge vignette */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/25 z-10" />
-            <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl md:rounded-[2.5rem] z-10" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20 z-10" />
+            <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl md:rounded-3xl z-10" />
           </Link>
 
-          {/* Interactive Navigation Arrows */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handlePrev();
-            }}
-            aria-label="Previous slide"
-            className="absolute top-1/2 -translate-y-1/2 right-3 sm:right-6 z-20 size-10 sm:size-12 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-95 shadow-xl cursor-pointer"
-          >
-            <ChevronRight className="size-5 sm:size-6 text-white" />
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleNext();
-            }}
-            aria-label="Next slide"
-            className="absolute top-1/2 -translate-y-1/2 left-3 sm:left-6 z-20 size-10 sm:size-12 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 active:scale-95 shadow-xl cursor-pointer"
-          >
-            <ChevronLeft className="size-5 sm:size-6 text-white" />
-          </button>
-
           {/* Sleek Glassmorphic Pagination Indicators */}
-          <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-black/55 backdrop-blur-md px-4 py-2 rounded-full border border-white/15 shadow-2xl">
+          <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-xl">
             {HERO_SHOWCASE_IMAGES.map((_, idx) => (
               <button
                 key={idx}
@@ -296,8 +269,8 @@ export default function Home() {
                 aria-label={`Go to slide ${idx + 1}`}
                 className={`transition-all duration-500 rounded-full cursor-pointer ${
                   idx === currentHeroImageIdx
-                    ? 'w-7 sm:w-8 h-2 bg-gradient-to-r from-[#D4A5A5] to-rose-300 shadow-[0_0_12px_rgba(212,165,165,0.9)]'
-                    : 'w-2 h-2 bg-white/40 hover:bg-white/80'
+                    ? 'w-6 sm:w-7 h-1.5 bg-gradient-to-r from-[#D4A5A5] to-rose-300 shadow-[0_0_10px_rgba(212,165,165,0.8)]'
+                    : 'w-1.5 h-1.5 bg-white/35 hover:bg-white/70'
                 }`}
               />
             ))}
