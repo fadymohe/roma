@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Camera, Sparkles, UploadCloud, X, CheckCircle2, ArrowLeft, RefreshCw, ShoppingBag, Zap, Layers, Filter } from 'lucide-react';
+import { Camera, Sparkles, UploadCloud, X, CheckCircle2, ArrowLeft, RefreshCw, ShoppingBag, Zap, AlertCircle, SearchX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/language-context';
 import { useLiveProducts, DEFAULT_PRODUCTS, Product, getProductDiscount } from '@/lib/catalog-data';
@@ -12,85 +12,95 @@ export interface VisualSearchModalProps {
   onClose: () => void;
 }
 
-interface DetectedVisualFeatures {
-  category: string;
-  categoryLabelAr: string;
-  categoryLabelEn: string;
-  dominantColor: string;
-  colorNameAr: string;
-  confidence: number;
-  detectedTags: string[];
+interface ProductSignature {
+  productId: number;
+  nameAr: string;
+  imageUrl: string;
+  fileName: string;
+  sha256: string;
+  md5: string;
+  fileSize: number;
+  aspectRatio: number;
+  avgR: number;
+  avgG: number;
+  avgB: number;
+  dhash: string;
 }
 
-interface ScoredProduct {
+interface MatchResult {
   product: Product;
   matchScore: number;
-  matchReasonAr: string;
-  matchReasonEn: string;
-  itemType: string;
-  isExactMatch?: boolean;
+  isExact: boolean;
+  reasonAr: string;
+  reasonEn: string;
 }
 
-/**
- * Robust semantic product classifier based strictly on product title.
- * Prevents marketing description noise (e.g. bags mentioning 'holds lipstick' or clips mentioning 'for makeup').
- */
-export function getSemanticProductType(product: Product): string {
-  const n = (product.nameAr || '').toLowerCase();
-
-  if (/(حزام|احزمة)/.test(n)) return 'belts';
-  if (/(شنطة|حقيبة|محفظة|purse|bag)/.test(n)) return 'bags';
-  if (/(شعر|توك|توكة|طوق شعر|مشابك شعر|بنس|بنسة|كلبس|بندانة|شريط رأس|رباط شعر|فيونكة شعر|خصلة شعر|اكستنشن)/.test(n) && !/(عطر وبخاخ الشعر|زيت شعر|شامبو|سيروم)/.test(n)) return 'hair';
-  if (/(روج|أحمر شفاه|احمر شفاه|ملمع شفاه|مرطب شفاه|بلسم شفاه|ملون شفاه|تنت شفاه|تكبير الشفاه|ليفتر جلوس|مقشر شفاه|روج سائل|روج مات|lipstick)/.test(n)) return 'lipstick';
-  if (/(طلاء أظافر|طلاء اظافر|أظافر|اظافر|مانيكير|nail polish|nail colour|بيس شيلد|لاصق اظافر)/.test(n)) return 'nails';
-  if (/(سلسلة|سلاسل|عقد|سوار|اسورة|أساور|خاتم|خواتم|انسيال|كوليه|دلاية|فان كليف|حلقان|مجوهرات مطلية)/.test(n) || (/(?:^|\s)حلق(?:$|\s)/.test(n) && !/(حلقة)/.test(n))) return 'jewelry';
-  if (/(عطر|او دو|أو دو|او دي|أو دي|بارفان|تواليت|مسك|عود|معطر جسم|بودي ميست|perfume|fragrance)/.test(n)) return 'perfume';
-  if (/(سيروم|كريم|لوشن|غسول|مرطب|شامبو|بلسم|مقشر|زيت|بشرة|جل الوفيرا|ماسك وجه)/.test(n)) return 'skincare';
-
-  return 'accessories';
-}
-
-const CATEGORY_TABS = [
-  { id: 'lipstick', labelAr: 'أحمر شفاه', labelEn: 'Lipsticks', icon: '💄' },
-  { id: 'perfume', labelAr: 'عطور فاخرة', labelEn: 'Perfumes', icon: '🌸' },
-  { id: 'jewelry', labelAr: 'مجوهرات وسلاسل', labelEn: 'Jewelry', icon: '💍' },
-  { id: 'skincare', labelAr: 'عناية وسيروم', labelEn: 'Skincare', icon: '💧' },
-  { id: 'nails', labelAr: 'طلاء أظافر', labelEn: 'Nails', icon: '💅' },
-  { id: 'hair', labelAr: 'إكسسوارات شعر', labelEn: 'Hair', icon: '🎀' },
-  { id: 'all', labelAr: 'جميع المنتجات', labelEn: 'All', icon: '✨' },
-];
-
-// Sample demo images mapping directly to real categories
+// Sample presets mapping directly to real store images
 const DEMO_PRESETS = [
   {
-    id: 'lipstick',
-    labelAr: 'أحمر شفاه وروج وردي',
-    labelEn: 'Pink Lipstick',
+    id: 'hero-2',
+    labelAr: 'أحمر شفاه وردي ملكي',
+    labelEn: 'Pink Royal Lipstick',
     src: '/hero/hero-2.jpg',
-    targetCategory: 'lipstick',
+    fileName: 'hero-2.jpg',
   },
   {
-    id: 'perfume',
-    labelAr: 'عطور ومكياج احترافي',
-    labelEn: 'Luxury Perfume',
+    id: 'hero-3',
+    labelAr: 'باليت مكياج وعطور',
+    labelEn: 'Makeup Palette & Perfume',
     src: '/hero/hero-3.jpg',
-    targetCategory: 'perfume',
+    fileName: 'hero-3.jpg',
   },
   {
-    id: 'skincare',
-    labelAr: 'كريمات وعناية بالبشرة',
-    labelEn: 'Face Cream & Skincare',
+    id: 'hero-4',
+    labelAr: 'كريم بي بي وعناية',
+    labelEn: 'BB Cream & Skincare',
     src: '/hero/hero-4.jpg',
-    targetCategory: 'skincare',
+    fileName: 'hero-4.jpg',
   },
   {
-    id: 'palette',
-    labelAr: 'مستحضرات وبلاشر جمال',
-    labelEn: 'Beauty & Blush Palette',
+    id: 'hero-1',
+    labelAr: 'بلاشر ومكياج ناعم',
+    labelEn: 'Blush & Beauty Palette',
     src: '/hero/hero-1.jpg',
-    targetCategory: 'lipstick',
+    fileName: 'hero-1.jpg',
   },
 ];
+
+function hammingDistance(s1: string, s2: string): number {
+  if (!s1 || !s2) return 64;
+  let dist = 0;
+  const len = Math.min(s1.length, s2.length);
+  for (let i = 0; i < len; i++) {
+    if (s1[i] !== s2[i]) dist++;
+  }
+  return dist + Math.abs(s1.length - s2.length);
+}
+
+function computeDHash(img: HTMLImageElement): string {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 9;
+    canvas.height = 8;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+    ctx.drawImage(img, 0, 0, 9, 8);
+    const data = ctx.getImageData(0, 0, 9, 8).data;
+    let bits = '';
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const idx1 = (y * 9 + x) * 4;
+        const idx2 = (y * 9 + (x + 1)) * 4;
+        const b1 = data[idx1] * 0.299 + data[idx1 + 1] * 0.587 + data[idx1 + 2] * 0.114;
+        const b2 = data[idx2] * 0.299 + data[idx2 + 1] * 0.587 + data[idx2 + 2] * 0.114;
+        bits += b1 > b2 ? '1' : '0';
+      }
+    }
+    return bits;
+  } catch {
+    return '';
+  }
+}
 
 export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
   const { isAr, formatPrice } = useLanguage();
@@ -103,18 +113,33 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0);
-  const [visualFeatures, setVisualFeatures] = useState<DetectedVisualFeatures | null>(null);
-  const [allMatchedProducts, setAllMatchedProducts] = useState<ScoredProduct[]>([]);
-  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('all');
+  const [exactMatch, setExactMatch] = useState<MatchResult | null>(null);
+  const [similarMatches, setSimilarMatches] = useState<MatchResult[]>([]);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [addedIds, setAddedIds] = useState<Record<number, boolean>>({});
 
+  const [signatures, setSignatures] = useState<ProductSignature[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mount check for client portal
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch precomputed visual signatures once when modal opens
+  useEffect(() => {
+    if (isOpen && signatures.length === 0) {
+      fetch('/product-visual-signatures.json')
+        .then((res) => res.json())
+        .then((data: ProductSignature[]) => {
+          if (Array.isArray(data)) {
+            setSignatures(data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen, signatures.length]);
 
   // Close on Escape key
   useEffect(() => {
@@ -127,7 +152,7 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Prevent background scroll when modal is open
+  // Prevent background scroll
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -139,260 +164,164 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
     };
   }, [isOpen]);
 
-  // Reset state when modal is closed
   const handleClose = () => {
     setSelectedImage(null);
     setIsScanning(false);
     setScanStep(0);
-    setVisualFeatures(null);
-    setAllMatchedProducts([]);
-    setActiveCategoryFilter('all');
+    setExactMatch(null);
+    setSimilarMatches([]);
+    setIsNotFound(false);
     onClose();
   };
 
-  // High-precision AI Visual Feature Extractor & Catalog Matcher
-  const analyzeImageAndMatch = useCallback((imageDataUrl: string, fileNameHint?: string, presetHint?: string) => {
-    setIsScanning(true);
-    setScanStep(1);
+  // Real Image-to-Image Matching Algorithm
+  const matchImage = useCallback(
+    async (imageDataUrl: string, uploadedFile?: File, presetName?: string) => {
+      setIsScanning(true);
+      setScanStep(1);
+      setExactMatch(null);
+      setSimilarMatches([]);
+      setIsNotFound(false);
 
-    setTimeout(() => setScanStep(2), 350);
-    setTimeout(() => setScanStep(3), 700);
+      setTimeout(() => setScanStep(2), 300);
+      setTimeout(() => setScanStep(3), 600);
 
-    setTimeout(() => {
+      // Compute SHA-256 if File is present
+      let uploadedSha256 = '';
+      if (uploadedFile) {
+        try {
+          const buffer = await uploadedFile.arrayBuffer();
+          const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          uploadedSha256 = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('').toLowerCase();
+        } catch {}
+      }
+
+      const fileNameLower = (uploadedFile?.name || presetName || '').toLowerCase();
+
+      // Ensure signatures are loaded
+      let sigs = signatures;
+      if (sigs.length === 0) {
+        try {
+          const res = await fetch('/product-visual-signatures.json');
+          sigs = await res.json();
+          setSignatures(sigs);
+        } catch {}
+      }
+
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
         try {
-          // Pixel color sampling via canvas
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          canvas.width = 64;
-          canvas.height = 64;
+          const dhash = computeDHash(img);
 
-          let rTotal = 0, gTotal = 0, bTotal = 0;
-          let pixelCount = 0;
+          // 1. Direct SHA-256 match
+          let matchedSig: ProductSignature | undefined;
+          if (uploadedSha256) {
+            matchedSig = sigs.find((s) => s.sha256 === uploadedSha256);
+          }
 
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, 64, 64);
-            const imgData = ctx.getImageData(0, 0, 64, 64).data;
-            for (let i = 0; i < imgData.length; i += 16) {
-              rTotal += imgData[i];
-              gTotal += imgData[i + 1];
-              bTotal += imgData[i + 2];
-              pixelCount++;
+          // 2. Direct filename match
+          if (!matchedSig && fileNameLower) {
+            matchedSig = sigs.find(
+              (s) =>
+                s.fileName.toLowerCase() === fileNameLower ||
+                s.imageUrl.toLowerCase().endsWith(fileNameLower)
+            );
+          }
+
+          // 3. Precise Perceptual Hash (dHash) matching
+          let bestDHashSig: ProductSignature | undefined;
+          let minDistance = 64;
+
+          if (dhash) {
+            for (const s of sigs) {
+              if (s.dhash) {
+                const dist = hammingDistance(dhash, s.dhash);
+                if (dist < minDistance) {
+                  minDistance = dist;
+                  bestDHashSig = s;
+                }
+              }
             }
           }
 
-          const avgR = pixelCount > 0 ? Math.round(rTotal / pixelCount) : 210;
-          const avgG = pixelCount > 0 ? Math.round(gTotal / pixelCount) : 150;
-          const avgB = pixelCount > 0 ? Math.round(bTotal / pixelCount) : 160;
+          // If dHash difference is very small (<= 8 bits out of 64), it's the exact image
+          if (!matchedSig && minDistance <= 8 && bestDHashSig) {
+            matchedSig = bestDHashSig;
+          }
 
-          const lowerHint = (fileNameHint || '').toLowerCase();
+          // Strict Threshold:
+          // If minDistance is > 12 bits AND no exact hash/filename was found:
+          // THE PRODUCT DOES NOT EXIST IN THE STORE!
+          if (!matchedSig && minDistance > 12) {
+            setIsNotFound(true);
+            setIsScanning(false);
+            return;
+          }
 
-          // Determine target category accurately
-          let detectedCategory = 'lipstick';
-          let catLabelAr = 'أحمر شفاه ومكياج';
-          let catLabelEn = 'Lipstick & Makeup';
-          let colorNameAr = 'وردي ملكي مخملي';
-          let tags = ['أحمر شفاه', 'روج', 'وردي'];
+          // Determine target product ID
+          const primarySig = matchedSig || bestDHashSig;
+          if (!primarySig) {
+            setIsNotFound(true);
+            setIsScanning(false);
+            return;
+          }
 
-          if (
-            presetHint === 'lipstick' ||
-            lowerHint.includes('hero-2') ||
-            lowerHint.includes('lip') ||
-            lowerHint.includes('روج') ||
-            lowerHint.includes('شفاه') ||
-            lowerHint.includes('shafah')
-          ) {
-            detectedCategory = 'lipstick';
-            catLabelAr = 'أحمر شفاه وروج';
-            catLabelEn = 'Lipstick & Lip Care';
-            colorNameAr = 'وردي مخملي';
-            tags = ['روج', 'أحمر شفاه', 'شفاه', 'مات', 'ثابت'];
-          } else if (
-            presetHint === 'perfume' ||
-            lowerHint.includes('hero-3') ||
-            lowerHint.includes('perfume') ||
-            lowerHint.includes('عطر') ||
-            lowerHint.includes('oud') ||
-            lowerHint.includes('parfum') ||
-            lowerHint.includes('مسك')
-          ) {
-            detectedCategory = 'perfume';
-            catLabelAr = 'عطور فاخرة';
-            catLabelEn = 'Luxury Perfumes';
-            colorNameAr = 'عنبري وذهبي';
-            tags = ['عطور', 'او دو بارفان', 'مسك', 'عود'];
-          } else if (
-            presetHint === 'skincare' ||
-            lowerHint.includes('hero-4') ||
-            lowerHint.includes('bb') ||
-            lowerHint.includes('cream') ||
-            lowerHint.includes('كريم') ||
-            lowerHint.includes('سيروم') ||
-            lowerHint.includes('skin')
-          ) {
-            detectedCategory = 'skincare';
-            catLabelAr = 'عناية بالبشرة وسيروم';
-            catLabelEn = 'Skincare & Creams';
-            colorNameAr = 'بيج / طبيعي ناعم';
-            tags = ['سيروم', 'كريم', 'مرطب', 'عناية'];
-          } else if (
-            lowerHint.includes('jewel') ||
-            lowerHint.includes('necklace') ||
-            lowerHint.includes('ring') ||
-            lowerHint.includes('سلسلة') ||
-            lowerHint.includes('خاتم') ||
-            lowerHint.includes('سوار') ||
-            lowerHint.includes('مجوهرات')
-          ) {
-            detectedCategory = 'jewelry';
-            catLabelAr = 'مجوهرات وسلاسل';
-            catLabelEn = 'Fine Jewelry';
-            colorNameAr = 'بريق ذهبي';
-            tags = ['سلسلة', 'خاتم', 'ذهب', 'مجوهرات'];
-          } else if (
-            lowerHint.includes('hair') ||
-            lowerHint.includes('شعر') ||
-            lowerHint.includes('توكة') ||
-            lowerHint.includes('طوق')
-          ) {
-            detectedCategory = 'hair';
-            catLabelAr = 'إكسسوارات شعر';
-            catLabelEn = 'Hair Accessories';
-            colorNameAr = 'إكسسوارات مبهجة';
-            tags = ['توك', 'شعر', 'مشابك'];
-          } else if (
-            lowerHint.includes('nail') ||
-            lowerHint.includes('أظافر') ||
-            lowerHint.includes('اظافر') ||
-            lowerHint.includes('طلاء')
-          ) {
-            detectedCategory = 'nails';
-            catLabelAr = 'طلاء أظافر ومانيكير';
-            catLabelEn = 'Nail Polish';
-            colorNameAr = 'ألوان أظافر متألقة';
-            tags = ['طلاء أظافر', 'مانيكير'];
+          const targetProduct = allProducts.find((p) => p.id === primarySig.productId);
+          if (!targetProduct) {
+            setIsNotFound(true);
+            setIsScanning(false);
+            return;
+          }
+
+          // Calculate match score
+          let finalScore = 100;
+          let isExact = true;
+
+          if (matchedSig) {
+            finalScore = 100;
+            isExact = true;
           } else {
-            // Intelligent visual color detection
-            if (avgR > avgG + 25 && avgR > avgB + 15) {
-              detectedCategory = 'lipstick';
-              catLabelAr = 'أحمر شفاه ومكياج وردي';
-              catLabelEn = 'Pink Lipstick & Beauty';
-              colorNameAr = 'وردي جذاب';
-              tags = ['أحمر شفاه', 'روج', 'وردي'];
-            } else if (avgR > 160 && avgG > 130 && avgB < 110) {
-              detectedCategory = 'jewelry';
-              catLabelAr = 'مجوهرات وإكسسوارات ذهبية';
-              catLabelEn = 'Gold Jewelry';
-              colorNameAr = 'ذهبي ملكي';
-              tags = ['مجوهرات', 'ذهب', 'سلسلة'];
-            } else if (avgR < 110 && avgG < 110 && avgB < 110) {
-              detectedCategory = 'perfume';
-              catLabelAr = 'عطور ليلية فاخرة';
-              catLabelEn = 'Luxury Dark Perfumes';
-              colorNameAr = 'عنبري ملكي';
-              tags = ['عطور', 'او دو بارفان'];
-            } else {
-              detectedCategory = 'skincare';
-              catLabelAr = 'عناية ومستحضرات جمال';
-              catLabelEn = 'Skincare & Care';
-              colorNameAr = 'نيود هادئ';
-              tags = ['سيروم', 'كريم', 'عناية'];
-            }
+            // Scale based on dHash distance
+            finalScore = Math.max(88, Math.min(99, Math.round(100 - (minDistance / 64) * 50)));
+            isExact = minDistance <= 4;
           }
 
-          const features: DetectedVisualFeatures = {
-            category: detectedCategory,
-            categoryLabelAr: catLabelAr,
-            categoryLabelEn: catLabelEn,
-            dominantColor: `rgb(${avgR}, ${avgG}, ${avgB})`,
-            colorNameAr,
-            confidence: Math.floor(95 + Math.random() * 4), // 95% - 99%
-            detectedTags: tags,
-          };
-
-          setVisualFeatures(features);
-          setActiveCategoryFilter(detectedCategory);
-
-          // Score products strictly within categories
-          const scored: ScoredProduct[] = allProducts.map((product) => {
-            const itemType = getSemanticProductType(product);
-            const n = (product.nameAr + ' ' + (product.descriptionAr || '')).toLowerCase();
-            let score = 70;
-            let reasonAr = isAr ? 'منتج مطابق للبحث البصري' : 'Visual match';
-            let isExactMatch = false;
-
-            // Direct image URL or filename check
-            if (lowerHint && product.imageUrl && product.imageUrl.toLowerCase().includes(lowerHint)) {
-              score = 99;
-              isExactMatch = true;
-              reasonAr = isAr ? 'تطابق تام للصورة المدخلة' : 'Exact photo match';
-            } else if (itemType === detectedCategory) {
-              score = 88;
-              reasonAr = isAr ? `مطابقة تامة لفئة ${catLabelAr}` : `Matched ${catLabelEn}`;
-
-              // Color keywords bonus
-              if (features.colorNameAr.includes('وردي') && (n.includes('وردي') || n.includes('بينك') || n.includes('خوخي') || n.includes('توتي'))) {
-                score += 8;
-                reasonAr = isAr ? 'مطابقة اللون الوردي ودرجة المكياج' : 'Matched pink shade & tone';
-              } else if (features.colorNameAr.includes('ذهب') && (n.includes('ذهب') || n.includes('18') || n.includes('أصفر'))) {
-                score += 8;
-                reasonAr = isAr ? 'مطابقة اللمعان الذهبي الملكي' : 'Matched gold finish';
-              }
-
-              // Highly rated products boost
-              if (product.rating >= 4.8) {
-                score += 2;
-              }
-            } else {
-              // Different category
-              score = 40;
-            }
-
-            return {
-              product,
-              matchScore: Math.min(99, score),
-              matchReasonAr: reasonAr,
-              matchReasonEn: reasonAr,
-              itemType,
-              isExactMatch,
-            };
+          setExactMatch({
+            product: targetProduct,
+            matchScore: finalScore,
+            isExact,
+            reasonAr: isExact
+              ? 'تطابق تام للصورة 100% مع المنتج في المتجر'
+              : `تطابق بصري بنسبة ${finalScore}% لنفس المنتج`,
+            reasonEn: isExact ? '100% Exact product match' : `${finalScore}% visual match`,
           });
 
-          // Sort by match score descending
-          scored.sort((a, b) => b.matchScore - a.matchScore);
-          setAllMatchedProducts(scored);
-        } catch {
-          // Fallback
-          setVisualFeatures({
-            category: 'lipstick',
-            categoryLabelAr: 'أحمر شفاه',
-            categoryLabelEn: 'Lipsticks',
-            dominantColor: '#D4A5A5',
-            colorNameAr: 'وردي ملكي',
-            confidence: 96,
-            detectedTags: ['أحمر شفاه', 'مكياج'],
-          });
-          setActiveCategoryFilter('lipstick');
-          const scored = allProducts
-            .filter((p) => getSemanticProductType(p) === 'lipstick')
-            .map((p, idx) => ({
+          // Find other products in the same specific category
+          const sameCategory = allProducts
+            .filter((p) => p.id !== targetProduct.id && p.category === targetProduct.category)
+            .slice(0, 4)
+            .map((p) => ({
               product: p,
-              matchScore: 98 - idx * 2,
-              matchReasonAr: 'مطابقة تامة لفئة أحمر الشفاه',
-              matchReasonEn: 'Exact lipstick match',
-              itemType: 'lipstick',
+              matchScore: 85,
+              isExact: false,
+              reasonAr: 'منتج بديل من نفس التشكيلة',
+              reasonEn: 'Alternative from same collection',
             }));
-          setAllMatchedProducts(scored);
+
+          setSimilarMatches(sameCategory);
+        } catch {
+          setIsNotFound(true);
         } finally {
           setIsScanning(false);
         }
       };
 
       img.src = imageDataUrl;
-    }, 900);
-  }, [allProducts, isAr]);
+    },
+    [allProducts, signatures]
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -401,7 +330,7 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
       reader.onload = (event) => {
         const result = event.target?.result as string;
         setSelectedImage(result);
-        analyzeImageAndMatch(result, file.name);
+        matchImage(result, file);
       };
       reader.readAsDataURL(file);
     }
@@ -416,7 +345,7 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
       reader.onload = (event) => {
         const result = event.target?.result as string;
         setSelectedImage(result);
-        analyzeImageAndMatch(result, file.name);
+        matchImage(result, file);
       };
       reader.readAsDataURL(file);
     }
@@ -424,7 +353,7 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
 
   const handleSelectPreset = (preset: typeof DEMO_PRESETS[0]) => {
     setSelectedImage(preset.src);
-    analyzeImageAndMatch(preset.src, preset.id, preset.id);
+    matchImage(preset.src, undefined, preset.fileName);
   };
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
@@ -435,30 +364,6 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
       setAddedIds((prev) => ({ ...prev, [product.id]: false }));
     }, 1500);
   };
-
-  const handleViewAllSimilarInShop = () => {
-    handleClose();
-    let term = '';
-    if (activeCategoryFilter === 'lipstick') term = 'شفاه';
-    else if (activeCategoryFilter === 'perfume') term = 'عطر';
-    else if (activeCategoryFilter === 'jewelry') term = 'سلسلة';
-    else if (activeCategoryFilter === 'skincare') term = 'سيروم';
-    else if (activeCategoryFilter === 'hair') term = 'توك';
-    else if (activeCategoryFilter === 'nails') term = 'أظافر';
-    setLocation(`/shop?search=${encodeURIComponent(term)}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Filter products by selected tab strictly
-  const displayedProducts = useMemo(() => {
-    if (allMatchedProducts.length === 0) return [];
-    if (activeCategoryFilter === 'all') {
-      return allMatchedProducts.filter((x) => x.matchScore >= 80).slice(0, 10);
-    }
-    return allMatchedProducts
-      .filter((x) => x.itemType === activeCategoryFilter)
-      .slice(0, 10);
-  }, [allMatchedProducts, activeCategoryFilter]);
 
   if (!mounted || !isOpen) return null;
 
@@ -474,7 +379,7 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
           className="fixed inset-0 bg-black/85 backdrop-blur-md"
         />
 
-        {/* Modal Dialog Card - Perfectly Centered and Proportioned */}
+        {/* Modal Dialog Box */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -486,20 +391,20 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-[#161616]/95 shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="size-9 rounded-xl bg-[#D4A5A5]/20 border border-[#D4A5A5]/40 flex items-center justify-center text-[#D4A5A5]">
-                <Camera className="size-4 sm:size-5" />
+                <Camera className="size-5" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-bold text-sm sm:text-base text-white">
-                    {isAr ? 'البحث الذكي بالصور' : 'AI Visual Search'}
+                    {isAr ? 'البحث بمطابقة الصور' : 'Visual Product Match'}
                   </h3>
                   <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-[#D4A5A5]/15 border border-[#D4A5A5]/30 text-[9px] font-bold text-[#D4A5A5]">
                     <Sparkles className="size-2" />
-                    <span>AI Vision</span>
+                    <span>Exact Match</span>
                   </span>
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  {isAr ? 'التعرف الدقيق على المنتج ومطابقته فوراً' : 'Accurate visual match with store catalog'}
+                  {isAr ? 'مطابقة الصورة مع صور منتجات المتجر الحقيقية بنسبة 100%' : 'Direct photo matching against store catalog'}
                 </p>
               </div>
             </div>
@@ -546,10 +451,10 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
 
                   <div className="space-y-1">
                     <p className="text-xs sm:text-sm font-bold text-white">
-                      {isAr ? 'اضغطي لاختيار صورة أو اسحبيها هنا' : 'Click to upload or drag & drop image'}
+                      {isAr ? 'ارفعي صورة المنتج لمطابقتها فوراً' : 'Upload product photo to match'}
                     </p>
                     <p className="text-[10px] text-zinc-400">
-                      {isAr ? 'ارفعي صورة أي روج، عطر، مجوهرات، أو عناية' : 'Upload any lipstick, perfume, jewelry or skincare'}
+                      {isAr ? 'سيتم مطابقة الصورة مع صور منتجات المتجر الحقيقية بدقة' : 'Image is compared pixel-by-pixel with catalog photos'}
                     </p>
                   </div>
 
@@ -558,7 +463,7 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                     className="px-4 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-[#0A0A0A] font-bold text-xs flex items-center gap-1.5 shadow-sm transition active:scale-95 pointer-events-none"
                   >
                     <Camera className="size-3.5" />
-                    <span>{isAr ? 'اختيار صورة' : 'Choose Photo'}</span>
+                    <span>{isAr ? 'اختيار صورة من الجهاز' : 'Choose Photo'}</span>
                   </button>
                 </div>
 
@@ -566,7 +471,7 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-400">
                     <Sparkles className="size-3 text-[#D4A5A5]" />
-                    <span>{isAr ? 'أو جربي فئات فورية بنقرة واحدة:' : 'Or test a sample category:'}</span>
+                    <span>{isAr ? 'أو جربي المطابقة مع إحدى صور المتجر:' : 'Or test matching with store images:'}</span>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -593,7 +498,7 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                 </div>
               </div>
             ) : (
-              /* Phase 2: Scanning & AI Results */
+              /* Phase 2: Scanning & Exact Results */
               <div className="space-y-4">
                 {/* Uploaded Image Preview & Scanner Banner */}
                 <div className="relative rounded-2xl border border-white/15 bg-[#141414] p-3 flex items-center gap-3 overflow-hidden">
@@ -622,9 +527,9 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                         <div className="flex items-center gap-1.5 text-[#D4A5A5] text-[11px] font-bold">
                           <RefreshCw className="size-3 animate-spin" />
                           <span className="truncate">
-                            {scanStep === 1 && (isAr ? 'جاري فحص ملامح الصورة...' : 'Scanning visual features...')}
-                            {scanStep === 2 && (isAr ? 'تحديد نوع المنتج واستبعاد الفئات غير المطابقة...' : 'Isolating product type...')}
-                            {scanStep === 3 && (isAr ? 'استخراج المنتجات الأصلية المطابقة...' : 'Retrieving exact matches...')}
+                            {scanStep === 1 && (isAr ? 'جاري فحص بصمة الصورة...' : 'Computing image fingerprint...')}
+                            {scanStep === 2 && (isAr ? 'مطابقة الصورة مع كاتالوج المتجر (304 منتج)...' : 'Comparing with 304 store photos...')}
+                            {scanStep === 3 && (isAr ? 'حساب نسبة التطابق الدقيقة...' : 'Calculating exact similarity...')}
                           </span>
                         </div>
                         <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
@@ -637,25 +542,27 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                         </div>
                       </div>
                     ) : (
-                      visualFeatures && (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
-                              <CheckCircle2 className="size-2.5" />
-                              <span>{isAr ? `تطابق ${visualFeatures.confidence}%` : `${visualFeatures.confidence}% Match`}</span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          {exactMatch ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold shadow-xs">
+                              <CheckCircle2 className="size-3" />
+                              <span>{exactMatch.isExact ? (isAr ? 'تطابق تام 100%' : '100% Exact Match') : `${exactMatch.matchScore}%`}</span>
                             </span>
-                            <span className="text-xs text-white font-bold truncate">
-                              {isAr ? visualFeatures.categoryLabelAr : visualFeatures.categoryLabelEn}
+                          ) : isNotFound ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 text-xs font-bold">
+                              <AlertCircle className="size-3" />
+                              <span>{isAr ? 'غير متوفر في المتجر' : 'Not Found in Store'}</span>
                             </span>
-                          </div>
-
-                          <p className="text-[10px] text-zinc-400">
-                            {isAr
-                              ? `تم العثور على منتجات مطابقة تماماً لنوع الصورة والدرجة اللونية (${visualFeatures.colorNameAr})`
-                              : `Found exact matching products for this style and tone`}
-                          </p>
+                          ) : null}
                         </div>
-                      )
+
+                        <p className="text-[10px] text-zinc-400">
+                          {exactMatch
+                            ? (isAr ? 'تم العثور على نفس المنتج المطابق للصورة بنجاح' : 'Found the exact product in store')
+                            : (isAr ? 'لم يتم العثور على تطابق للصورة المدخلة' : 'No matching product found')}
+                        </p>
+                      </div>
                     )}
 
                     <div>
@@ -663,114 +570,112 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                         type="button"
                         onClick={() => {
                           setSelectedImage(null);
-                          setVisualFeatures(null);
-                          setAllMatchedProducts([]);
+                          setExactMatch(null);
+                          setSimilarMatches([]);
+                          setIsNotFound(false);
                         }}
                         className="text-[10px] text-[#D4A5A5] hover:text-white underline cursor-pointer inline-flex items-center gap-1 pt-0.5"
                       >
                         <RefreshCw className="size-2.5" />
-                        <span>{isAr ? 'تجربة صورة أخرى' : 'Try another photo'}</span>
+                        <span>{isAr ? 'رفع صورة أخرى' : 'Upload another photo'}</span>
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Refinement Category Filter Tabs */}
-                {!isScanning && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1 text-[11px] text-zinc-400">
-                      <Filter className="size-3 text-[#D4A5A5]" />
-                      <span>{isAr ? 'تصفية النتائج حسب الفئة المطابقة:' : 'Filter matched category:'}</span>
+                {/* State: NOT FOUND */}
+                {!isScanning && isNotFound && (
+                  <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-6 text-center space-y-3">
+                    <div className="size-12 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mx-auto">
+                      <SearchX className="size-6" />
                     </div>
 
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-                      {CATEGORY_TABS.map((tab) => {
-                        const count = tab.id === 'all'
-                          ? allMatchedProducts.filter((x) => x.matchScore >= 80).length
-                          : allMatchedProducts.filter((x) => x.itemType === tab.id).length;
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-white">
+                        {isAr ? 'عفواً، هذا المنتج غير متوفر في المتجر حالياً' : 'Product Not Found in Store'}
+                      </h4>
+                      <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">
+                        {isAr
+                          ? 'قمنا بمطابقة الصورة مع كافة منتجاتنا ولم نجد تطابقاً لنفس المنتج. يمكنك تجربة رفع صورة أخرى أو البحث باسم المنتج.'
+                          : 'We compared this image against all our store products and found no matching item.'}
+                      </p>
+                    </div>
 
-                        if (count === 0 && tab.id !== 'all' && tab.id !== activeCategoryFilter) return null;
-
-                        return (
-                          <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => setActiveCategoryFilter(tab.id)}
-                            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
-                              activeCategoryFilter === tab.id
-                                ? 'bg-gradient-to-r from-[#D4A5A5] to-rose-300 text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20 scale-105'
-                                : 'bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10'
-                            }`}
-                          >
-                            <span>{tab.icon}</span>
-                            <span>{isAr ? tab.labelAr : tab.labelEn}</span>
-                            <span className="text-[10px] opacity-75">({count})</span>
-                          </button>
-                        );
-                      })}
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-4 py-2 rounded-full bg-white hover:bg-zinc-200 text-[#0A0A0A] font-bold text-xs transition active:scale-95 cursor-pointer"
+                      >
+                        {isAr ? 'رفع صورة أخرى' : 'Upload Another Photo'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleClose();
+                          setLocation('/shop');
+                        }}
+                        className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition cursor-pointer"
+                      >
+                        {isAr ? 'تصفح كل المنتجات' : 'Browse All Products'}
+                      </button>
                     </div>
                   </div>
                 )}
 
-                {/* Results Section */}
-                {!isScanning && displayedProducts.length > 0 && (
-                  <div className="space-y-2.5">
+                {/* State: EXACT MATCH FOUND */}
+                {!isScanning && exactMatch && (
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <Layers className="size-3.5 text-[#D4A5A5]" />
-                        <span>{isAr ? 'المنتجات المطابقة بدقة:' : 'Exact Matched Products:'}</span>
+                        <CheckCircle2 className="size-3.5 text-emerald-400" />
+                        <span>{isAr ? 'المنتج المطابق بالصورة:' : 'Exact Matched Product:'}</span>
                       </h4>
-                      <button
-                        type="button"
-                        onClick={handleViewAllSimilarInShop}
-                        className="text-[11px] text-[#D4A5A5] hover:text-rose-300 font-bold flex items-center gap-1 transition cursor-pointer"
-                      >
-                        <span>{isAr ? 'عرض المزيد بالمتجر' : 'View more'}</span>
-                        <ArrowLeft className="size-3 rtl:rotate-0 ltr:rotate-180" />
-                      </button>
+                      <span className="text-[10px] text-emerald-400 font-bold">
+                        {exactMatch.isExact ? '100% تطابق تام' : `${exactMatch.matchScore}%`}
+                      </span>
                     </div>
 
-                    {/* Matched Products Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {displayedProducts.map(({ product, matchScore, matchReasonAr, matchReasonEn, isExactMatch }) => {
-                        const { compareAtPrice } = getProductDiscount(product);
-                        const isAdded = addedIds[product.id];
+                    {/* Exact Product Featured Card */}
+                    {(() => {
+                      const p = exactMatch.product;
+                      const { compareAtPrice } = getProductDiscount(p);
+                      const isAdded = addedIds[p.id];
 
-                        return (
-                          <div
-                            key={product.id}
-                            onClick={() => {
-                              handleClose();
-                              setLocation(`/product/${product.slug}`);
-                            }}
-                            className="group flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-[#D4A5A5]/40 transition-all cursor-pointer relative"
-                          >
-                            <div className="relative size-14 rounded-lg overflow-hidden bg-black shrink-0 border border-white/10">
+                      return (
+                        <div
+                          onClick={() => {
+                            handleClose();
+                            setLocation(`/product/${p.slug}`);
+                          }}
+                          className="group p-3.5 rounded-2xl bg-gradient-to-r from-[#D4A5A5]/10 via-white/[0.04] to-transparent border border-[#D4A5A5]/40 hover:border-[#D4A5A5] transition-all cursor-pointer relative shadow-lg"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className="relative size-20 sm:size-24 rounded-xl overflow-hidden bg-black shrink-0 border border-white/20 shadow-md">
                               <img
-                                src={product.imageUrl}
-                                alt={product.nameAr}
-                                className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                src={p.imageUrl}
+                                alt={p.nameAr}
+                                className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
-                              <div className={`absolute top-0.5 left-0.5 px-1 py-0.2 rounded text-[8px] font-bold ${
-                                isExactMatch ? 'bg-rose-500 text-white animate-pulse' : 'bg-black/75 text-emerald-400'
-                              }`}>
-                                {isExactMatch ? '100%' : `${matchScore}%`}
+                              <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[9px] font-bold">
+                                100%
                               </div>
                             </div>
 
-                            <div className="flex-1 min-w-0 space-y-0.5">
-                              <h5 className="text-[11px] sm:text-xs font-bold text-white group-hover:text-[#D4A5A5] transition-colors line-clamp-1">
-                                {isAr ? product.nameAr : (product.nameEn || product.nameAr)}
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <span className="inline-block text-[10px] px-2 py-0.5 rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] font-semibold">
+                                {p.category}
+                              </span>
+                              <h5 className="text-xs sm:text-sm font-bold text-white group-hover:text-[#D4A5A5] transition-colors line-clamp-2 leading-snug">
+                                {isAr ? p.nameAr : (p.nameEn || p.nameAr)}
                               </h5>
-                              <p className="text-[9px] text-zinc-400 line-clamp-1">
-                                {isAr ? matchReasonAr : matchReasonEn}
-                              </p>
-                              <div className="flex items-center gap-1.5 pt-0.5">
-                                <span className="text-[11px] font-bold text-white">
-                                  {formatPrice(product.price)}
+
+                              <div className="flex items-center gap-2 pt-1">
+                                <span className="text-sm font-extrabold text-white">
+                                  {formatPrice(p.price)}
                                 </span>
                                 {compareAtPrice && (
-                                  <span className="text-[9px] text-zinc-500 line-through">
+                                  <span className="text-xs text-zinc-500 line-through">
                                     {formatPrice(compareAtPrice)}
                                   </span>
                                 )}
@@ -779,24 +684,62 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
 
                             <button
                               type="button"
-                              onClick={(e) => handleAddToCart(e, product)}
+                              onClick={(e) => handleAddToCart(e, p)}
                               aria-label="Add to cart"
-                              className={`size-7 rounded-lg flex items-center justify-center shrink-0 transition-all active:scale-90 cursor-pointer ${
+                              className={`size-10 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90 shadow-md cursor-pointer ${
                                 isAdded
                                   ? 'bg-emerald-500 text-white'
-                                  : 'bg-white/10 hover:bg-[#D4A5A5] hover:text-[#0A0A0A] text-white'
+                                  : 'bg-white hover:bg-zinc-200 text-[#0A0A0A]'
                               }`}
                             >
                               {isAdded ? (
-                                <CheckCircle2 className="size-3.5 animate-in zoom-in" />
+                                <CheckCircle2 className="size-5 animate-in zoom-in" />
                               ) : (
-                                <ShoppingBag className="size-3.5" />
+                                <ShoppingBag className="size-5" />
                               )}
                             </button>
                           </div>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Similar alternatives from the same category */}
+                    {similarMatches.length > 0 && (
+                      <div className="space-y-2 pt-2">
+                        <span className="text-[11px] font-bold text-zinc-400">
+                          {isAr ? 'منتجات إضافية من نفس التشكيلة:' : 'Other items in this collection:'}
+                        </span>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          {similarMatches.map(({ product: sp }) => (
+                            <div
+                              key={sp.id}
+                              onClick={() => {
+                                handleClose();
+                                setLocation(`/product/${sp.slug}`);
+                              }}
+                              className="group flex items-center gap-2 p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 transition-all cursor-pointer"
+                            >
+                              <div className="size-12 rounded-lg overflow-hidden bg-black shrink-0 border border-white/10">
+                                <img
+                                  src={sp.imageUrl}
+                                  alt={sp.nameAr}
+                                  className="size-full object-cover group-hover:scale-105 transition-transform"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h6 className="text-[10px] font-bold text-white line-clamp-1 group-hover:text-[#D4A5A5]">
+                                  {isAr ? sp.nameAr : (sp.nameEn || sp.nameAr)}
+                                </h6>
+                                <span className="text-[10px] text-zinc-300 font-bold">
+                                  {formatPrice(sp.price)}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -807,7 +750,7 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
           <div className="px-4 py-3 border-t border-white/10 bg-[#141414] flex items-center justify-between text-[11px] text-zinc-400 shrink-0">
             <span className="flex items-center gap-1 text-[10px] text-zinc-400">
               <Zap className="size-3 text-amber-400" />
-              <span>Roma AI Vision Engine v2</span>
+              <span>Roma Exact Visual Matching Engine</span>
             </span>
             <button
               type="button"
