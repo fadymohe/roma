@@ -1,9 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Search, X, ArrowLeft, ArrowRight, Sparkles, Tag, Compass, Lightbulb } from 'lucide-react';
+import { Search, X, ArrowLeft, ArrowRight, Sparkles, Tag, Compass, Lightbulb, Camera } from 'lucide-react';
 import { useLiveProducts, DEFAULT_PRODUCTS, Product } from '@/lib/catalog-data';
 import { useLanguage } from '@/lib/language-context';
 import { Link, useLocation } from 'wouter';
 import { smartSearchProducts, getHighlightedParts } from '@/lib/smart-search';
+import { VisualSearchModal } from '@/components/visual-search-modal';
 
 export interface IntegratedSearchProps {
   className?: string;
@@ -19,6 +20,7 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
 
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -106,10 +108,21 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
         )}
 
         <button
-          type="submit"
-          className="me-1 px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-[#0A0A0A] text-xs font-bold transition active:scale-95 shrink-0 flex items-center gap-1 shadow-sm"
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsVisualSearchOpen(true);
+          }}
+          title={isAr ? 'البحث الذكي باستخدام الصور' : 'AI Visual Search'}
+          className="me-1 size-8 sm:size-9 rounded-full bg-white hover:bg-zinc-200 text-[#0A0A0A] flex items-center justify-center transition-all duration-200 active:scale-95 shrink-0 shadow-sm relative group/cam cursor-pointer"
+          aria-label={isAr ? 'البحث بالصور' : 'Image search'}
         >
-          <span>{isAr ? 'بحث' : 'Go'}</span>
+          <Camera className="size-4 text-[#0A0A0A] transition-transform group-hover/cam:scale-110" />
+          <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+          </span>
         </button>
       </form>
 
@@ -293,6 +306,11 @@ export function IntegratedSearch({ className = '', variant = 'desktop', autoFocu
           )}
         </div>
       )}
+      {/* AI Visual Search Modal */}
+      <VisualSearchModal
+        isOpen={isVisualSearchOpen}
+        onClose={() => setIsVisualSearchOpen(false)}
+      />
     </div>
   );
 }
