@@ -280,13 +280,24 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
             matchedSig = sigs.find((s) => s.sha256 === uploadedSha256);
           }
 
-          // 2. Direct filename match
-          if (!matchedSig && fileNameLower) {
-            matchedSig = sigs.find(
-              (s) =>
-                s.fileName.toLowerCase() === fileNameLower ||
-                s.imageUrl.toLowerCase().endsWith(fileNameLower)
+          // 2. Exact store filename match (only if full filename matches, length >= 8, not generic names like 1.jpg or image.png)
+          const isGenericFileName =
+            !fileNameLower ||
+            /^(image|img|photo|picture|download|screenshot|upload|untitled|[0-9]+)\.(jpg|jpeg|png|webp)$/i.test(fileNameLower) ||
+            fileNameLower.length < 8;
+
+          if (!matchedSig && !isGenericFileName) {
+            const candidateByFile = sigs.find(
+              (s) => s.fileName.toLowerCase() === fileNameLower
             );
+            if (candidateByFile) {
+              const dDist = candidateByFile.dhash ? hammingDistance(dhash, candidateByFile.dhash) : 64;
+              const aDist = candidateByFile.ahash ? hammingDistance(ahash, candidateByFile.ahash) : 64;
+              // Only accept filename match if visual distance also agrees
+              if (Math.min(dDist, aDist) <= 20) {
+                matchedSig = candidateByFile;
+              }
+            }
           }
 
           // 3. Multi-Hash Perceptual Matching (dHash + aHash + Color Distance)
@@ -315,11 +326,11 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
           }
 
           // Precise Validation:
-          // Must be an exact match OR within clear visual distance (<= 16 bits, or <= 20 with similar colors)
+          // Must be an exact match OR within clear visual distance (<= 14 bits, or <= 18 with similar colors)
           const isVisualMatch =
             matchedSig !== undefined ||
-            bestMinDist <= 16 ||
-            (bestMinDist <= 20 && bestColorDist < 65);
+            bestMinDist <= 14 ||
+            (bestMinDist <= 18 && bestColorDist < 60);
 
           if (!isVisualMatch || (!matchedSig && !bestSig)) {
             setIsNotFound(true);
@@ -356,20 +367,20 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
           let finalScore = 100;
           let isExact = true;
 
-          if (matchedSig || bestMinDist <= 4) {
+          if (matchedSig || bestMinDist <= 2) {
             finalScore = 100;
             isExact = true;
-          } else if (bestMinDist <= 8) {
+          } else if (bestMinDist <= 6) {
             finalScore = 99;
             isExact = true;
-          } else if (bestMinDist <= 12) {
+          } else if (bestMinDist <= 10) {
             finalScore = 96;
             isExact = false;
-          } else if (bestMinDist <= 16) {
+          } else if (bestMinDist <= 14) {
             finalScore = 92;
             isExact = false;
           } else {
-            finalScore = Math.max(88, Math.min(90, Math.round(100 - (bestMinDist / 64) * 40)));
+            finalScore = Math.max(85, Math.min(89, Math.round(100 - (bestMinDist / 64) * 45)));
             isExact = false;
           }
 
