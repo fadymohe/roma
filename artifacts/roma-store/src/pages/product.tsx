@@ -448,10 +448,16 @@ export default function ProductPage() {
         {/* Left Column: Amazon-Style Touch-Swipeable Gallery */}
         <div className="space-y-4">
           <div
-            className="relative aspect-square md:aspect-[4/3] max-h-[460px] overflow-hidden rounded-3xl border border-white/10 bg-[#141414] p-4 sm:p-6 flex items-center justify-center shadow-xl group select-none"
+            className="relative aspect-square w-full overflow-hidden rounded-3xl border border-white/10 bg-[#141414] flex items-center justify-center shadow-xl group select-none"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
+            {/* Ambient blur backdrop to ensure seamless blending without black side gaps */}
+            <div
+              className="absolute inset-0 bg-center bg-cover blur-2xl opacity-20 scale-125 pointer-events-none"
+              style={{ backgroundImage: `url(${galleryImages[selectedImage] || product.imageUrl})` }}
+            />
+
             <img
               src={galleryImages[selectedImage] || product.imageUrl}
               alt={displayName}
@@ -463,19 +469,19 @@ export default function ProductPage() {
                   target.src = '/logo-white-bg.png';
                 }
               }}
-              className="max-h-[380px] md:max-h-[420px] max-w-full h-auto w-auto object-contain rounded-2xl transition-transform duration-500 group-hover:scale-105 drop-shadow-2xl"
+              className="relative z-10 w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
             />
 
             {/* Badge */}
             {displayBadge && (
-              <span className="absolute top-5 right-5 rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[11px] font-medium px-2.5 py-0.5 shadow-md">
+              <span className="absolute top-5 right-5 z-20 rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[11px] font-medium px-2.5 py-0.5 shadow-md">
                 {displayBadge}
               </span>
             )}
 
             {/* Swipe hint dots for mobile */}
             {galleryImages.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-[#0A0A0A]/60 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-md">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-[#0A0A0A]/60 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-md">
                 {galleryImages.map((_, i) => (
                   <span
                     key={i}
