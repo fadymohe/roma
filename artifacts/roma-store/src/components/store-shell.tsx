@@ -375,18 +375,16 @@ export function StoreShell({ children }: { children: ReactNode }) {
       )}
 
       {/* Main Content View */}
-      <main className={`flex-1 w-full ${!location.startsWith('/product/') ? 'pb-20 md:pb-12' : ''}`}>{children}</main>
+      <main className="flex-1 w-full pb-20 md:pb-12">{children}</main>
 
       {/* ========================================================================= */}
       {/* 1. BRAND AESTHETICS & MOBILE-FIRST UX: STICKY MOBILE BOTTOM NAVIGATION    */}
       {/* Destinations: [Store / Shop, Categories, Cart with counter, My Account]   */}
-      {/* (Hidden on product detail pages to avoid collision with Product Buy Bar)   */}
       {/* ========================================================================= */}
-      {!location.startsWith('/product/') && (
-        <nav
-          aria-label="Mobile Bottom Navigation"
-          className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 shadow-2xl safe-area-pb"
-        >
+      <nav
+        aria-label="Mobile Bottom Navigation"
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 shadow-2xl safe-area-pb"
+      >
           <div className="grid grid-cols-4 items-center max-w-md mx-auto">
             {/* Destination 1: Store / Shop */}
             <Link
@@ -458,9 +456,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
             </Link>
           </div>
         </nav>
-      )}
 
-      {/* Popups & Drawers */}
+        {/* Popups & Drawers */}
       <UserDrawer />
       <WishlistDrawer />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />

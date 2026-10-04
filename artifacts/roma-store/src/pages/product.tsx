@@ -401,7 +401,7 @@ export default function ProductPage() {
   const currentStock = variant?.stock ?? product.stock ?? 12;
 
   return (
-    <div className="roma-container pt-3 pb-28 md:py-12 text-[#F9FAFB]" dir={dir}>
+    <div className="roma-container pt-3 pb-8 md:py-12 text-[#F9FAFB]" dir={dir}>
       {/* Top Breadcrumb & Navigation */}
       <div className="mb-6 flex items-center justify-between">
         <Link
@@ -571,7 +571,7 @@ export default function ProductPage() {
             </span>
             <h1
               data-testid="text-product-name"
-              className="mt-1 font-display text-2xl md:text-4xl font-extrabold text-white leading-snug"
+              className="mt-1.5 font-display text-lg sm:text-2xl md:text-3xl font-extrabold text-white leading-snug"
             >
               {displayName}
             </h1>
@@ -891,40 +891,6 @@ export default function ProductPage() {
           </div>
         </div>
       )}
-
-      {/* ========================================================================= */}
-      {/* LUXURY STICKY MOBILE ACTION BAR                                           */}
-      {/* Sits cleanly at the bottom on mobile viewport                             */}
-      {/* ========================================================================= */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 p-3 px-4 shadow-2xl safe-area-pb">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <span className="text-[10px] text-zinc-400 block">{t('cart.total')}</span>
-            <span className="text-base font-extrabold font-mono-brand text-white">
-              {formatPrice(product.price * quantity)}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={addToBag}
-              className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border border-[#D4A5A5]/40 text-[#D4A5A5] hover:bg-[#D4A5A5]/10 ${
-                addedNotice ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : ''
-              }`}
-            >
-              {addedNotice ? '✓ تمت الإضافة' : t('product.add_to_cart')}
-            </button>
-            <button
-              type="button"
-              onClick={buyNowDirect}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#F2A7A7] via-[#E99797] to-[#DF8C8C] text-white font-extrabold shadow-lg shadow-rose-400/25 hover:brightness-105 text-xs transition active:scale-95"
-            >
-              {isAr ? 'شراء الآن' : t('product.buy_now')}
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
