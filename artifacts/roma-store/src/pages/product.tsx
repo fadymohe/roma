@@ -456,11 +456,11 @@ export default function ProductPage() {
       </div>
 
       {/* Main Product Layout */}
-      <div className="grid gap-10 md:grid-cols-2 md:gap-14 items-start">
+      <div className="grid gap-5 md:grid-cols-2 md:gap-14 items-start">
         {/* Left Column: Amazon-Style Touch-Swipeable Gallery */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div
-            className="relative aspect-square w-full overflow-hidden rounded-3xl border border-white/10 bg-[#141414] flex items-center justify-center shadow-xl group select-none"
+            className="relative aspect-square w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-white/10 bg-[#141414] flex items-center justify-center shadow-xl group select-none"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
@@ -486,19 +486,19 @@ export default function ProductPage() {
 
             {/* Badge */}
             {displayBadge && (
-              <span className="absolute top-5 right-5 z-20 rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[11px] font-medium px-2.5 py-0.5 shadow-md">
+              <span className="absolute top-3.5 right-3.5 z-20 rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[10px] font-semibold px-2 py-0.5 shadow-md">
                 {displayBadge}
               </span>
             )}
 
             {/* Swipe hint dots for mobile */}
             {galleryImages.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-[#0A0A0A]/60 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-md">
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-[#0A0A0A]/60 px-2 py-0.5 rounded-full border border-white/10 backdrop-blur-md">
                 {galleryImages.map((_, i) => (
                   <span
                     key={i}
                     className={`size-1.5 rounded-full transition-all ${
-                      selectedImage === i ? 'bg-[#D4A5A5] w-3' : 'bg-white/40'
+                      selectedImage === i ? 'bg-[#D4A5A5] w-2.5' : 'bg-white/40'
                     }`}
                   />
                 ))}
@@ -508,13 +508,13 @@ export default function ProductPage() {
 
           {/* Sleek Image Gallery Thumbnails directly underneath */}
           {galleryImages.length > 1 && (
-            <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
               {galleryImages.map((img, idx) => (
                 <button
                   type="button"
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
-                  className={`relative w-16 h-16 rounded-xl overflow-hidden border transition-all shrink-0 p-0.5 bg-[#141414] ${
+                  className={`relative w-13 h-13 sm:w-16 sm:h-16 rounded-xl overflow-hidden border transition-all shrink-0 p-0.5 bg-[#141414] ${
                     selectedImage === idx
                       ? 'border-[#D4A5A5] shadow-md shadow-[#D4A5A5]/20 ring-1 ring-[#D4A5A5]'
                       : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'
@@ -564,49 +564,49 @@ export default function ProductPage() {
         </div>
 
         {/* Right Column: Title, Pricing & Purchase Block */}
-        <div className="space-y-6">
+        <div className="space-y-3.5 sm:space-y-5 md:space-y-6">
           <div>
-            <span className="font-mono-brand text-xs font-bold tracking-widest text-[#D4A5A5] uppercase">
+            <span className="font-mono-brand text-[11px] sm:text-xs font-bold tracking-widest text-[#D4A5A5] uppercase">
               {product.categoryEn || product.category}
             </span>
             <h1
               data-testid="text-product-name"
-              className="mt-1.5 font-display text-lg sm:text-2xl md:text-3xl font-extrabold text-white leading-snug"
+              className="mt-1 font-display text-base sm:text-xl md:text-3xl font-extrabold text-white leading-snug"
             >
               {displayName}
             </h1>
 
             {/* Ratings & Stock Badge */}
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-1.5 bg-[#1A1A1A] px-2.5 py-1 rounded-full border border-white/10">
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-[#1A1A1A] px-2 py-0.5 rounded-full border border-white/10">
                 <div className="flex gap-0.5 text-amber-400">
                   {Array.from({ length: 5 }).map((_, index) => (
-                    <Star key={index} className="size-3.5 fill-current" />
+                    <Star key={index} className="size-3 fill-current" />
                   ))}
                 </div>
-                <span className="text-xs font-bold text-white">{productRatingAvg}</span>
-                <span className="text-xs text-[#A1A1AA]">({reviews.length} {isAr ? 'تقييم موثق' : 'reviews'})</span>
+                <span className="text-[11px] font-bold text-white">{productRatingAvg}</span>
+                <span className="text-[10px] text-[#A1A1AA]">({reviews.length} {isAr ? 'تقييم' : 'reviews'})</span>
               </div>
 
               {/* In Stock Badge */}
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300 bg-emerald-950/40 border border-emerald-800/40 px-3 py-1 rounded-full">
-                <CheckCircle2 className="size-3.5" />
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300 bg-emerald-950/40 border border-emerald-800/40 px-2.5 py-0.5 rounded-full">
+                <CheckCircle2 className="size-3" />
                 <span>{isAr ? 'متوفر في المخزون' : 'In Stock'}</span>
               </span>
             </div>
 
             {/* Price Row (Pure White Price) */}
-            <div className="mt-4 flex items-baseline gap-3">
-              <span className="text-3xl md:text-4xl font-extrabold font-mono-brand text-white">
+            <div className="mt-2.5 flex items-baseline gap-2.5">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-mono-brand text-white">
                 {formatPrice(product.price)}
               </span>
               {effectiveCompareAtPrice && effectiveCompareAtPrice > product.price && (
-                <span className="text-base text-[#A1A1AA] line-through font-mono-brand opacity-60">
+                <span className="text-sm text-[#A1A1AA] line-through font-mono-brand opacity-60">
                   {formatPrice(effectiveCompareAtPrice)}
                 </span>
               )}
               {effectiveCompareAtPrice && effectiveCompareAtPrice > product.price && (
-                <span className="rounded-full bg-rose-500 text-white px-2.5 py-0.5 text-xs font-bold shadow-xs">
+                <span className="rounded-full bg-rose-500 text-white px-2 py-0.5 text-[10px] sm:text-xs font-bold shadow-xs">
                   {discountPercent ? `-${discountPercent}%` : (isAr ? `وفرتي ${effectiveCompareAtPrice - product.price} ج.م` : `Save ${effectiveCompareAtPrice - product.price} EGP`)}
                 </span>
               )}
@@ -614,28 +614,28 @@ export default function ProductPage() {
           </div>
 
           {/* Purchase Action Block */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-3">
+          <div className="space-y-2.5 pt-1">
+            <div className="flex items-center gap-2.5">
               {/* Quantity Stepper */}
-              <div className="flex items-center rounded-2xl border border-white/10 bg-[#141414] p-1 shadow-xs">
+              <div className="flex items-center rounded-xl border border-white/10 bg-[#141414] p-0.5 shadow-xs h-10">
                 <button
                   type="button"
                   aria-label="Decrease"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="size-9 rounded-xl flex items-center justify-center text-[#A1A1AA] hover:bg-white/5 hover:text-white"
+                  className="size-8 rounded-lg flex items-center justify-center text-[#A1A1AA] hover:bg-white/5 hover:text-white transition"
                 >
-                  <Minus className="size-4" />
+                  <Minus className="size-3.5" />
                 </button>
-                <span className="w-10 text-center font-mono-brand text-sm font-bold text-white">
+                <span className="w-8 text-center font-mono-brand text-xs sm:text-sm font-bold text-white">
                   {quantity}
                 </span>
                 <button
                   type="button"
                   aria-label="Increase"
                   onClick={() => setQuantity((q) => q + 1)}
-                  className="size-9 rounded-xl flex items-center justify-center text-[#A1A1AA] hover:bg-white/5 hover:text-white"
+                  className="size-8 rounded-lg flex items-center justify-center text-[#A1A1AA] hover:bg-white/5 hover:text-white transition"
                 >
-                  <Plus className="size-4" />
+                  <Plus className="size-3.5" />
                 </button>
               </div>
 
@@ -644,76 +644,76 @@ export default function ProductPage() {
                 type="button"
                 data-testid="button-add-to-cart"
                 onClick={addToBag}
-                className="flex-1 flex items-center justify-center gap-2 rounded-2xl border border-[#D4A5A5]/40 text-[#D4A5A5] hover:bg-[#D4A5A5]/10 py-3.5 px-6 text-sm font-bold transition active:scale-[0.99]"
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-[#D4A5A5]/40 text-[#D4A5A5] hover:bg-[#D4A5A5]/10 h-10 px-3 text-xs sm:text-sm font-bold transition active:scale-[0.99]"
               >
-                <ShoppingBag className="size-4 text-[#D4A5A5]" />
+                <ShoppingBag className="size-3.5 text-[#D4A5A5]" />
                 <span>
                   {addedNotice
                     ? isAr
-                      ? '✓ تمت الإضافة إلى الحقيبة بنجاح!'
+                      ? '✓ تمت الإضافة'
                       : '✓ Added to Bag!'
                     : t('product.add_to_cart')}
                 </span>
               </button>
             </div>
 
-            {/* Primary CTA: High-emphasis Fast Cash Buy Now (Bright colors, pure white font) */}
+            {/* Primary CTA: High-emphasis Fast Cash Buy Now */}
             <button
               type="button"
               data-testid="button-buy-now"
               onClick={buyNowDirect}
-              className="w-full flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#F2A7A7] via-[#E99797] to-[#DF8C8C] text-white font-extrabold shadow-lg shadow-rose-400/25 hover:brightness-105 py-3.5 px-6 text-sm md:text-base transition active:scale-[0.99] tracking-wide"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F2A7A7] via-[#E99797] to-[#DF8C8C] text-white font-extrabold shadow-md shadow-rose-400/20 hover:brightness-105 h-11 sm:h-12 px-4 text-xs sm:text-sm transition active:scale-[0.99] tracking-wide"
             >
-              <Zap className="size-4.5 text-white fill-white shrink-0" />
+              <Zap className="size-4 text-white fill-white shrink-0" />
               <span className="text-white drop-shadow-xs font-bold">{isAr ? 'شراء الآن' : t('product.buy_now')}</span>
             </button>
           </div>
 
           {/* Reassurance Features */}
-          <div className="rounded-2xl border border-white/10 bg-[#141414] p-4 space-y-2 text-xs text-[#A1A1AA]">
+          <div className="rounded-xl border border-white/10 bg-[#141414] p-3 space-y-1.5 text-[11px] sm:text-xs text-[#A1A1AA]">
             <div className="flex items-center gap-2 text-white font-medium">
-              <ShieldCheck className="size-4 text-[#D4A5A5]" />
+              <ShieldCheck className="size-3.5 text-[#D4A5A5] shrink-0" />
               <span>{isAr ? 'ضمان استبدال واسترجاع لمدة ١٤ يوماً' : '14-Day Hassle-Free Returns & Exchange'}</span>
             </div>
             <div className="flex items-center gap-2 text-white font-medium">
-              <Truck className="size-4 text-[#D4A5A5]" />
+              <Truck className="size-3.5 text-[#D4A5A5] shrink-0" />
               <span>{isAr ? 'معاينة المنتج قبل الدفع للمندوب متاحة' : 'Inspect Product Upon Courier Delivery'}</span>
             </div>
           </div>
 
           {/* Trust Value Badges (Mobile-only here under purchase block) */}
-          <div className="grid grid-cols-2 gap-2 pt-1 md:hidden">
-            <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Leaf className="size-4 text-[#D4A5A5] mb-1" />
-              <span className="text-[10px] font-bold text-white">{isAr ? '١٠٠٪ طبيعي' : '100% Organic'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'خالٍ من البارابين' : 'Toxin-Free'}</span>
+          <div className="grid grid-cols-2 gap-1.5 pt-0.5 md:hidden">
+            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#141414] border border-white/5 shadow-2xs">
+              <Leaf className="size-3.5 text-[#D4A5A5] mb-0.5" />
+              <span className="text-[10px] font-bold text-white leading-tight">{isAr ? '١٠٠٪ طبيعي' : '100% Organic'}</span>
+              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'خالٍ من البارابين' : 'Toxin-Free'}</span>
             </div>
-            <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Award className="size-4 text-[#D4A5A5] mb-1" />
-              <span className="text-[10px] font-bold text-white">{isAr ? 'مسجل بالصحة' : 'MOH Registered'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'ترخيص جودة مصري' : 'Gov Certified'}</span>
+            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#141414] border border-white/5 shadow-2xs">
+              <Award className="size-3.5 text-[#D4A5A5] mb-0.5" />
+              <span className="text-[10px] font-bold text-white leading-tight">{isAr ? 'مسجل بالصحة' : 'MOH Registered'}</span>
+              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'ترخيص جودة مصري' : 'Gov Certified'}</span>
             </div>
-            <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Droplets className="size-4 text-[#D4A5A5] mb-1" />
-              <span className="text-[10px] font-bold text-white">{isAr ? 'مختبر جلدياً' : 'Derm Tested'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'آمن للبشرة' : 'Sensitive Safe'}</span>
+            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#141414] border border-white/5 shadow-2xs">
+              <Droplets className="size-3.5 text-[#D4A5A5] mb-0.5" />
+              <span className="text-[10px] font-bold text-white leading-tight">{isAr ? 'مختبر جلدياً' : 'Derm Tested'}</span>
+              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'آمن للبشرة' : 'Sensitive Safe'}</span>
             </div>
-            <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Truck className="size-4 text-[#D4A5A5] mb-1" />
-              <span className="text-[10px] font-bold text-white">{isAr ? 'شحن ٢٤-٤٨ ساعة' : '24-48h Delivery'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'دفع عند الاستلام' : 'Cash on Delivery'}</span>
+            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#141414] border border-white/5 shadow-2xs">
+              <Truck className="size-3.5 text-[#D4A5A5] mb-0.5" />
+              <span className="text-[10px] font-bold text-white leading-tight">{isAr ? 'شحن ٢٤-٤٨ ساعة' : '24-48h Delivery'}</span>
+              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'دفع عند الاستلام' : 'Cash on Delivery'}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabs Section: Description, Ingredients, Ritual & Reviews */}
-      <div className="mt-10 md:mt-14 border-t border-white/10 pt-8 md:pt-10">
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 border-b border-white/10 no-scrollbar">
+      <div className="mt-6 md:mt-12 border-t border-white/10 pt-5 md:pt-8">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-3 border-b border-white/10 no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('desc')}
-            className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-bold transition whitespace-nowrap shrink-0 ${
+            className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-xs font-bold transition whitespace-nowrap shrink-0 ${
               activeTab === 'desc'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-xs'
                 : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
