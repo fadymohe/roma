@@ -27,28 +27,31 @@ const HERO_SHOWCASE_IMAGES = [
 export default function Home() {
   const { t, isAr, dir } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
-  const [currentHeroImageIdx, setCurrentHeroImageIdx] = useState(0);
+  const [[currentHeroImageIdx, direction], setSlide] = useState([0, 0]);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
 
-  // Auto-switch hero showcase image every 4.5 seconds (pauses on hover or touch)
+  const paginate = (newDirection: number) => {
+    setSlide(([prev]) => [
+      (prev + newDirection + HERO_SHOWCASE_IMAGES.length) % HERO_SHOWCASE_IMAGES.length,
+      newDirection,
+    ]);
+  };
+
+  const goToSlide = (idx: number) => {
+    setSlide(([prev]) => [idx, idx > prev ? 1 : -1]);
+  };
+
+  // Auto-switch hero showcase image every 3 seconds (pauses on hover or touch)
   useEffect(() => {
     if (isHeroHovered) return;
     const heroTimer = setInterval(() => {
-      setCurrentHeroImageIdx((prev) => (prev + 1) % HERO_SHOWCASE_IMAGES.length);
-    }, 4500);
+      paginate(1);
+    }, 3000);
     return () => clearInterval(heroTimer);
   }, [isHeroHovered]);
-
-  const handleNext = () => {
-    setCurrentHeroImageIdx((prev) => (prev + 1) % HERO_SHOWCASE_IMAGES.length);
-  };
-
-  const handlePrev = () => {
-    setCurrentHeroImageIdx((prev) => (prev - 1 + HERO_SHOWCASE_IMAGES.length) % HERO_SHOWCASE_IMAGES.length);
-  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartXRef.current = e.touches[0].clientX;
@@ -70,9 +73,9 @@ export default function Home() {
       const diff = touchStartXRef.current - touchEndXRef.current;
       if (Math.abs(diff) > 35) {
         if (diff > 0) {
-          handleNext();
+          paginate(1);
         } else {
-          handlePrev();
+          paginate(-1);
         }
       }
     }
@@ -81,6 +84,41 @@ export default function Home() {
     }, 60);
     touchStartXRef.current = null;
     touchEndXRef.current = null;
+  };
+
+  // Cinematic Luxury Parallax & Depth Transition
+  const LUXURY_EASE = [0.16, 1, 0.3, 1] as const;
+  const bannerVariants = {
+    enter: (dir: number) => ({
+      x: dir >= 0 ? (isAr ? '-20%' : '20%') : (isAr ? '20%' : '-20%'),
+      opacity: 0,
+      scale: 1.04,
+      filter: 'blur(3px)',
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      filter: 'blur(0px)',
+      transition: {
+        x: { duration: 0.65, ease: LUXURY_EASE },
+        opacity: { duration: 0.45, ease: 'easeOut' as const },
+        scale: { duration: 0.7, ease: LUXURY_EASE },
+        filter: { duration: 0.35 },
+      },
+    },
+    exit: (dir: number) => ({
+      x: dir >= 0 ? (isAr ? '20%' : '-20%') : (isAr ? '-20%' : '20%'),
+      opacity: 0,
+      scale: 0.97,
+      filter: 'blur(3px)',
+      transition: {
+        x: { duration: 0.55, ease: LUXURY_EASE },
+        opacity: { duration: 0.35, ease: 'easeIn' as const },
+        scale: { duration: 0.55 },
+        filter: { duration: 0.3 },
+      },
+    }),
   };
 
   const [timeLeft, setTimeLeft] = useState({ days: '07', hours: '00', minutes: '00', seconds: '00' });
@@ -275,7 +313,7 @@ export default function Home() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="group relative w-full max-w-[780px] mx-auto aspect-[860/355] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#121212] shadow-xl md:shadow-2xl select-none"
+          className="group relative w-full max-w-[920px] mx-auto aspect-[860/355] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#121212] shadow-xl md:shadow-2xl select-none"
         >
           {/* Entire banner is a link to the shop / category */}
           <Link
@@ -288,13 +326,14 @@ export default function Home() {
             className="block w-full h-full relative cursor-pointer overflow-hidden"
             aria-label={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].alt}
           >
-            <AnimatePresence mode="popLayout" initial={false}>
+            <AnimatePresence mode="popLayout" custom={direction} initial={false}>
               <motion.div
                 key={currentHeroImageIdx}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                custom={direction}
+                variants={bannerVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
                 className="absolute inset-0 w-full h-full overflow-hidden"
               >
                 <img
@@ -320,12 +359,12 @@ export default function Home() {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  setCurrentHeroImageIdx(idx);
+                  goToSlide(idx);
                 }}
                 aria-label={`Go to slide ${idx + 1}`}
-                className={`transition-all duration-300 rounded-full cursor-pointer p-0.5 ${
+                className={`transition-all duration-400 rounded-full cursor-pointer p-0.5 ${
                   idx === currentHeroImageIdx
-                    ? 'w-5 sm:w-6 h-1.5 bg-[#D4A5A5] shadow-[0_0_8px_rgba(212,165,165,0.8)]'
+                    ? 'w-6 sm:w-7 h-1.5 bg-gradient-to-r from-[#D4A5A5] to-rose-300 shadow-[0_0_8px_rgba(212,165,165,0.8)]'
                     : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/80'
                 }`}
               />
