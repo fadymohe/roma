@@ -78,7 +78,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
             />
           </Link>
 
-          {/* Mobile Right Controls: Language + Wishlist */}
+          {/* Mobile Right Controls: Language + Wishlist + Cart */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Quick Language Toggle on Mobile */}
             <button
@@ -109,6 +109,20 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 </span>
               )}
             </button>
+
+            {/* Mobile Top Cart Link */}
+            <Link
+              href="/cart"
+              aria-label={t('nav.cart')}
+              className="relative flex size-8 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] hover:text-[#F9FAFB] active:scale-95 transition"
+            >
+              <ShoppingBag className="size-3.5" strokeWidth={1.75} />
+              {count > 0 && (
+                <span className="absolute -top-1 -right-1 flex size-3.5 items-center justify-center rounded-full bg-[#D4A5A5] text-[8px] font-bold text-[#0A0A0A] font-mono">
+                  {count}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
 
@@ -361,91 +375,90 @@ export function StoreShell({ children }: { children: ReactNode }) {
       )}
 
       {/* Main Content View */}
-      <main className={`flex-1 w-full ${!isHomePage ? 'pb-24 md:pb-12' : ''}`}>{children}</main>
+      <main className={`flex-1 w-full ${!location.startsWith('/product/') ? 'pb-20 md:pb-12' : ''}`}>{children}</main>
 
       {/* ========================================================================= */}
       {/* 1. BRAND AESTHETICS & MOBILE-FIRST UX: STICKY MOBILE BOTTOM NAVIGATION    */}
       {/* Destinations: [Store / Shop, Categories, Cart with counter, My Account]   */}
+      {/* (Hidden on product detail pages to avoid collision with Product Buy Bar)   */}
       {/* ========================================================================= */}
-      {/* ========================================================================= */}
-      {/* 1. BRAND AESTHETICS & MOBILE-FIRST UX: STICKY MOBILE BOTTOM NAVIGATION    */}
-      {/* Destinations: [Store / Shop, Categories, Cart with counter, My Account]   */}
-      {/* ========================================================================= */}
-      <nav
-        aria-label="Mobile Bottom Navigation"
-        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 shadow-2xl safe-area-pb"
-      >
-        <div className="grid grid-cols-4 items-center max-w-md mx-auto">
-          {/* Destination 1: Store / Shop */}
-          <Link
-            href="/shop"
-            aria-label={isAr ? 'المتجر' : 'Shop'}
-            className={`flex flex-col items-center justify-center py-1 transition ${
-              location === '/shop' || location === '/'
-                ? 'text-[#D4A5A5]'
-                : 'text-[#A1A1AA] hover:text-white'
-            }`}
-          >
-            <div className={`p-1 rounded-full ${location === '/shop' || location === '/' ? 'bg-[#D4A5A5]/15' : ''}`}>
-              <HomeIcon className="size-5" strokeWidth={1.75} />
-            </div>
-            <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'المتجر' : 'Shop'}</span>
-          </Link>
+      {!location.startsWith('/product/') && (
+        <nav
+          aria-label="Mobile Bottom Navigation"
+          className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 shadow-2xl safe-area-pb"
+        >
+          <div className="grid grid-cols-4 items-center max-w-md mx-auto">
+            {/* Destination 1: Store / Shop */}
+            <Link
+              href="/shop"
+              aria-label={isAr ? 'المتجر' : 'Shop'}
+              className={`flex flex-col items-center justify-center py-1 transition ${
+                location === '/shop' || location === '/'
+                  ? 'text-[#D4A5A5]'
+                  : 'text-[#A1A1AA] hover:text-white'
+              }`}
+            >
+              <div className={`p-1 rounded-full ${location === '/shop' || location === '/' ? 'bg-[#D4A5A5]/15' : ''}`}>
+                <HomeIcon className="size-5" strokeWidth={1.75} />
+              </div>
+              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'المتجر' : 'Shop'}</span>
+            </Link>
 
-          {/* Destination 2: Categories */}
-          <Link
-            href="/categories"
-            aria-label={isAr ? 'الأقسام' : 'Categories'}
-            className={`flex flex-col items-center justify-center py-1 transition ${
-              location === '/categories'
-                ? 'text-[#D4A5A5]'
-                : 'text-[#A1A1AA] hover:text-white'
-            }`}
-          >
-            <div className={`p-1 rounded-full ${location === '/categories' ? 'bg-[#D4A5A5]/15' : ''}`}>
-              <LayoutGrid className="size-5" strokeWidth={1.75} />
-            </div>
-            <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'الأقسام' : 'Categories'}</span>
-          </Link>
+            {/* Destination 2: Categories */}
+            <Link
+              href="/categories"
+              aria-label={isAr ? 'الأقسام' : 'Categories'}
+              className={`flex flex-col items-center justify-center py-1 transition ${
+                location === '/categories'
+                  ? 'text-[#D4A5A5]'
+                  : 'text-[#A1A1AA] hover:text-white'
+              }`}
+            >
+              <div className={`p-1 rounded-full ${location === '/categories' ? 'bg-[#D4A5A5]/15' : ''}`}>
+                <LayoutGrid className="size-5" strokeWidth={1.75} />
+              </div>
+              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'الأقسام' : 'Categories'}</span>
+            </Link>
 
-          {/* Destination 3: Cart with Dynamic Counter Badge */}
-          <Link
-            href="/cart"
-            aria-label={isAr ? 'السلة' : 'Cart'}
-            className={`relative flex flex-col items-center justify-center py-1 transition ${
-              location === '/cart'
-                ? 'text-[#D4A5A5]'
-                : 'text-[#A1A1AA] hover:text-white'
-            }`}
-          >
-            <div className={`relative p-1 rounded-full ${location === '/cart' ? 'bg-[#D4A5A5]/15' : ''}`}>
-              <ShoppingBag className="size-5" strokeWidth={1.75} />
-              {count > 0 && (
-                <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#D4A5A5] text-[9px] font-bold text-[#0A0A0A] font-mono">
-                  {count}
-                </span>
-              )}
-            </div>
-            <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'السلة' : 'Cart'}</span>
-          </Link>
+            {/* Destination 3: Cart with Dynamic Counter Badge */}
+            <Link
+              href="/cart"
+              aria-label={isAr ? 'السلة' : 'Cart'}
+              className={`relative flex flex-col items-center justify-center py-1 transition ${
+                location === '/cart'
+                  ? 'text-[#D4A5A5]'
+                  : 'text-[#A1A1AA] hover:text-white'
+              }`}
+            >
+              <div className={`relative p-1 rounded-full ${location === '/cart' ? 'bg-[#D4A5A5]/15' : ''}`}>
+                <ShoppingBag className="size-5" strokeWidth={1.75} />
+                {count > 0 && (
+                  <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#D4A5A5] text-[9px] font-bold text-[#0A0A0A] font-mono">
+                    {count}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'السلة' : 'Cart'}</span>
+            </Link>
 
-          {/* Destination 4: My Account */}
-          <Link
-            href={user ? '/account' : '/auth'}
-            aria-label={isAr ? 'حسابي' : 'Account'}
-            className={`flex flex-col items-center justify-center py-1 transition ${
-              location === '/account' || location === '/auth' || location === '/login'
-                ? 'text-[#D4A5A5]'
-                : 'text-[#A1A1AA] hover:text-white'
-            }`}
-          >
-            <div className={`p-1 rounded-full ${location === '/account' || location === '/auth' || location === '/login' ? 'bg-[#D4A5A5]/15' : ''}`}>
-              <User className="size-5" strokeWidth={1.75} />
-            </div>
-            <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'حسابي' : 'Account'}</span>
-          </Link>
-        </div>
-      </nav>
+            {/* Destination 4: My Account */}
+            <Link
+              href={user ? '/account' : '/auth'}
+              aria-label={isAr ? 'حسابي' : 'Account'}
+              className={`flex flex-col items-center justify-center py-1 transition ${
+                location === '/account' || location === '/auth' || location === '/login'
+                  ? 'text-[#D4A5A5]'
+                  : 'text-[#A1A1AA] hover:text-white'
+              }`}
+            >
+              <div className={`p-1 rounded-full ${location === '/account' || location === '/auth' || location === '/login' ? 'bg-[#D4A5A5]/15' : ''}`}>
+                <User className="size-5" strokeWidth={1.75} />
+              </div>
+              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'حسابي' : 'Account'}</span>
+            </Link>
+          </div>
+        </nav>
+      )}
 
       {/* Popups & Drawers */}
       <UserDrawer />

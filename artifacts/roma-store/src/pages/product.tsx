@@ -253,7 +253,7 @@ export default function ProductPage() {
   const { slug = '' } = useParams<{ slug: string }>();
   const [, setLocation] = useLocation();
   const liveProducts = useLiveProducts();
-  const { add } = useCart();
+  const { add, count: cartCount } = useCart();
   const { isWishlisted, toggleWishlist } = useAuth();
   const { t, isAr, formatPrice, dir } = useLanguage();
 
@@ -401,7 +401,7 @@ export default function ProductPage() {
   const currentStock = variant?.stock ?? product.stock ?? 12;
 
   return (
-    <div className="roma-container py-6 md:py-12 text-[#F9FAFB] pb-32" dir={dir}>
+    <div className="roma-container pt-3 pb-28 md:py-12 text-[#F9FAFB]" dir={dir}>
       {/* Top Breadcrumb & Navigation */}
       <div className="mb-6 flex items-center justify-between">
         <Link
@@ -440,6 +440,18 @@ export default function ProductPage() {
               strokeWidth={1.5}
             />
           </button>
+          <Link
+            href="/cart"
+            className="relative flex size-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] hover:text-white hover:border-[#D4A5A5] transition active:scale-95"
+            aria-label="Cart"
+          >
+            <ShoppingBag className="size-4.5 text-[#D4A5A5]" strokeWidth={1.75} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#D4A5A5] text-[9px] font-bold text-[#0A0A0A] font-mono">
+                {cartCount}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
 
@@ -526,8 +538,8 @@ export default function ProductPage() {
             </div>
           )}
 
-          {/* Trust Value Badges under Image */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+          {/* Trust Value Badges under Image (Desktop Only - Mobile version placed beneath CTA) */}
+          <div className="hidden md:grid grid-cols-4 gap-2 pt-2">
             <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
               <Leaf className="size-4 text-[#D4A5A5] mb-1" />
               <span className="text-[10px] font-bold text-white">{isAr ? '١٠٠٪ طبيعي' : '100% Organic'}</span>
@@ -668,16 +680,40 @@ export default function ProductPage() {
               <span>{isAr ? 'معاينة المنتج قبل الدفع للمندوب متاحة' : 'Inspect Product Upon Courier Delivery'}</span>
             </div>
           </div>
+
+          {/* Trust Value Badges (Mobile-only here under purchase block) */}
+          <div className="grid grid-cols-2 gap-2 pt-1 md:hidden">
+            <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
+              <Leaf className="size-4 text-[#D4A5A5] mb-1" />
+              <span className="text-[10px] font-bold text-white">{isAr ? '١٠٠٪ طبيعي' : '100% Organic'}</span>
+              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'خالٍ من البارابين' : 'Toxin-Free'}</span>
+            </div>
+            <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
+              <Award className="size-4 text-[#D4A5A5] mb-1" />
+              <span className="text-[10px] font-bold text-white">{isAr ? 'مسجل بالصحة' : 'MOH Registered'}</span>
+              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'ترخيص جودة مصري' : 'Gov Certified'}</span>
+            </div>
+            <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
+              <Droplets className="size-4 text-[#D4A5A5] mb-1" />
+              <span className="text-[10px] font-bold text-white">{isAr ? 'مختبر جلدياً' : 'Derm Tested'}</span>
+              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'آمن للبشرة' : 'Sensitive Safe'}</span>
+            </div>
+            <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
+              <Truck className="size-4 text-[#D4A5A5] mb-1" />
+              <span className="text-[10px] font-bold text-white">{isAr ? 'شحن ٢٤-٤٨ ساعة' : '24-48h Delivery'}</span>
+              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'دفع عند الاستلام' : 'Cash on Delivery'}</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Tabs Section: Description, Ingredients, Ritual & Reviews */}
-      <div className="mt-14 border-t border-white/10 pt-10">
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 border-b border-white/10">
+      <div className="mt-10 md:mt-14 border-t border-white/10 pt-8 md:pt-10">
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 border-b border-white/10 no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('desc')}
-            className={`px-4 py-2 rounded-full text-xs md:text-sm font-bold transition ${
+            className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-bold transition whitespace-nowrap shrink-0 ${
               activeTab === 'desc'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-xs'
                 : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
@@ -688,7 +724,7 @@ export default function ProductPage() {
           <button
             type="button"
             onClick={() => setActiveTab('ingredients')}
-            className={`px-4 py-2 rounded-full text-xs md:text-sm font-bold transition ${
+            className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-bold transition whitespace-nowrap shrink-0 ${
               activeTab === 'ingredients'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-xs'
                 : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
@@ -707,7 +743,7 @@ export default function ProductPage() {
           <button
             type="button"
             onClick={() => setActiveTab('howTo')}
-            className={`px-4 py-2 rounded-full text-xs md:text-sm font-bold transition ${
+            className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-bold transition whitespace-nowrap shrink-0 ${
               activeTab === 'howTo'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-xs'
                 : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
@@ -718,7 +754,7 @@ export default function ProductPage() {
           <button
             type="button"
             onClick={() => setActiveTab('reviews')}
-            className={`px-4 py-2 rounded-full text-xs md:text-sm font-bold transition ${
+            className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-bold transition whitespace-nowrap shrink-0 ${
               activeTab === 'reviews'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-xs'
                 : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
@@ -858,9 +894,9 @@ export default function ProductPage() {
 
       {/* ========================================================================= */}
       {/* LUXURY STICKY MOBILE ACTION BAR                                           */}
-      {/* Sits right above or on bottom on mobile viewport                          */}
+      {/* Sits cleanly at the bottom on mobile viewport                             */}
       {/* ========================================================================= */}
-      <div className="fixed bottom-14 left-0 right-0 z-40 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 p-3 px-4 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 p-3 px-4 shadow-2xl safe-area-pb">
         <div className="flex items-center justify-between gap-3">
           <div>
             <span className="text-[10px] text-zinc-400 block">{t('cart.total')}</span>

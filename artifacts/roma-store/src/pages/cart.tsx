@@ -445,7 +445,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="roma-container py-8 md:py-14 text-white" dir={dir}>
+    <div className="roma-container pt-4 pb-28 md:py-14 text-white" dir={dir}>
       {/* Top Free Shipping Progress Indicator */}
       {/* Top Minimum Order & Shipping Information Indicator */}
       <div className="mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl">
