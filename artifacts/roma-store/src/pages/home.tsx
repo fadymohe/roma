@@ -121,6 +121,99 @@ export default function Home() {
     }),
   };
 
+  // Testimonial Carousel State & Gestures (Mobile Auto-sliding with Swipe)
+  const [[currentTestimonialIdx, testimonialDirection], setTestimonialSlide] = useState([0, 0]);
+  const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
+  const testimonialTouchStartXRef = useRef<number | null>(null);
+  const testimonialTouchEndXRef = useRef<number | null>(null);
+  const isTestimonialDraggingRef = useRef(false);
+
+  const paginateTestimonial = (newDirection: number) => {
+    setTestimonialSlide(([prev]) => [
+      (prev + newDirection + TESTIMONIALS.length) % TESTIMONIALS.length,
+      newDirection,
+    ]);
+  };
+
+  const goToTestimonial = (idx: number) => {
+    setTestimonialSlide(([prev]) => [idx, idx > prev ? 1 : -1]);
+  };
+
+  // Auto-switch mobile testimonials every 3.5 seconds (pauses on hover or touch)
+  useEffect(() => {
+    if (isTestimonialHovered) return;
+    const testimonialTimer = setInterval(() => {
+      paginateTestimonial(1);
+    }, 3500);
+    return () => clearInterval(testimonialTimer);
+  }, [isTestimonialHovered]);
+
+  const handleTestimonialTouchStart = (e: React.TouchEvent) => {
+    testimonialTouchStartXRef.current = e.touches[0].clientX;
+    testimonialTouchEndXRef.current = null;
+    isTestimonialDraggingRef.current = false;
+    setIsTestimonialHovered(true);
+  };
+
+  const handleTestimonialTouchMove = (e: React.TouchEvent) => {
+    testimonialTouchEndXRef.current = e.touches[0].clientX;
+    if (testimonialTouchStartXRef.current !== null && Math.abs(testimonialTouchStartXRef.current - e.touches[0].clientX) > 10) {
+      isTestimonialDraggingRef.current = true;
+    }
+  };
+
+  const handleTestimonialTouchEnd = () => {
+    setIsTestimonialHovered(false);
+    if (testimonialTouchStartXRef.current !== null && testimonialTouchEndXRef.current !== null) {
+      const diff = testimonialTouchStartXRef.current - testimonialTouchEndXRef.current;
+      if (Math.abs(diff) > 35) {
+        if (diff > 0) {
+          paginateTestimonial(1);
+        } else {
+          paginateTestimonial(-1);
+        }
+      }
+    }
+    setTimeout(() => {
+      isTestimonialDraggingRef.current = false;
+    }, 60);
+    testimonialTouchStartXRef.current = null;
+    testimonialTouchEndXRef.current = null;
+  };
+
+  const testimonialVariants = {
+    enter: (dir: number) => ({
+      x: dir >= 0 ? (isAr ? '-30%' : '30%') : (isAr ? '30%' : '-30%'),
+      opacity: 0,
+      scale: 0.95,
+      filter: 'blur(2px)',
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      filter: 'blur(0px)',
+      transition: {
+        x: { duration: 0.55, ease: LUXURY_EASE },
+        opacity: { duration: 0.4, ease: 'easeOut' as const },
+        scale: { duration: 0.55, ease: LUXURY_EASE },
+        filter: { duration: 0.3 },
+      },
+    },
+    exit: (dir: number) => ({
+      x: dir >= 0 ? (isAr ? '30%' : '-30%') : (isAr ? '-30%' : '30%'),
+      opacity: 0,
+      scale: 0.95,
+      filter: 'blur(2px)',
+      transition: {
+        x: { duration: 0.5, ease: LUXURY_EASE },
+        opacity: { duration: 0.3, ease: 'easeIn' as const },
+        scale: { duration: 0.5 },
+        filter: { duration: 0.25 },
+      },
+    }),
+  };
+
   const [timeLeft, setTimeLeft] = useState({ days: '07', hours: '00', minutes: '00', seconds: '00' });
 
   useEffect(() => {
@@ -703,11 +796,11 @@ export default function Home() {
 
       {/* Client Testimonials & Social Proof - Elevated Luxury with Micro-Animations */}
       <section className="roma-container">
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#141414] via-[#0E0E0E] to-[#121212] p-8 md:p-14 shadow-2xl">
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#141414] via-[#0E0E0E] to-[#121212] p-5 sm:p-8 md:p-14 shadow-2xl">
           {/* Ambient soft glow backdrop */}
           <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#D4A5A5]/10 rounded-full blur-3xl" />
 
-          <div className="relative text-center max-w-xl mx-auto mb-12">
+          <div className="relative text-center max-w-xl mx-auto mb-8 md:mb-12">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#D4A5A5]/10 border border-[#D4A5A5]/25 text-[#D4A5A5] text-xs font-semibold mb-3 shadow-xs">
               <BadgeCheck className="size-4 text-[#D4A5A5]" />
               <span>{isAr ? 'شهادات عميلاتنا الموثقة' : 'Verified Client Reviews'}</span>
@@ -720,7 +813,116 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          {/* Mobile Testimonials Animated Carousel (Side-by-side switching with luxury animation, swipe, and controls) */}
+          <div
+            className="block md:hidden relative select-none"
+            onMouseEnter={() => setIsTestimonialHovered(true)}
+            onMouseLeave={() => setIsTestimonialHovered(false)}
+            onTouchStart={handleTestimonialTouchStart}
+            onTouchMove={handleTestimonialTouchMove}
+            onTouchEnd={handleTestimonialTouchEnd}
+          >
+            <div className="relative min-h-[220px] overflow-hidden rounded-2xl">
+              <AnimatePresence mode="popLayout" custom={testimonialDirection} initial={false}>
+                <motion.div
+                  key={currentTestimonialIdx}
+                  custom={testimonialDirection}
+                  variants={testimonialVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="w-full"
+                >
+                  <div className="group relative flex flex-col justify-between rounded-2xl border border-white/10 hover:border-[#D4A5A5]/40 bg-[#161616]/95 backdrop-blur-md p-5 sm:p-6 shadow-xl min-h-[210px] overflow-hidden">
+                    {/* Floating Quote Icon Watermark */}
+                    <Quote className="absolute top-3 left-3 size-14 text-white/[0.03] pointer-events-none -rotate-12" />
+
+                    <div>
+                      {/* Rating Stars & Verified Pill */}
+                      <div className="flex items-center justify-between gap-2 mb-3.5">
+                        <div className="flex text-[#D4A5A5] gap-1 drop-shadow-[0_0_6px_rgba(212,165,165,0.4)]">
+                          {Array.from({ length: TESTIMONIALS[currentTestimonialIdx].rating }).map((_, i) => (
+                            <Star key={i} className="size-3.5 fill-[#D4A5A5]" />
+                          ))}
+                        </div>
+                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 font-bold px-2 py-0.5 rounded-full shadow-xs">
+                          <CheckCircle2 className="size-3 text-emerald-400 shrink-0" />
+                          <span>{isAr ? 'مشتري موثق' : 'Verified'}</span>
+                        </span>
+                      </div>
+
+                      {/* Review Quote with Refined Arabic Typography */}
+                      <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-normal italic relative z-10">
+                        "{isAr ? TESTIMONIALS[currentTestimonialIdx].quoteAr : TESTIMONIALS[currentTestimonialIdx].quoteEn}"
+                      </p>
+                    </div>
+
+                    {/* Author Signature & City */}
+                    <div className="mt-4 pt-3.5 border-t border-white/10 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex size-8 rounded-full bg-gradient-to-tr from-[#D4A5A5]/25 to-[#D4A5A5]/10 border border-[#D4A5A5]/35 items-center justify-center font-bold text-xs text-[#D4A5A5] shrink-0">
+                          {TESTIMONIALS[currentTestimonialIdx].nameAr.charAt(0)}
+                        </div>
+                        <div className="flex flex-col text-right">
+                          <strong className="text-xs font-bold text-white tracking-wide">
+                            {isAr ? TESTIMONIALS[currentTestimonialIdx].nameAr.split('—')[0]?.trim() : TESTIMONIALS[currentTestimonialIdx].nameEn.split('—')[0]?.trim()}
+                          </strong>
+                          <span className="text-[10px] text-zinc-400 font-medium">
+                            {isAr ? TESTIMONIALS[currentTestimonialIdx].nameAr.split('—')[1]?.trim() : TESTIMONIALS[currentTestimonialIdx].nameEn.split('—')[1]?.trim()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <span className="text-[10px] text-[#D4A5A5] font-bold bg-[#D4A5A5]/10 px-2 py-0.5 rounded-full border border-[#D4A5A5]/25">
+                        {currentTestimonialIdx + 1} / {TESTIMONIALS.length}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Sleek Carousel Controls: Prev Button, Indicators, Next Button */}
+            <div className="flex items-center justify-between mt-3.5 px-1">
+              <button
+                type="button"
+                onClick={() => paginateTestimonial(-1)}
+                className="size-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:border-[#D4A5A5]/40 transition active:scale-95 cursor-pointer"
+                aria-label={isAr ? 'التقييم السابق' : 'Previous review'}
+              >
+                {isAr ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
+              </button>
+
+              {/* Dots indicators */}
+              <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                {TESTIMONIALS.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => goToTestimonial(idx)}
+                    aria-label={`Go to review ${idx + 1}`}
+                    className={`transition-all duration-300 rounded-full cursor-pointer ${
+                      idx === currentTestimonialIdx
+                        ? 'w-5 sm:w-6 h-1.5 bg-gradient-to-r from-[#D4A5A5] to-rose-300 shadow-[0_0_8px_rgba(212,165,165,0.7)]'
+                        : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => paginateTestimonial(1)}
+                className="size-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:border-[#D4A5A5]/40 transition active:scale-95 cursor-pointer"
+                aria-label={isAr ? 'التقييم التالي' : 'Next review'}
+              >
+                {isAr ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Desktop 3-column Grid (Hidden on Mobile) */}
+          <div className="relative hidden md:grid md:grid-cols-3 gap-6 md:gap-8">
             {TESTIMONIALS.map((tItem) => (
               <div
                 key={tItem.id}
