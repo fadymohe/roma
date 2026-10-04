@@ -129,8 +129,8 @@ export default async function handler(req, res) {
 قائمة المنتجات (${compactCatalog.length} منتج):
 ${JSON.stringify(compactCatalog)}`;
 
-      // Try Gemini 2.0 Flash first, fallback to Gemini 1.5 Flash if needed
-      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      // Verified active models: gemini-3.5-flash is ultra-fast & highly accurate
+      const models = ['gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest'];
       let candidateText = null;
 
       for (const model of models) {
@@ -159,6 +159,7 @@ ${JSON.stringify(compactCatalog)}`;
               },
             }),
           });
+
 
           if (response.ok) {
             const result = await response.json();
