@@ -20,7 +20,7 @@ import {
   ChevronRight,
   Clock,
 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useParams, useLocation } from 'wouter';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
@@ -42,6 +42,11 @@ export default function ProductPage() {
   const [addedNotice, setAddedNotice] = useState(false);
   const [activeTab, setActiveTab] = useState<'desc' | 'ingredients' | 'howTo' | 'reviews'>('desc');
   const touchStartX = useRef<number | null>(null);
+
+  // Always scroll to top when opening or switching products
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [slug]);
 
   // Match product from live dynamic list or default products
   const product: Product =
@@ -113,9 +118,56 @@ export default function ProductPage() {
     touchStartX.current = null;
   };
 
-  const relatedProducts = liveProducts
-    .filter((p) => p.id !== product.id)
-    .slice(0, 4);
+  // Extract Amazon specs/ingredients/features from description
+  const parsedDetails = useMemo(() => {
+    const desc = isAr ? product.descriptionAr : (product.descriptionEn || product.descriptionAr) || '';
+    const isPerfume = Boolean(product.category?.includes('عطر') || product.categoryEn?.toLowerCase().includes('perfume'));
+    const isAccessory = Boolean(
+      product.category?.includes('شعر') ||
+      product.category?.includes('إكسسوار') ||
+      product.category?.includes('مجوهرات') ||
+      product.categoryEn?.toLowerCase().includes('jewelry') ||
+      product.categoryEn?.toLowerCase().includes('accessories')
+    );
+
+    // Extract bullet points (lines starting with •, -, or *)
+    const lines = desc.split('\n').map((l) => l.trim()).filter(Boolean);
+    const bullets = lines
+      .filter((l) => l.startsWith('•') || l.startsWith('-') || (l.startsWith('*') && !l.includes('أبرز المميزات')))
+      .map((l) => l.replace(/^[•\-*]\s*/, '').trim())
+      .filter(Boolean);
+
+    return {
+      isPerfume,
+      isAccessory,
+      bullets,
+      title: isPerfume
+        ? isAr
+          ? 'النوتات والتركيبة العطرية'
+          : 'Fragrance Notes & Composition'
+        : isAccessory
+        ? isAr
+          ? 'الخامات والمواصفات التفصيلية'
+          : 'Materials & Specifications'
+        : isAr
+        ? 'المكونات الفعالة والمميزات'
+        : 'Active Ingredients & Highlights',
+    };
+  }, [product, isAr]);
+
+  // Recommended products strictly prioritized from the SAME category
+  const relatedProducts = useMemo(() => {
+    const sameCat = liveProducts.filter(
+      (p) =>
+        p.id !== product.id &&
+        ((product.category && p.category === product.category) ||
+          (product.categoryEn && p.categoryEn === product.categoryEn))
+    );
+    const backfill = liveProducts.filter(
+      (p) => p.id !== product.id && !sameCat.some((sc) => sc.id === p.id)
+    );
+    return [...sameCat, ...backfill].slice(0, 4);
+  }, [liveProducts, product]);
 
   const currentStock = variant?.stock ?? product.stock ?? 12;
 
@@ -455,7 +507,15 @@ export default function ProductPage() {
                 : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
             }`}
           >
-            {t('pdp.tab_ingredients')}
+            {parsedDetails.isAccessory
+              ? isAr
+                ? 'الخامات والمواصفات'
+                : 'Materials & Specs'
+              : parsedDetails.isPerfume
+              ? isAr
+                ? 'النوتات والتركيبة'
+                : 'Fragrance Notes'
+              : t('pdp.tab_ingredients')}
           </button>
           <button
             type="button"
@@ -485,18 +545,39 @@ export default function ProductPage() {
         <div className="pt-6">
           {activeTab === 'desc' && (
             <div className="prose prose-invert prose-sm max-w-none text-[#A1A1AA] leading-relaxed space-y-4">
-              <p className="text-sm md:text-base leading-relaxed text-white/90">{displayDescription}</p>
+              <p className="text-sm md:text-base leading-relaxed text-white/90 whitespace-pre-line">{displayDescription}</p>
             </div>
           )}
 
           {activeTab === 'ingredients' && (
             <div className="space-y-4 text-sm text-[#A1A1AA]">
               <h3 className="font-display font-bold text-base text-white">
-                {isAr ? 'تركيبة غنية بخلاصات نقية طبيعية' : 'Pure Botanical Actives'}
+                {parsedDetails.title}
               </h3>
-              <p className="leading-relaxed bg-[#141414] p-4 rounded-2xl border border-white/10 text-white/90">
-                {displayIngredients || (isAr ? 'تركيبة نباتية خالية من البارابين والزيوت المعدنية الضارة.' : 'Botanical formula free from parabens and mineral oils.')}
-              </p>
+
+              {displayIngredients ? (
+                <div className="leading-relaxed bg-[#141414] p-4 md:p-5 rounded-2xl border border-white/10 text-white/90 whitespace-pre-line">
+                  {displayIngredients}
+                </div>
+              ) : parsedDetails.bullets.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {parsedDetails.bullets.map((b, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-2xl border border-white/10 bg-[#141414] flex items-start gap-2.5 text-white/90"
+                    >
+                      <Sparkles className="size-4 text-[#D4A5A5] shrink-0 mt-0.5" />
+                      <span className="text-xs md:text-sm leading-relaxed">{b}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="leading-relaxed bg-[#141414] p-4 md:p-5 rounded-2xl border border-white/10 text-white/90">
+                  <p className="text-xs md:text-sm leading-relaxed">
+                    {displayDescription.split('\n')[0] || (isAr ? 'مصنوع بأعلى معايير الجودة وخامات فائقة الدقة والجمال.' : 'Crafted with premium materials and high precision.')}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -505,7 +586,7 @@ export default function ProductPage() {
               <h3 className="font-display font-bold text-base text-white">
                 {isAr ? 'طقوس الاستخدام المثالية لنتائج مبهرة' : 'The Ideal Application Ritual'}
               </h3>
-              <p className="leading-relaxed bg-[#141414] p-4 rounded-2xl border border-white/10 text-white/90">
+              <p className="leading-relaxed bg-[#141414] p-4 rounded-2xl border border-white/10 text-white/90 whitespace-pre-line">
                 {displayHowToUse || (isAr ? 'يُستخدم يومياً صباحاً ومساءً على بشرة نظيفة للحصول على أقصى ترطيب ونضارة.' : 'Use daily morning and evening on clean skin for optimal radiance.')}
               </p>
             </div>
@@ -566,19 +647,19 @@ export default function ProductPage() {
         </div>
       </div>
 
-      {/* Related Products Carousel */}
+      {/* Recommended Products Carousel - Category Specific */}
       {relatedProducts.length > 0 && (
         <div className="mt-20 border-t border-white/10 pt-14">
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <span className="font-mono-brand text-xs font-bold text-[#D4A5A5] tracking-widest uppercase">
-                {isAr ? 'مختارات ملكية لكِ' : 'Curated For You'}
-              </span>
-              <h3 className="mt-1 font-display text-2xl font-bold text-white md:text-3xl">
-                {isAr ? 'منتجات مقترحة تتناغم مع اختياركِ' : 'Complementary Beauty Pairings'}
+              <h3 className="font-display text-2xl font-bold text-white md:text-3xl">
+                {isAr ? 'المنتجات المقترحة لك' : 'Suggested Products for You'}
               </h3>
             </div>
-            <Link href="/shop" className="text-xs font-bold text-[#D4A5A5] hover:underline">
+            <Link
+              href={`/shop?category=${encodeURIComponent(product.category || product.categoryEn || '')}`}
+              className="text-xs font-bold text-[#D4A5A5] hover:underline"
+            >
               {isAr ? 'عرض الكل' : 'View All'}
             </Link>
           </div>

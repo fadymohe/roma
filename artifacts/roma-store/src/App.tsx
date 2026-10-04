@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -33,14 +33,38 @@ const queryClient = new QueryClient({
   },
 });
 
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location]);
+  return null;
+}
+
+function CategoryRedirect({ slug }: { slug: string }) {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation(`/shop?category=${encodeURIComponent(slug)}`, { replace: true });
+  }, [slug, setLocation]);
+  return null;
+}
+
 function Router() {
   return (
     <StoreShell>
+      <ScrollToTop />
       <RoutedErrorBoundary>
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/shop" component={Shop} />
           <Route path="/categories" component={CategoriesPage} />
+          <Route path="/category" component={CategoriesPage} />
+          <Route path="/category/:slug">
+            {(params) => <CategoryRedirect slug={params.slug} />}
+          </Route>
+          <Route path="/categories/:slug">
+            {(params) => <CategoryRedirect slug={params.slug} />}
+          </Route>
           <Route path="/product/:slug" component={ProductPage} />
           <Route path="/cart" component={CartPage} />
           <Route path="/account" component={AccountPage} />

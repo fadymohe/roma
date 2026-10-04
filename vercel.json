@@ -1,6 +1,5 @@
 {
   "outputDirectory": "dist",
-  "cleanUrls": true,
   "headers": [
     {
       "source": "/",

@@ -58,10 +58,10 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <article
       data-testid={`card-product-${product.id}`}
-      className="group relative flex flex-col justify-between h-full w-full rounded-3xl border border-white/10 hover:border-[#D4A5A5]/60 bg-gradient-to-b from-[#151515] to-[#0F0F0F] p-3 sm:p-3.5 shadow-xl hover:shadow-2xl hover:shadow-[#D4A5A5]/10 transition-all duration-300 select-none overflow-hidden"
+      className="group relative flex flex-col justify-between h-full w-full rounded-2xl sm:rounded-3xl border border-white/10 hover:border-[#D4A5A5]/60 bg-gradient-to-b from-[#151515] to-[#0F0F0F] p-2.5 sm:p-3.5 shadow-xl hover:shadow-2xl hover:shadow-[#D4A5A5]/10 transition-all duration-300 select-none overflow-hidden"
     >
       {/* Top Image Container: Perfectly proportioned container for laptop and mobile with pure white inner background */}
-      <div className="relative h-48 sm:h-56 md:h-60 w-full shrink-0 overflow-hidden rounded-2xl bg-white flex items-center justify-center border border-zinc-200/80 group-hover:border-[#D4A5A5]/60 transition-colors p-3 sm:p-4">
+      <div className="relative h-44 sm:h-56 md:h-60 w-full shrink-0 overflow-hidden rounded-xl sm:rounded-2xl bg-white flex items-center justify-center border border-zinc-200/80 group-hover:border-[#D4A5A5]/60 transition-colors p-2.5 sm:p-4">
         {/* Skeleton placeholder while image loads */}
         {!imageLoaded && (
           <div className="absolute inset-0 bg-zinc-100 animate-pulse rounded-2xl" />
@@ -136,11 +136,11 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Middle & Bottom: Content, Pricing, and Action */}
-      <div className="flex flex-1 flex-col justify-between pt-3">
+      <div className="flex flex-1 flex-col justify-between pt-2.5 sm:pt-3">
         {/* Category & Rating */}
         <div>
           <div className="flex items-center justify-between text-[11px] text-[#A1A1AA] mb-1.5 h-4 shrink-0">
-            <span className="font-medium truncate max-w-[130px] tracking-wide text-zinc-400">{displayCategory}</span>
+            <span className="font-medium truncate max-w-[110px] sm:max-w-[130px] tracking-wide text-zinc-400">{displayCategory}</span>
             <div className="flex items-center gap-1 font-mono shrink-0">
               <Star className="size-3 fill-amber-400 text-amber-400" />
               <span className="text-white text-[11px] font-bold">{product.rating}</span>
@@ -150,7 +150,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Product Title - Strict 2-line clamp with uniform height across all cards */}
           <Link
             href={`/product/${product.slug}`}
-            className="line-clamp-2-fixed block text-xs sm:text-sm font-bold text-white hover:text-[#D4A5A5] transition-colors"
+            className="line-clamp-2-fixed block text-xs sm:text-sm font-bold text-white hover:text-[#D4A5A5] transition-colors leading-snug"
             title={displayName}
           >
             {displayName}
@@ -158,23 +158,19 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Pricing & Add to Bag CTA */}
-        <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between gap-1.5 shrink-0">
-          <div className="flex flex-col justify-center min-h-[36px] shrink-0">
+        <div className="mt-2.5 sm:mt-3 pt-2 sm:pt-2.5 border-t border-white/10 flex flex-col gap-2 shrink-0">
+          <div className="flex items-baseline justify-between gap-1.5">
             <span className="text-sm sm:text-base font-extrabold font-mono text-[#D4A5A5] tracking-tight leading-none">
               {formatPrice(product.price)}
             </span>
             {effectiveCompareAtPrice && effectiveCompareAtPrice > product.price ? (
-              <span className="text-[11px] text-zinc-500 line-through font-mono mt-1 leading-none">
+              <span className="text-[10px] sm:text-[11px] text-zinc-500 line-through font-mono leading-none">
                 {formatPrice(effectiveCompareAtPrice)}
               </span>
-            ) : (
-              <span className="text-[11px] invisible select-none mt-1 leading-none" aria-hidden="true">
-                0
-              </span>
-            )}
+            ) : null}
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 w-full">
             {/* Quick WhatsApp Inquiry / Order */}
             <a
               href={`https://wa.me/201505566849?text=${encodeURIComponent(
@@ -185,7 +181,7 @@ export function ProductCard({ product }: ProductCardProps) {
               target="_blank"
               rel="noopener noreferrer"
               title={isAr ? 'طلب واستفسار مباشر عبر واتساب' : 'Quick WhatsApp Order'}
-              className="size-9 rounded-xl flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/25 transition-all active:scale-95 shadow-sm"
+              className="size-8.5 sm:size-9 rounded-xl flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/25 transition-all active:scale-95 shadow-sm shrink-0"
               aria-label="WhatsApp"
               onClick={(e) => e.stopPropagation()}
             >
@@ -196,7 +192,7 @@ export function ProductCard({ product }: ProductCardProps) {
               type="button"
               data-testid={`btn-add-cart-${product.id}`}
               onClick={handleAddToCart}
-              className={`flex items-center justify-center gap-1.5 rounded-xl px-2.5 sm:px-3.5 py-2 text-xs font-bold transition-all active:scale-95 shadow-md shrink-0 h-9 ${
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold transition-all active:scale-95 shadow-md h-8.5 sm:h-9 ${
                 isAdding
                   ? 'bg-emerald-500 text-white shadow-emerald-500/30'
                   : 'bg-white hover:bg-zinc-100 text-zinc-950 shadow-md hover:shadow-lg hover:shadow-white/10 border border-white/20'
@@ -209,7 +205,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 </>
               ) : (
                 <>
-                  <ShoppingBag className="size-3.5 text-zinc-950" strokeWidth={2.2} />
+                  <ShoppingBag className="size-3.5 text-zinc-950 shrink-0" strokeWidth={2.2} />
                   <span className="inline text-zinc-950 font-bold whitespace-nowrap">{t('product.add_to_cart')}</span>
                 </>
               )}
