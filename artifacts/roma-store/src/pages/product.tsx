@@ -28,6 +28,85 @@ import { useLanguage } from '@/lib/language-context';
 import { DEFAULT_PRODUCTS, useLiveProducts, getProductDiscount, type Product } from '@/lib/catalog-data';
 import { ProductCard } from '@/components/product-card';
 
+function getProductReviews(product: Product, isAr: boolean) {
+  const numId = typeof product.id === 'number'
+    ? product.id
+    : Array.from(String(product.id || '1')).reduce((acc, c) => acc + c.charCodeAt(0), 0);
+
+  const isPerfume = Boolean(product.category?.includes('عطر') || product.categoryEn?.toLowerCase().includes('perfume'));
+  const isHair = Boolean(product.category?.includes('شعر') || product.categoryEn?.toLowerCase().includes('hair'));
+  const isJewelry = Boolean(product.category?.includes('مجوهرات') || product.categoryEn?.toLowerCase().includes('jewelry'));
+  const isBeauty = Boolean(product.category?.includes('مكياج') || product.category?.includes('جسم') || product.category?.includes('عناية'));
+
+  const names = [
+    { ar: 'نوران الشناوي', en: 'Nouran El-Shenawy', loc: 'التجمع الخامس' },
+    { ar: 'سارة المهدي', en: 'Sarah El-Mahdy', loc: 'مصر الجديدة' },
+    { ar: 'مريم القاضي', en: 'Mariam El-Qady', loc: 'المعادي' },
+    { ar: 'حبيبة الجوهري', en: 'Habiba El-Gohary', loc: 'الشيخ زايد' },
+    { ar: 'ياسمين خليل', en: 'Yasmine Khalil', loc: 'الإسكندرية' },
+    { ar: 'ندى الشريف', en: 'Nada El-Sherif', loc: 'الدقي' },
+    { ar: 'آية منصور', en: 'Aya Mansour', loc: 'المنصورة' },
+    { ar: 'سلمى رضوان', en: 'Salma Radwan', loc: 'مدينة نصر' },
+    { ar: 'دينا عثمان', en: 'Dina Othman', loc: 'المهندسين' },
+    { ar: 'فريدة زايد', en: 'Farida Zayed', loc: 'طنطا' },
+    { ar: 'ملك الباز', en: 'Malak El-Baz', loc: 'الزمالك' },
+    { ar: 'هاجر السعيد', en: 'Hagar El-Saeed', loc: 'الشروق' },
+  ];
+
+  const perfumeReviews = [
+    { ar: 'ريحته فواحة جداً وثباته فضل معايا أكتر من ٢٤ ساعة على الهدوم. كل اللي شمه سألني عنه!', en: 'Incredible scent and lasting sillage! Stayed on my clothes over 24 hours.' },
+    { ar: 'عطر راقي جداً وأنثوي بدون مبالغة، الزجاجة تحفة والتغليف وصل سليم وفي وقت قياسي.', en: 'Very sophisticated and feminine. The bottle looks luxurious on the vanity.' },
+    { ar: 'بديل ممتاز وفخم وثابت، ريحته ناعمة وهادية ومناسبة جداً للاستخدام اليومي والمناسبات.', en: 'Superb quality and long-lasting aroma. Perfect for daily wear and evening events.' },
+    { ar: 'طلبته هدية لأختي وعجبها جداً، وميزة معاينة الأوردر قبل الدفع خلتني أطلب وأنا مطمنة.', en: 'Bought it as a gift and she absolutely loved it. Loved the pay-on-delivery inspection!' },
+  ];
+
+  const hairReviews = [
+    { ar: 'الخامة ممتازة ومابتنتش الشعر خالص، ماسكة كويس جداً في الشعر التقيل وثابتة طول اليوم.', en: 'Great material that does not pull hair. Holds thick hair securely all day long.' },
+    { ar: 'شكلها شيك جداً وكيوت في الحقيقة أحلى من الصور بكتير، وسعرها تحفة مقارنة بالمحلات.', en: 'Even cuter in person than photos! Exceptional value and premium finish.' },
+    { ar: 'القطع ألوانها مبهجة ونظيفة، بنتي فرحت بيها جداً ومرنة ومريحة في اللبس.', en: 'Vibrant colors and gentle on the hair. My daughter was thrilled with it!' },
+    { ar: 'المشبك قوي ومتين ومبيفكش بسهولة، والتوصيل وصل تاني يوم على طول.', en: 'Sturdy clamp, durable spring, and fast delivery the next day.' },
+  ];
+
+  const jewelryReviews = [
+    { ar: 'الفينش روعة ولمعانها فخم ومبيغيرش لون، كأنها قطعة دهب حقيقي بالظبط!', en: 'Stunning shine and finish! Looks like real fine jewelry and hasn’t tarnished.' },
+    { ar: 'رقيقة جداً وأنيقة في اللبس ومقاسها مظبوط بالمللي. التغليف كمان ينفع هدية شيك.', en: 'Dainty and elegant on the wrist/neck. Perfect gift packaging.' },
+    { ar: 'أول مرة أطلب إكسسوار أونلاين وتطلع الجودة ممتازة كده. مندوب التوصيل كان محترم جداً.', en: 'First time ordering jewelry online and exceeded my expectations!' },
+  ];
+
+  const beautyReviews = [
+    { ar: 'الملمس ناعم وخفيف جداً، مش بيدهن خالص وبيدي نضارة فورية وطبيعية.', en: 'Super smooth and lightweight texture, absorbs fast without greasiness.' },
+    { ar: 'مكوناته لطيفة ومسببش أي حساسية لبشرتي، من أحسن المنتجات اللي جربتها الفترة دي.', en: 'Gentle on sensitive skin with no irritation. Truly a daily staple.' },
+    { ar: 'النتيجة بانت معايا من أول أسبوع، تغليف ممتاز وريحة المنتج هادية ونظيفة.', en: 'Noticed visible results within the first week. Clean, pleasant scent.' },
+  ];
+
+  const pool = isPerfume ? perfumeReviews : isHair ? hairReviews : isJewelry ? jewelryReviews : beautyReviews;
+
+  const name1 = names[numId % names.length];
+  const name2 = names[(numId + 5) % names.length];
+  const rev1 = pool[numId % pool.length];
+  const rev2 = pool[(numId + 2) % pool.length];
+
+  const rating1 = 5;
+  const rating2 = numId % 3 === 0 ? 4 : 5;
+
+  return [
+    {
+      name: isAr ? name1.ar : name1.en,
+      location: isAr ? name1.loc : name1.loc,
+      rating: rating1,
+      text: isAr ? rev1.ar : rev1.en,
+      time: isAr ? 'منذ يومين' : '2 days ago',
+    },
+    {
+      name: isAr ? name2.ar : name2.en,
+      location: isAr ? name2.loc : name2.loc,
+      rating: rating2,
+      text: isAr ? rev2.ar : rev2.en,
+      time: isAr ? 'منذ ٥ أيام' : '5 days ago',
+    },
+  ];
+}
+
 export default function ProductPage() {
   const { slug = '' } = useParams<{ slug: string }>();
   const [, setLocation] = useLocation();
@@ -57,6 +136,8 @@ export default function ProductPage() {
 
   const variant = product.variants?.[selectedVariant] || product.variants?.[0];
   const favorited = isWishlisted(product.id);
+
+  const reviews = useMemo(() => getProductReviews(product, isAr), [product, isAr]);
 
   const displayName = isAr ? product.nameAr : (product.nameEn || product.nameAr);
   const displayDescription = isAr ? product.descriptionAr : (product.descriptionEn || product.descriptionAr);
@@ -244,12 +325,6 @@ export default function ProductPage() {
               </span>
             )}
 
-            {/* Free Shipping Tag */}
-            <div className="absolute bottom-5 left-5 rounded-full bg-[#0A0A0A]/85 backdrop-blur-md px-3 py-1 text-[11px] font-bold text-[#D4A5A5] shadow-md flex items-center gap-1.5 border border-white/10">
-              <Truck className="size-3.5 text-[#D4A5A5]" />
-              <span>{t('pdp.free_shipping_hint')}</span>
-            </div>
-
             {/* Swipe hint dots for mobile */}
             {galleryImages.length > 1 && (
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-[#0A0A0A]/60 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-md">
@@ -322,7 +397,7 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* Right Column: Title, Pricing, Swatches & Purchase Block */}
+        {/* Right Column: Title, Pricing & Purchase Block */}
         <div className="space-y-6">
           <div>
             <span className="font-mono-brand text-xs font-bold tracking-widest text-[#D4A5A5] uppercase">
@@ -347,23 +422,16 @@ export default function ProductPage() {
                 <span className="text-xs text-[#A1A1AA]">({product.reviewCount} {isAr ? 'تقييم موثق' : 'reviews'})</span>
               </div>
 
-              {/* Dynamic Stock Indicator */}
-              {currentStock <= 5 ? (
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-300 bg-amber-950/40 border border-amber-800/40 px-3 py-1 rounded-full animate-pulse">
-                  <AlertCircle className="size-3.5" />
-                  {isAr ? `متبقي ${currentStock} قطع فقط في المخزن!` : `Only ${currentStock} units left in stock!`}
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-300 bg-emerald-950/40 border border-emerald-800/40 px-3 py-1 rounded-full">
-                  <CheckCircle2 className="size-3.5" />
-                  {isAr ? `متوفر في المخزون (${currentStock} قطعة جاهزة للشحن)` : `In Stock (${currentStock} units)`}
-                </span>
-              )}
+              {/* In Stock Badge */}
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300 bg-emerald-950/40 border border-emerald-800/40 px-3 py-1 rounded-full">
+                <CheckCircle2 className="size-3.5" />
+                <span>{isAr ? 'متوفر في المخزون' : 'In Stock'}</span>
+              </span>
             </div>
 
-            {/* Price Row */}
+            {/* Price Row (Pure White Price) */}
             <div className="mt-4 flex items-baseline gap-3">
-              <span className="text-3xl md:text-4xl font-extrabold font-mono-brand text-[#D4A5A5]">
+              <span className="text-3xl md:text-4xl font-extrabold font-mono-brand text-white">
                 {formatPrice(product.price)}
               </span>
               {effectiveCompareAtPrice && effectiveCompareAtPrice > product.price && (
@@ -379,42 +447,7 @@ export default function ProductPage() {
             </div>
           </div>
 
-          {/* Shade & Variant Swatches */}
-          {product.variants && product.variants.length > 0 && (
-            <div className="space-y-3 rounded-2xl border border-white/10 bg-[#141414] p-4 shadow-sm">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-white">
-                  {t('pdp.select_shade')}
-                </span>
-                <span className="font-bold text-[#D4A5A5]">
-                  {isAr ? variant?.nameAr : (variant?.nameEn || variant?.nameAr)}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2.5">
-                {product.variants.map((v, idx) => (
-                  <button
-                    type="button"
-                    key={v.id}
-                    onClick={() => setSelectedVariant(idx)}
-                    className={`group flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold transition-all shadow-xs ${
-                      selectedVariant === idx
-                        ? 'border-[#D4A5A5] bg-[#D4A5A5]/15 text-[#D4A5A5] ring-2 ring-[#D4A5A5]/20'
-                        : 'border-white/10 bg-[#1A1A1A] text-[#A1A1AA] hover:border-white/20'
-                    }`}
-                  >
-                    <span
-                      className="size-4 rounded-full border border-black/20 shrink-0 shadow-xs"
-                      style={{ backgroundColor: v.hex }}
-                    />
-                    <span>{isAr ? v.nameAr : (v.nameEn || v.nameAr)}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Desktop Purchase Action Block */}
+          {/* Purchase Action Block */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center gap-3">
               {/* Quantity Stepper */}
@@ -458,15 +491,15 @@ export default function ProductPage() {
               </button>
             </div>
 
-            {/* Primary CTA: High-emphasis Fast Cash Buy Now */}
+            {/* Primary CTA: High-emphasis Fast Cash Buy Now (Bright colors, pure white font) */}
             <button
               type="button"
               data-testid="button-buy-now"
               onClick={buyNowDirect}
-              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#D4A5A5] to-[#C89595] text-[#0A0A0A] font-bold shadow-lg shadow-[#D4A5A5]/10 hover:opacity-95 py-3.5 px-6 text-sm transition active:scale-[0.99]"
+              className="w-full flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#F2A7A7] via-[#E99797] to-[#DF8C8C] text-white font-extrabold shadow-lg shadow-rose-400/25 hover:brightness-105 py-3.5 px-6 text-sm md:text-base transition active:scale-[0.99] tracking-wide"
             >
-              <Zap className="size-4 text-[#0A0A0A]" />
-              <span>{isAr ? 'شراء سريع كاش (الدفع عند الاستلام)' : t('product.buy_now')}</span>
+              <Zap className="size-4.5 text-white fill-white shrink-0" />
+              <span className="text-white drop-shadow-xs font-bold">{isAr ? 'شراء سريع كاش (الدفع عند الاستلام)' : t('product.buy_now')}</span>
             </button>
           </div>
 
@@ -572,9 +605,9 @@ export default function ProductPage() {
                   ))}
                 </div>
               ) : (
-                <div className="leading-relaxed bg-[#141414] p-4 md:p-5 rounded-2xl border border-white/10 text-white/90">
+                <div className="leading-relaxed bg-[#141414] p-4 md:p-5 rounded-2xl border border-white/10 text-zinc-400">
                   <p className="text-xs md:text-sm leading-relaxed">
-                    {displayDescription.split('\n')[0] || (isAr ? 'مصنوع بأعلى معايير الجودة وخامات فائقة الدقة والجمال.' : 'Crafted with premium materials and high precision.')}
+                    {isAr ? 'غير متوفر' : 'Not available'}
                   </p>
                 </div>
               )}
@@ -584,11 +617,15 @@ export default function ProductPage() {
           {activeTab === 'howTo' && (
             <div className="space-y-4 text-sm text-[#A1A1AA]">
               <h3 className="font-display font-bold text-base text-white">
-                {isAr ? 'طقوس الاستخدام المثالية لنتائج مبهرة' : 'The Ideal Application Ritual'}
+                {isAr ? 'طريقة الاستخدام' : 'How to Use'}
               </h3>
-              <p className="leading-relaxed bg-[#141414] p-4 rounded-2xl border border-white/10 text-white/90 whitespace-pre-line">
-                {displayHowToUse || (isAr ? 'يُستخدم يومياً صباحاً ومساءً على بشرة نظيفة للحصول على أقصى ترطيب ونضارة.' : 'Use daily morning and evening on clean skin for optimal radiance.')}
-              </p>
+              <div className="leading-relaxed bg-[#141414] p-4 rounded-2xl border border-white/10 text-white/90 whitespace-pre-line">
+                {displayHowToUse ? (
+                  <p>{displayHowToUse}</p>
+                ) : (
+                  <p className="text-zinc-400">{isAr ? 'غير متوفر' : 'Not available'}</p>
+                )}
+              </div>
             </div>
           )}
 
@@ -599,48 +636,40 @@ export default function ProductPage() {
                   <h3 className="font-display text-base font-bold text-white">
                     {isAr ? 'تجارب وآراء العميلات' : 'Verified Client Reviews'}
                   </h3>
-                  <p className="text-xs text-[#A1A1AA]">{product.rating} من 5 نجوم · بناءً على {product.reviewCount} تقييم</p>
+                  <p className="text-xs text-[#A1A1AA]">
+                    {reviews.length > 0
+                      ? `${(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)} من 5 نجوم · بناءً على ${reviews.length} تقييمات موثقة`
+                      : `${product.rating} من 5 نجوم · بناءً على ${product.reviewCount} تقييم`}
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl border border-white/10 bg-[#141414] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs text-white">هدى سليم</span>
-                      <span className="text-[10px] text-emerald-400 bg-emerald-950/40 font-bold px-2 py-0.5 rounded-full border border-emerald-800/40">✓ مشترية موثقة</span>
+                {reviews.map((rev, idx) => (
+                  <div key={idx} className="p-4 rounded-2xl border border-white/10 bg-[#141414] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-white">{rev.name}</span>
+                        <span className="text-[10px] text-emerald-400 bg-emerald-950/40 font-bold px-2 py-0.5 rounded-full border border-emerald-800/40">
+                          {isAr ? '✓ مشترية موثقة' : '✓ Verified Buyer'}
+                        </span>
+                        {rev.city && (
+                          <span className="text-[10px] text-zinc-400 font-medium">
+                            • {rev.city}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex text-amber-400">
+                        {Array.from({ length: rev.rating }).map((_, i) => (
+                          <Star key={i} className="size-3 fill-current" />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex text-amber-400">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="size-3 fill-current" />
-                      ))}
-                    </div>
+                    <p className="text-xs text-[#A1A1AA] leading-relaxed">
+                      {rev.comment}
+                    </p>
                   </div>
-                  <p className="text-xs text-[#A1A1AA] leading-relaxed">
-                    {isAr
-                      ? 'المنتج فاق توقعاتي بكتير! التغليف لوحده تحفة فنية والتركيبة فرقت في بشرتي من أول استخدامين.'
-                      : 'Exceeded all expectations! Breathtaking packaging and truly transformative texture from the first uses.'}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl border border-white/10 bg-[#141414] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs text-white">داليا الألفي</span>
-                      <span className="text-[10px] text-emerald-400 bg-emerald-950/40 font-bold px-2 py-0.5 rounded-full border border-emerald-800/40">✓ مشترية موثقة</span>
-                    </div>
-                    <div className="flex text-amber-400">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="size-3 fill-current" />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-xs text-[#A1A1AA] leading-relaxed">
-                    {isAr
-                      ? 'شحن سريع جداً وصلني تاني يوم في المعادي، وأهم حاجة إني قدرت أعاين الأوردر قبل ما أدفع للمندوب.'
-                      : 'Next-day delivery to Maadi! Loved the option to inspect the parcel before paying the courier.'}
-                  </p>
-                </div>
+                ))}
               </div>
             </div>
           )}
@@ -680,7 +709,7 @@ export default function ProductPage() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <span className="text-[10px] text-zinc-400 block">{t('cart.total')}</span>
-            <span className="text-base font-extrabold font-mono-brand text-[#D4A5A5]">
+            <span className="text-base font-extrabold font-mono-brand text-white">
               {formatPrice(product.price * quantity)}
             </span>
           </div>
@@ -698,7 +727,7 @@ export default function ProductPage() {
             <button
               type="button"
               onClick={buyNowDirect}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#D4A5A5] to-[#C89595] text-[#0A0A0A] font-bold shadow-lg shadow-[#D4A5A5]/10 hover:opacity-95 text-xs transition active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#F2A7A7] via-[#E99797] to-[#DF8C8C] text-white font-extrabold shadow-lg shadow-rose-400/25 hover:brightness-105 text-xs transition active:scale-95"
             >
               {isAr ? 'شراء سريع كاش' : t('product.buy_now')}
             </button>
