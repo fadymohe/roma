@@ -263,10 +263,10 @@ export default function Home() {
   ];
 
   return (
-    <div dir={dir} className="space-y-10 md:space-y-16 py-4 md:py-8 text-[#F9FAFB]">
+    <div dir={dir} className="space-y-8 md:space-y-12 py-3 md:py-5 text-[#F9FAFB]">
 
       {/* ========================================================================= */}
-      {/* FULL-BLEED LUXURY HERO BANNER CAROUSEL (RESPONSIVE FOR ALL SCREENS)       */}
+      {/* LUXURY HERO BANNER CAROUSEL (RESPONSIVE & PEEK-OPTIMIZED)                 */}
       {/* ========================================================================= */}
       <section className="roma-container relative">
         <div
@@ -275,7 +275,7 @@ export default function Home() {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="group relative w-full aspect-[860/355] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#121212] shadow-xl md:shadow-2xl select-none"
+          className="group relative w-full max-w-[780px] mx-auto aspect-[860/355] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#121212] shadow-xl md:shadow-2xl select-none"
         >
           {/* Entire banner is a link to the shop / category */}
           <Link
@@ -311,35 +311,8 @@ export default function Home() {
             <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl md:rounded-3xl z-10" />
           </Link>
 
-          {/* Sleek Side Navigation Arrows (Hover on Desktop) */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (isAr) handleNext(); else handlePrev();
-            }}
-            aria-label={isAr ? 'السابق' : 'Previous'}
-            className="hidden sm:flex absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 size-8 md:size-10 rounded-full bg-black/45 hover:bg-black/80 text-white/90 hover:text-white border border-white/20 backdrop-blur-md shadow-lg transition-all duration-300 items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
-          >
-            <ChevronLeft className="size-4 md:size-5" />
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (isAr) handlePrev(); else handleNext();
-            }}
-            aria-label={isAr ? 'التالي' : 'Next'}
-            className="hidden sm:flex absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 size-8 md:size-10 rounded-full bg-black/45 hover:bg-black/80 text-white/90 hover:text-white border border-white/20 backdrop-blur-md shadow-lg transition-all duration-300 items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
-          >
-            <ChevronRight className="size-4 md:size-5" />
-          </button>
-
           {/* Sleek Glassmorphic Pagination Indicators (Mobile-optimized tap targets & styling) */}
-          <div className="absolute bottom-2 sm:bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2 bg-black/55 backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-white/15 shadow-xl">
+          <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2 bg-black/55 backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-white/15 shadow-xl">
             {HERO_SHOWCASE_IMAGES.map((_, idx) => (
               <button
                 key={idx}
