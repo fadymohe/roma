@@ -78,12 +78,18 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  if (req.method === 'GET') {
+    const hasKey = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+    return res.status(200).json({ ok: true, engine: 'ROMA AI Visual Matching Engine', hasGeminiKey: hasKey });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { image, filename } = req.body || {};
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+    const { image, filename } = body;
     if (!image) {
       return res.status(400).json({ error: 'Missing image data' });
     }
