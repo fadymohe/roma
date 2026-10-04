@@ -7,10 +7,21 @@ import { CATEGORIES, TESTIMONIALS, useLiveProducts, DEFAULT_PRODUCTS } from '@/l
 import { useLanguage } from '@/lib/language-context';
 
 const HERO_SHOWCASE_IMAGES = [
-  { src: '/hero/hero-1.jpg', alt: 'مستحضرات تجميل وأحمر شفاه فاخر' },
-  { src: '/hero/hero-2.jpg', alt: 'مجموعة تحديد وتجميل الشفاه الوردية' },
-  { src: '/hero/hero-3.jpg', alt: 'باليت ظلال عيون ومستحضرات احترافية' },
-  { src: '/hero/hero-4.jpg', alt: 'كريم الأساس والتغطية المخملية' },
+  {
+    src: '/hero/banner-1.png',
+    alt: 'تخفيضات كبرى في روما مصر - أكبر سوق للمكياج في مصر - خصومات تصل إلى 50%',
+    link: '/shop',
+  },
+  {
+    src: '/hero/banner-2.png',
+    alt: 'انتعاش العطر في هذا الصيف - تشكيلة فاخرة بروائح زهرية بخصم حتى 15%',
+    link: '/shop?category=perfumes',
+  },
+  {
+    src: '/hero/banner-3.png',
+    alt: 'عروض حصرية وبداية الشتاء - أسعار تبدأ من 1 جنيه مصري',
+    link: '/shop',
+  },
 ];
 
 export default function Home() {
@@ -18,13 +29,16 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [currentHeroImageIdx, setCurrentHeroImageIdx] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchEndXRef = useRef<number | null>(null);
+  const isDraggingRef = useRef(false);
 
-  // Auto-switch hero showcase image every 4 seconds (pauses on hover)
+  // Auto-switch hero showcase image every 4.5 seconds (pauses on hover or touch)
   useEffect(() => {
     if (isHeroHovered) return;
     const heroTimer = setInterval(() => {
       setCurrentHeroImageIdx((prev) => (prev + 1) % HERO_SHOWCASE_IMAGES.length);
-    }, 4000);
+    }, 4500);
     return () => clearInterval(heroTimer);
   }, [isHeroHovered]);
 
@@ -34,6 +48,39 @@ export default function Home() {
 
   const handlePrev = () => {
     setCurrentHeroImageIdx((prev) => (prev - 1 + HERO_SHOWCASE_IMAGES.length) % HERO_SHOWCASE_IMAGES.length);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchEndXRef.current = null;
+    isDraggingRef.current = false;
+    setIsHeroHovered(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndXRef.current = e.touches[0].clientX;
+    if (touchStartXRef.current !== null && Math.abs(touchStartXRef.current - e.touches[0].clientX) > 10) {
+      isDraggingRef.current = true;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsHeroHovered(false);
+    if (touchStartXRef.current !== null && touchEndXRef.current !== null) {
+      const diff = touchStartXRef.current - touchEndXRef.current;
+      if (Math.abs(diff) > 35) {
+        if (diff > 0) {
+          handleNext();
+        } else {
+          handlePrev();
+        }
+      }
+    }
+    setTimeout(() => {
+      isDraggingRef.current = false;
+    }, 60);
+    touchStartXRef.current = null;
+    touchEndXRef.current = null;
   };
 
   const [timeLeft, setTimeLeft] = useState({ days: '07', hours: '00', minutes: '00', seconds: '00' });
@@ -219,56 +266,80 @@ export default function Home() {
     <div dir={dir} className="space-y-10 md:space-y-16 py-4 md:py-8 text-[#F9FAFB]">
 
       {/* ========================================================================= */}
-      {/* FULL-BLEED LUXURY HERO BANNER CAROUSEL                                     */}
+      {/* FULL-BLEED LUXURY HERO BANNER CAROUSEL (RESPONSIVE FOR ALL SCREENS)       */}
       {/* ========================================================================= */}
       <section className="roma-container relative">
         <div
           onMouseEnter={() => setIsHeroHovered(true)}
           onMouseLeave={() => setIsHeroHovered(false)}
-          className="group relative w-full h-[220px] sm:h-[300px] md:h-[380px] lg:h-[430px] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#0E0E0E] shadow-2xl select-none"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="group relative w-full aspect-[860/355] rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 bg-[#121212] shadow-xl md:shadow-2xl select-none"
         >
-          {/* Entire banner is a link to the shop */}
+          {/* Entire banner is a link to the shop / category */}
           <Link
-            href="/shop"
+            href={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].link}
+            onClick={(e) => {
+              if (isDraggingRef.current) {
+                e.preventDefault();
+              }
+            }}
             className="block w-full h-full relative cursor-pointer overflow-hidden"
-            aria-label={isAr ? 'تسوقي التشكيلة الكاملة' : 'Shop All Products'}
+            aria-label={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].alt}
           >
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={currentHeroImageIdx}
-                initial={{ opacity: 0, scale: 1.02 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.99 }}
-                transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
-                className="absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className="absolute inset-0 w-full h-full overflow-hidden"
               >
-                {/* Ambient blurred backdrop to extend image colors across wide displays without cropping */}
-                <img
-                  src={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].src}
-                  alt=""
-                  aria-hidden="true"
-                  className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-60 scale-110 pointer-events-none"
-                />
-
-                {/* Subtle dark tint over blur */}
-                <div className="absolute inset-0 bg-black/30 pointer-events-none z-[1]" />
-
-                {/* Main sharp, fully visible product image without any cropping */}
                 <img
                   src={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].src}
                   alt={HERO_SHOWCASE_IMAGES[currentHeroImageIdx].alt}
-                  className="relative z-10 w-full h-full max-h-full object-contain object-center py-2 sm:py-3 drop-shadow-2xl select-none"
+                  className="w-full h-full object-cover select-none pointer-events-none rounded-2xl md:rounded-3xl"
+                  loading={currentHeroImageIdx === 0 ? 'eager' : 'lazy'}
+                  draggable={false}
                 />
               </motion.div>
             </AnimatePresence>
 
-            {/* Subtle luxury edge vignette */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 z-10" />
+            {/* Subtle luxury edge highlight */}
             <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl md:rounded-3xl z-10" />
           </Link>
 
-          {/* Sleek Glassmorphic Pagination Indicators */}
-          <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-xl">
+          {/* Sleek Side Navigation Arrows (Hover on Desktop) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isAr) handleNext(); else handlePrev();
+            }}
+            aria-label={isAr ? 'السابق' : 'Previous'}
+            className="hidden sm:flex absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 size-8 md:size-10 rounded-full bg-black/45 hover:bg-black/80 text-white/90 hover:text-white border border-white/20 backdrop-blur-md shadow-lg transition-all duration-300 items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
+          >
+            <ChevronLeft className="size-4 md:size-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isAr) handlePrev(); else handleNext();
+            }}
+            aria-label={isAr ? 'التالي' : 'Next'}
+            className="hidden sm:flex absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 size-8 md:size-10 rounded-full bg-black/45 hover:bg-black/80 text-white/90 hover:text-white border border-white/20 backdrop-blur-md shadow-lg transition-all duration-300 items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer active:scale-90"
+          >
+            <ChevronRight className="size-4 md:size-5" />
+          </button>
+
+          {/* Sleek Glassmorphic Pagination Indicators (Mobile-optimized tap targets & styling) */}
+          <div className="absolute bottom-2 sm:bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2 bg-black/55 backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-white/15 shadow-xl">
             {HERO_SHOWCASE_IMAGES.map((_, idx) => (
               <button
                 key={idx}
@@ -279,10 +350,10 @@ export default function Home() {
                   setCurrentHeroImageIdx(idx);
                 }}
                 aria-label={`Go to slide ${idx + 1}`}
-                className={`transition-all duration-500 rounded-full cursor-pointer ${
+                className={`transition-all duration-300 rounded-full cursor-pointer p-0.5 ${
                   idx === currentHeroImageIdx
-                    ? 'w-6 sm:w-7 h-1.5 bg-gradient-to-r from-[#D4A5A5] to-rose-300 shadow-[0_0_10px_rgba(212,165,165,0.8)]'
-                    : 'w-1.5 h-1.5 bg-white/35 hover:bg-white/70'
+                    ? 'w-5 sm:w-6 h-1.5 bg-[#D4A5A5] shadow-[0_0_8px_rgba(212,165,165,0.8)]'
+                    : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/80'
                 }`}
               />
             ))}

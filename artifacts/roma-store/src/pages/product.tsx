@@ -224,7 +224,7 @@ function getProductReviews(product: Product, isAr: boolean) {
 
   // 4 to 6 reviews per product to give rich depth
   const reviewCount = 4 + (numId % 3);
-  const reviewsList = [];
+  const reviewsList: { name: string; city: string; rating: number; comment: string; date: string }[] = [];
 
   for (let i = 0; i < reviewCount; i++) {
     const nameIndex = (numId * 13 + i * 7) % names.length;
