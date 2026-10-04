@@ -129,57 +129,109 @@ export default async function handler(req, res) {
 قائمة المنتجات (${compactCatalog.length} منتج):
 ${JSON.stringify(compactCatalog)}`;
 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+      // Try Gemini 2.0 Flash first, fallback to Gemini 1.5 Flash if needed
+      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      let candidateText = null;
 
-      try {
-        const response = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: promptWithCatalog },
-                  {
-                    inlineData: {
-                      mimeType: mimeType,
-                      data: base64Data,
+      for (const model of models) {
+        try {
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const response = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    { text: promptWithCatalog },
+                    {
+                      inlineData: {
+                        mimeType: mimeType,
+                        data: base64Data,
+                      },
                     },
-                  },
-                ],
+                  ],
+                },
+              ],
+              generationConfig: {
+                responseMimeType: 'application/json',
+                temperature: 0.1,
               },
-            ],
-            generationConfig: {
-              responseMimeType: 'application/json',
-              temperature: 0.1,
-            },
-          }),
-        });
+            }),
+          });
 
-        if (response.ok) {
-          const result = await response.json();
-          const candidateText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (candidateText) {
-            const aiVerdict = JSON.parse(candidateText);
+          if (response.ok) {
+            const result = await response.json();
+            candidateText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (candidateText) break;
+          } else {
+            const errText = await response.text();
+            console.warn(`Gemini model ${model} failed (${response.status}):`, errText);
+          }
+        } catch (modelErr) {
+          console.warn(`Error calling ${model}:`, modelErr);
+        }
+      }
 
-            // Locate full product if matched
-            let matchedProduct = null;
-            if (aiVerdict?.match_verdict?.matched_product_id) {
-              matchedProduct = allProducts.find(
-                (p) => String(p.id) === String(aiVerdict.match_verdict.matched_product_id)
-              );
+      if (candidateText) {
+        try {
+          const aiVerdict = JSON.parse(candidateText);
+
+          // Locate full product if matched
+          let matchedProduct = null;
+          const targetId = aiVerdict?.match_verdict?.matched_product_id;
+          const targetName = (aiVerdict?.match_verdict?.matched_product_name || '').toLowerCase().trim();
+          const cleanQuery = (aiVerdict?.search_fallback?.clean_search_query || '').toLowerCase().trim();
+          const ocrWords = Array.isArray(aiVerdict?.visual_breakdown?.visible_text_ocr)
+            ? aiVerdict.visual_breakdown.visible_text_ocr.map((w) => String(w).toLowerCase())
+            : [];
+
+          // 1. Direct ID match
+          if (targetId) {
+            matchedProduct = allProducts.find(
+              (p) => String(p.id).trim() === String(targetId).trim()
+            );
+          }
+
+          // 2. Direct name match
+          if (!matchedProduct && targetName) {
+            matchedProduct = allProducts.find(
+              (p) => p.nameAr?.toLowerCase().includes(targetName) || targetName.includes(p.nameAr?.toLowerCase())
+            );
+          }
+
+          // 3. Query or OCR keyword match (e.g. Mohra, Lattafa)
+          if (!matchedProduct && (cleanQuery || ocrWords.length > 0)) {
+            const searchTokens = [...cleanQuery.split(/\s+/), ...ocrWords].filter((t) => t.length >= 3);
+            let bestScore = 0;
+            let bestProd = null;
+
+            for (const p of allProducts) {
+              const fullText = `${p.nameAr} ${p.nameEn || ''} ${p.descriptionAr || ''} ${p.slug}`.toLowerCase();
+              let count = 0;
+              for (const tok of searchTokens) {
+                if (fullText.includes(tok)) count++;
+              }
+              if (count > bestScore) {
+                bestScore = count;
+                bestProd = p;
+              }
             }
 
-            return res.status(200).json({
-              success: true,
-              engine: 'gemini-vision',
-              aiVerdict,
-              matchedProduct: matchedProduct || null,
-            });
+            if (bestScore >= 2 && bestProd) {
+              matchedProduct = bestProd;
+            }
           }
+
+          return res.status(200).json({
+            success: true,
+            engine: 'gemini-vision',
+            aiVerdict,
+            matchedProduct: matchedProduct || null,
+          });
+        } catch (parseErr) {
+          console.error('Failed to parse AI response JSON:', parseErr, candidateText);
         }
-      } catch (geminiErr) {
-        console.error('Gemini vision API error:', geminiErr);
       }
     }
 

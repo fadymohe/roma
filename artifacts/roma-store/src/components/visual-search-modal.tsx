@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Camera, Sparkles, UploadCloud, X, CheckCircle2, ArrowLeft, RefreshCw, ShoppingBag, Zap, AlertCircle, SearchX } from 'lucide-react';
+import { Camera, Sparkles, UploadCloud, X, CheckCircle2, ArrowLeft, RefreshCw, ShoppingBag, Zap, AlertCircle, SearchX, Key, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/language-context';
 import { useLiveProducts, DEFAULT_PRODUCTS, Product, getProductDiscount, CATEGORIES } from '@/lib/catalog-data';
@@ -144,6 +144,29 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [addedIds, setAddedIds] = useState<Record<number, boolean>>({});
+
+  const [hasServerKey, setHasServerKey] = useState(false);
+  const [userGeminiKey, setUserGeminiKey] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('ROMA_GEMINI_KEY') || '';
+    }
+    return '';
+  });
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [tempKeyInput, setTempKeyInput] = useState('');
+  const [searchFallbackQuery, setSearchFallbackQuery] = useState('');
+
+  // Check if server has Gemini Key configured
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/visual-search')
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.hasGeminiKey) setHasServerKey(true);
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
 
   // Use statically bundled signatures for instant access with zero network dependency
   const [signatures, setSignatures] = useState<ProductSignature[]>(() => {
@@ -527,17 +550,91 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
               </div>
             </div>
 
-            <button
-              onClick={handleClose}
-              className="size-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition active:scale-95 cursor-pointer"
-              aria-label="Close"
-            >
-              <X className="size-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setTempKeyInput(userGeminiKey);
+                  setShowKeyModal(!showKeyModal);
+                }}
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold transition cursor-pointer border ${
+                  hasServerKey || userGeminiKey
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                    : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white hover:border-[#D4A5A5]/40'
+                }`}
+                title={isAr ? 'ربط مفتاح الذكاء الاصطناعي (Gemini Vision)' : 'AI Vision Key'}
+              >
+                <Key className="size-3 text-[#D4A5A5]" />
+                <span className="hidden sm:inline">
+                  {hasServerKey || userGeminiKey ? 'AI Vision ⚡' : (isAr ? 'مفتاح AI' : 'AI Key')}
+                </span>
+                {(hasServerKey || userGeminiKey) && (
+                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                )}
+              </button>
+
+              <button
+                onClick={handleClose}
+                className="size-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition active:scale-95 cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
           </div>
 
           {/* Modal Body */}
           <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
+            {/* Gemini API Key Configuration Box */}
+            {showKeyModal && (
+              <div className="p-4 rounded-2xl border border-[#D4A5A5]/30 bg-[#1e1a1a] space-y-2.5 text-right">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-white">
+                    <Key className="size-4 text-[#D4A5A5]" />
+                    <span>{isAr ? 'ربط محرك Gemini Vision لمطابقة صور الكاميرا' : 'Connect Gemini Vision Key'}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyModal(false)}
+                    className="text-zinc-400 hover:text-white text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  {isAr
+                    ? 'يسمح للمتجر بالتعرف الفوري على أي منتج من صور الكاميرا الحقيقية وعزل الخلفية وقراءة النصوص على العبوة بنسبة 100%.'
+                    : 'Enables 100% exact recognition from camera photos.'}
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="password"
+                    placeholder="AIzaSy..."
+                    value={tempKeyInput}
+                    onChange={(e) => setTempKeyInput(e.target.value)}
+                    className="flex-1 bg-black/60 border border-white/20 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#D4A5A5]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const trimmed = tempKeyInput.trim();
+                      if (trimmed) {
+                        localStorage.setItem('ROMA_GEMINI_KEY', trimmed);
+                        setUserGeminiKey(trimmed);
+                      } else {
+                        localStorage.removeItem('ROMA_GEMINI_KEY');
+                        setUserGeminiKey('');
+                      }
+                      setShowKeyModal(false);
+                    }}
+                    className="px-4 py-1.5 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] text-black font-bold text-xs transition cursor-pointer"
+                  >
+                    {isAr ? 'حفظ' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <input
               ref={fileInputRef}
               type="file"
@@ -700,6 +797,35 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                       </p>
                     </div>
 
+                    {/* Quick Search Fallback Bar */}
+                    <div className="pt-1 max-w-sm mx-auto w-full">
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          if (searchFallbackQuery.trim()) {
+                            handleClose();
+                            setLocation(`/shop?q=${encodeURIComponent(searchFallbackQuery.trim())}`);
+                          }
+                        }}
+                        className="flex items-center gap-1.5 bg-black/60 border border-white/15 rounded-full p-1 pl-3 text-xs focus-within:border-[#D4A5A5]/60 transition"
+                      >
+                        <Search className="size-3.5 text-zinc-400 shrink-0" />
+                        <input
+                          type="text"
+                          placeholder={isAr ? 'أو اكتبي اسم المنتج (مثال: مهرة، لطافة...)' : 'Or search by name (e.g. Mohra, Lattafa)...'}
+                          value={searchFallbackQuery}
+                          onChange={(e) => setSearchFallbackQuery(e.target.value)}
+                          className="bg-transparent flex-1 text-white placeholder-zinc-500 focus:outline-none text-[11px]"
+                        />
+                        <button
+                          type="submit"
+                          className="px-3 py-1 bg-[#D4A5A5] text-black rounded-full font-bold text-[10px] hover:bg-[#C89595] transition cursor-pointer"
+                        >
+                          {isAr ? 'بحث' : 'Search'}
+                        </button>
+                      </form>
+                    </div>
+
                     <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
                       {detectedCategory && (
                         <button
@@ -734,6 +860,22 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                         {isAr ? 'تصفح كل المتجر' : 'Browse Store'}
                       </button>
                     </div>
+
+                    {!hasServerKey && !userGeminiKey && (
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTempKeyInput(userGeminiKey);
+                            setShowKeyModal(true);
+                          }}
+                          className="inline-flex items-center gap-1.5 text-[11px] text-[#D4A5A5] hover:underline cursor-pointer"
+                        >
+                          <Key className="size-3" />
+                          <span>{isAr ? 'هل تريدين تفعيل قراءة صور الكاميرا بالذكاء الاصطناعي؟ اضغطي هنا' : 'Enable AI Camera Vision with Gemini Key'}</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
