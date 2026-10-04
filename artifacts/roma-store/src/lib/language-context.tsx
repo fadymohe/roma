@@ -77,7 +77,7 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Product Card & Actions
     'product.add_to_cart': 'إضافة للسلة',
-    'product.buy_now': 'شراء سريع كاش',
+    'product.buy_now': 'شراء الآن',
     'product.quick_view': 'نظرة سريعة',
     'product.in_stock': 'متوفر بالمخزون',
     'product.low_stock': 'متبقي {count} قطع فقط!',

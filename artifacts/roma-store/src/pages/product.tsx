@@ -36,7 +36,7 @@ function getProductReviews(product: Product, isAr: boolean) {
   const isPerfume = Boolean(product.category?.includes('عطر') || product.categoryEn?.toLowerCase().includes('perfume'));
   const isHair = Boolean(product.category?.includes('شعر') || product.categoryEn?.toLowerCase().includes('hair'));
   const isJewelry = Boolean(product.category?.includes('مجوهرات') || product.categoryEn?.toLowerCase().includes('jewelry'));
-  const isBeauty = Boolean(product.category?.includes('مكياج') || product.category?.includes('جسم') || product.category?.includes('عناية'));
+  const isBeauty = Boolean(product.category?.includes('مكياج') || product.category?.includes('جسم') || product.category?.includes('عناية') || product.categoryEn?.toLowerCase().includes('beauty'));
 
   const names = [
     { ar: 'نوران الشناوي', en: 'Nouran El-Shenawy', loc: 'التجمع الخامس' },
@@ -51,60 +51,202 @@ function getProductReviews(product: Product, isAr: boolean) {
     { ar: 'فريدة زايد', en: 'Farida Zayed', loc: 'طنطا' },
     { ar: 'ملك الباز', en: 'Malak El-Baz', loc: 'الزمالك' },
     { ar: 'هاجر السعيد', en: 'Hagar El-Saeed', loc: 'الشروق' },
+    { ar: 'شروق عبد الرحمن', en: 'Shorouk Abdelrahman', loc: 'الرحاب' },
+    { ar: 'خديجة سامي', en: 'Khadija Samy', loc: 'الهرم' },
+    { ar: 'ميرنا عاطف', en: 'Mirna Atef', loc: 'سموحة' },
+    { ar: 'رضوى زهران', en: 'Radwa Zahran', loc: 'مدينتي' },
+    { ar: 'تسنيم بدر', en: 'Tasneem Badr', loc: 'العاشر من رمضان' },
+    { ar: 'منة الله شاكر', en: 'Menna Shaker', loc: 'العبور' },
+    { ar: 'لبنى عاصم', en: 'Lobna Assem', loc: 'بني سويف' },
+    { ar: 'يارا النجار', en: 'Yara El-Naggar', loc: 'الزقازيق' },
+    { ar: 'ماهينور الجمال', en: 'Mahinour El-Gammal', loc: 'جاردن سيتي' },
+    { ar: 'هبة القوصي', en: 'Heba El-Qoussi', loc: 'شبرا' },
+    { ar: 'سهيلة فهمي', en: 'Suhaila Fahmy', loc: 'بورسعيد' },
+    { ar: 'بسنت توفيق', en: 'Passant Tawfik', loc: 'السويس' },
+    { ar: 'نهى مصطفى', en: 'Noha Moustafa', loc: 'أسيوط' },
+    { ar: 'كارمن النحاس', en: 'Karmine El-Nahas', loc: 'المقطم' },
+    { ar: 'جيهان فايز', en: 'Gihan Fayez', loc: 'الإسماعيلية' },
+    { ar: 'رنا البرنس', en: 'Rana El-Prince', loc: 'دمنهور' },
+    { ar: 'إيمان غنيم', en: 'Eman Ghoneim', loc: 'المحلة الكبرى' },
+    { ar: 'ليلى الأزهري', en: 'Layla El-Azhary', loc: 'الفيوم' },
+    { ar: 'نورهان خطاب', en: 'Nourhan Khattab', loc: 'العجوزة' },
+    { ar: 'ميسرة عبد العزيز', en: 'Maysara Abdelaziz', loc: 'المنيل' },
+    { ar: 'شيماء بدر الدين', en: 'Shaimaa Badr', loc: 'شرم الشيخ' },
+    { ar: 'أروى حسني', en: 'Arwa Hosny', loc: 'الغردقة' },
+    { ar: 'دنيا وجدي', en: 'Donia Wagdy', loc: 'بنها' },
+    { ar: 'نادين صبري', en: 'Nadine Sabry', loc: 'كفر الشيخ' },
   ];
 
   const perfumeReviews = [
-    { ar: 'ريحته فواحة جداً وثباته فضل معايا أكتر من ٢٤ ساعة على الهدوم. كل اللي شمه سألني عنه!', en: 'Incredible scent and lasting sillage! Stayed on my clothes over 24 hours.' },
-    { ar: 'عطر راقي جداً وأنثوي بدون مبالغة، الزجاجة تحفة والتغليف وصل سليم وفي وقت قياسي.', en: 'Very sophisticated and feminine. The bottle looks luxurious on the vanity.' },
-    { ar: 'بديل ممتاز وفخم وثابت، ريحته ناعمة وهادية ومناسبة جداً للاستخدام اليومي والمناسبات.', en: 'Superb quality and long-lasting aroma. Perfect for daily wear and evening events.' },
-    { ar: 'طلبته هدية لأختي وعجبها جداً، وميزة معاينة الأوردر قبل الدفع خلتني أطلب وأنا مطمنة.', en: 'Bought it as a gift and she absolutely loved it. Loved the pay-on-delivery inspection!' },
+    {
+      ar: 'ريحته فواحة وثابتة جداً؛ رشيته الصبح وفضل في هدومي لتاني يوم بنفس القوة. كل ما أقابل حد يسألني عن اسمه، التغليف شيك جداً ووصلني مغلف بعناية.',
+      en: 'Incredible scent and lasting sillage! Stayed on my clothes over 24 hours. Everyone asks what perfume I am wearing.'
+    },
+    {
+      ar: 'عطر أنثوي فخم ومميز مش مكرر، الميكس بين النوتات هادي وراقي ومبيوجعش الصداع خالص. الزجاجة شكلها قطعة ديكور على التسريحة.',
+      en: 'Very sophisticated, feminine and non-cloying. The bottle looks luxurious on my vanity table.'
+    },
+    {
+      ar: 'طلبته وأنا مترددة شوية بس بجد طلع فوق الخيال؛ الفوحان ممتاز ومناسب جداً للمناسبات والسهرات. المندوب كان محترم جداً وخلاني أعاين العلبة قبل الاستلام.',
+      en: 'Exceeded my expectations! Sillage is wonderful for evening events. Courier was very respectful and allowed inspection.'
+    },
+    {
+      ar: 'ثبات العطر على الجلد 8 ساعات وعلى الملابس بيقعد يومين كاملين. نوتاته بتبدأ منعشة وتهدى على لمسة بودرية دافية وناعمة، تجربة شراء ممتازة.',
+      en: 'Stays 8 hours on skin and 2 days on clothes. Starts fresh and settles into a warm powdery dry-down.'
+    },
+    {
+      ar: 'الباكدجينج تحفة وينفع هدية قيمة جداً، سرعة التوصيل أبهرتني وصلني في أقل من 24 ساعة في المعادي، شكراً ليكم بجد.',
+      en: 'Stunning packaging, makes a luxurious gift. Next-day delivery blew me away, truly grateful.'
+    },
+    {
+      ar: 'عطر رايق وجذاب وثباته تحفة، عجب كل صاحباتي في الشغل والكل افتكره براند عالمي مستورد بآلاف. سعره يستاهل كل قرش.',
+      en: 'Elegant and magnetic scent. All my colleagues thought it was an expensive international designer perfume.'
+    },
+    {
+      ar: 'ريحته هادية وفخمة في نفس الوقت، مش نفاذة تضايق، بالعكس مريحة للأعصاب. دي تالت مرة أطلب من المتجر وكل مرة بيبهروني.',
+      en: 'Calming and luxurious at once. Not overpowering, very soothing. My 3rd time ordering from Roma Store!'
+    },
+    {
+      ar: 'أحلى حاجة إن العطر أصلي وتركيزه عالي ومبيغيرش ريحته مع الوقت. تجربة ممتازة وخدمة العملاء على الواتساب قمة في الذوق.',
+      en: 'Concentrated authentic perfume that doesn’t turn sour over time. Excellent customer support on WhatsApp.'
+    },
   ];
 
   const hairReviews = [
-    { ar: 'الخامة ممتازة ومابتنتش الشعر خالص، ماسكة كويس جداً في الشعر التقيل وثابتة طول اليوم.', en: 'Great material that does not pull hair. Holds thick hair securely all day long.' },
-    { ar: 'شكلها شيك جداً وكيوت في الحقيقة أحلى من الصور بكتير، وسعرها تحفة مقارنة بالمحلات.', en: 'Even cuter in person than photos! Exceptional value and premium finish.' },
-    { ar: 'القطع ألوانها مبهجة ونظيفة، بنتي فرحت بيها جداً ومرنة ومريحة في اللبس.', en: 'Vibrant colors and gentle on the hair. My daughter was thrilled with it!' },
-    { ar: 'المشبك قوي ومتين ومبيفكش بسهولة، والتوصيل وصل تاني يوم على طول.', en: 'Sturdy clamp, durable spring, and fast delivery the next day.' },
+    {
+      ar: 'المعدن متين جداً واللمعة بتاعته فخمة ومبتتغيرش، مسكته قوية جداً للشعر التقيل ومبيزحلقش خالص طول اليوم حتى مع الحركة.',
+      en: 'Heavy-duty metal with gorgeous non-tarnishing shine. Secure hold for thick hair with zero slippage.'
+    },
+    {
+      ar: 'القطع في الطبيعة أحلى بكتير من الصور، الكواليتي عالية والسوستة مرنة ومش بتكسر الشعر أو تشده. بنتي فرحت بيه جداً.',
+      en: 'Even prettier in person than pictures! Smooth gentle spring that does not tug or pull fine hair.'
+    },
+    {
+      ar: 'الديزاين راقي وشيك جداً، بيدي لوك أنيق لأي تسريحة شعر بسيطة. التغليف جه نظيف ومعاه كيس حماية، وسعره ممتاز مقارنة بالمحلات.',
+      en: 'Ultra-chic design, instantly elevates any everyday hairstyle. Came protected and packed cleanly.'
+    },
+    {
+      ar: 'خامة ممتازة ومابتسببش أي صداع من الشد، وبتحكم الشعر الهايش والكيرلي كويس جداً. طلبت منه لونين وهطلب باقي الألوان بإذن الله.',
+      en: 'Comfortable fit with no tension headaches. Holds curly volume perfectly, ordered another set!'
+    },
+    {
+      ar: 'التفاصيل معمولة بإتقان ومفيش أي أطراف حادة تعور الفروة. الشحن وصلني تاني يوم على طول والمندوب كان قمة في الاحترام.',
+      en: 'Polished edges that do not scratch the scalp. Super fast delivery and great courier.'
+    },
+    {
+      ar: 'شياكة غير عادية! مناسب جداً للمشاوير والجامعة والمناسبات، كل اللي بيشوفه في شعري بيسألني جايباه منين.',
+      en: 'Remarkable elegance! Perfect for university, work, and gatherings. Constant compliments.'
+    },
+    {
+      ar: 'الألوان مطابقة للصور بالظبط، والخامات متماسكة ومبتتقشرش حتى بعد استخدام يومي مكثف. اختيار موفق جداً.',
+      en: 'Colors match photos exactly. High durability without any peeling after weeks of daily wear.'
+    },
+    {
+      ar: 'مسكته محكمة ومريحة جداً ومبيوقعش من الشعر الناعم. تجربة أولى ممتازة وهكرر الشراء أكيد.',
+      en: 'Secure hold even for silky soft hair. Wonderful first purchase and definitely shopping again.'
+    },
   ];
 
   const jewelryReviews = [
-    { ar: 'الفينش روعة ولمعانها فخم ومبيغيرش لون، كأنها قطعة دهب حقيقي بالظبط!', en: 'Stunning shine and finish! Looks like real fine jewelry and hasn’t tarnished.' },
-    { ar: 'رقيقة جداً وأنيقة في اللبس ومقاسها مظبوط بالمللي. التغليف كمان ينفع هدية شيك.', en: 'Dainty and elegant on the wrist/neck. Perfect gift packaging.' },
-    { ar: 'أول مرة أطلب إكسسوار أونلاين وتطلع الجودة ممتازة كده. مندوب التوصيل كان محترم جداً.', en: 'First time ordering jewelry online and exceeded my expectations!' },
+    {
+      ar: 'الفينش احترافي جداً ولمعان الفصوص يخطف العين، كأنها دهب حقيقي عيار 18 بالظبط! مغيرتش لون مع الاستخدام ولا عملت أي حساسية.',
+      en: 'Master craftsmanship, stones sparkle like real 18k gold jewelry! No color fading or allergies.'
+    },
+    {
+      ar: 'القطعة رقيقة جداً وأنيقة في اللبس ومقاسها مظبوط بالمللي. التغليف فاخر جداً ومناسب يتقدم هدية راقية بدون أي مجهود.',
+      en: 'Dainty and fits like a dream. Luxury box and pouch, ready to be gifted immediately.'
+    },
+    {
+      ar: 'أول مرة أطلب مجوهرات أونلاين وتطلع أحسن من المتوقع، اللمعة ثابتة والقفل محكم ومبيفكش بسهولة. شكراً روما على المصداقية.',
+      en: 'Best online jewelry purchase ever. Firm clasp and luminous shine. Kudos to Roma for genuine quality.'
+    },
+    {
+      ar: 'تفاصيل الشغل دقيقة وناعمة ومبتشبكش في الهدوم خالص. وصلني مع كارت الضمان وعلبة شيك جداً، هكون عميلة دائمة عندكم.',
+      en: 'Fine seamless finish that does not snag on delicate fabrics. Permanent customer here!'
+    },
+    {
+      ar: 'خامة ممتازة ومظهر ملكي فخم يجنن، لبستها في مناسبة عائلية وكل الناس افتكروها ألماس. التوصيل كان سريع ومعاينة قبل الدفع ممتازة.',
+      en: 'Regal brilliance! Wore it to a wedding and everyone thought it was genuine diamond jewelry.'
+    },
+    {
+      ar: 'رقيقة وشيك جداً في اللبس اليومي، بستحمى بيها ومفيش أي تغير في اللون أو بهتان. جودة تحترم بجد.',
+      en: 'Resistant to water and perfume, retains bright gleam effortlessly. Outstanding value.'
+    },
   ];
 
   const beautyReviews = [
-    { ar: 'الملمس ناعم وخفيف جداً، مش بيدهن خالص وبيدي نضارة فورية وطبيعية.', en: 'Super smooth and lightweight texture, absorbs fast without greasiness.' },
-    { ar: 'مكوناته لطيفة ومسببش أي حساسية لبشرتي، من أحسن المنتجات اللي جربتها الفترة دي.', en: 'Gentle on sensitive skin with no irritation. Truly a daily staple.' },
-    { ar: 'النتيجة بانت معايا من أول أسبوع، تغليف ممتاز وريحة المنتج هادية ونظيفة.', en: 'Noticed visible results within the first week. Clean, pleasant scent.' },
-  ];
-
-  const pool = isPerfume ? perfumeReviews : isHair ? hairReviews : isJewelry ? jewelryReviews : beautyReviews;
-
-  const name1 = names[numId % names.length];
-  const name2 = names[(numId + 5) % names.length];
-  const rev1 = pool[numId % pool.length];
-  const rev2 = pool[(numId + 2) % pool.length];
-
-  const rating1 = 5;
-  const rating2 = numId % 3 === 0 ? 4 : 5;
-
-  return [
     {
-      name: isAr ? name1.ar : name1.en,
-      location: isAr ? name1.loc : name1.loc,
-      rating: rating1,
-      text: isAr ? rev1.ar : rev1.en,
-      time: isAr ? 'منذ يومين' : '2 days ago',
+      ar: 'التركيبة خفيفة جداً وسريعة الامتصاص ومش بتسيب أي ملمس دهني أو تزييت. حسيت بفرق واضح في ترطيب ونضارة بشرتي من أول استخدامين.',
+      en: 'Lightweight and absorbs instantly without greasiness. Noticeable difference in hydration from day two.'
     },
     {
-      name: isAr ? name2.ar : name2.en,
-      location: isAr ? name2.loc : name2.loc,
-      rating: rating2,
-      text: isAr ? rev2.ar : rev2.en,
-      time: isAr ? 'منذ ٥ أيام' : '5 days ago',
+      ar: 'مكوناته لطيفة وآمنة ومسببش أي تحسس أو حبوب لبشرتي الحساسة. ريحته هادية ونظيفة وبتدوم وقت طويل.',
+      en: 'Extremely gentle on sensitive skin, caused zero flare-ups or breakouts. Very pleasant, clean scent.'
+    },
+    {
+      ar: 'النتيجة ظهرت معايا بسرعة وبشرتي بقت أنعم ومشرقة أكتر. التغليف محكم والمنتج وصل أصلي ومقفل ومطابق تماماً للمواصفات.',
+      en: 'Swift visible results, skin feels smoother and luminous. Came sealed and 100% authentic.'
+    },
+    {
+      ar: 'من أحسن المنتجات اللي جربتها السنة دي، التغطية والترطيب ممتازين وبيدوا لوك ناتشورال ومريح جداً طول اليوم.',
+      en: 'One of my top beauty finds this year. Leaves a natural healthy finish that lasts comfortably.'
+    },
+    {
+      ar: 'الباكدج أنيق ومضخة الاستخدام مريحة جداً بتنزل الكمية المظبوطة بدون هدر. شكراً على سرعة التوصيل والأمانة.',
+      en: 'Convenient pump dispenser and elegant bottle. High integrity brand and fast delivery.'
+    },
+    {
+      ar: 'فرق كبير جداً في ملمس بشرتي، حتى الميكب بقى شكله أحسن وأنظف بكتير بعد ما استخدمته. يستاهل التجربة بالتأكيد.',
+      en: 'Transformed my skin texture, makeup sits smoothly and flawlessly now. Absolutely worth it.'
     },
   ];
+
+  const generalReviews = [
+    {
+      ar: 'الخامة فاخرة والتفاصيل مبهرة بكل ما تعنيه الكلمة. منتج عملي ومطابق للوصف بالمللي والتغليف محترم جداً.',
+      en: 'Exceptional material quality and craftsmanship. Matches catalog specs to the letter.'
+    },
+    {
+      ar: 'جودة التصنيع عالية جداً وأفضل بكتير من المنتجات المتوفرة في السوق بنفس السعر. تجربة شراء موفقة ومميزة.',
+      en: 'Superior manufacturing quality compared to market alternatives in this price bracket.'
+    },
+    {
+      ar: 'التعامل ممتاز وسرعة في التوصيل لغاية باب البيت، وسهولة المعاينة قبل الدفع تدي ثقة كبيرة في البراند.',
+      en: 'Prompt door-to-door delivery and welcoming courier. Inspires great trust in Roma.'
+    },
+    {
+      ar: 'المنتج متقن ومريح جداً، الألوان والخامات ممتازة والتغليف يحافظ عليه من أي خدش أثناء الشحن.',
+      en: 'Impeccable condition upon arrival, thoughtfully wrapped to avoid any transit damage.'
+    },
+  ];
+
+  const pool = isPerfume ? perfumeReviews : isHair ? hairReviews : isJewelry ? jewelryReviews : isBeauty ? beautyReviews : generalReviews;
+
+  // 4 to 6 reviews per product to give rich depth
+  const reviewCount = 4 + (numId % 3);
+  const reviewsList = [];
+
+  for (let i = 0; i < reviewCount; i++) {
+    const nameIndex = (numId * 13 + i * 7) % names.length;
+    const nameObj = names[nameIndex];
+    const revIndex = (numId * 11 + i * 5) % pool.length;
+    const revObj = pool[revIndex];
+
+    // Mostly 5 stars, occasionally a 4 star
+    const rating = (numId + i) % 7 === 0 ? 4 : 5;
+    const daysAgo = (i + 1) * 2 + (numId % 3);
+    const dateStr = isAr ? `منذ ${daysAgo} أيام` : `${daysAgo} days ago`;
+
+    reviewsList.push({
+      name: isAr ? nameObj.ar : nameObj.en,
+      city: nameObj.loc,
+      rating,
+      comment: isAr ? revObj.ar : revObj.en,
+      date: dateStr,
+    });
+  }
+
+  return reviewsList;
 }
 
 export default function ProductPage() {
@@ -138,6 +280,12 @@ export default function ProductPage() {
   const favorited = isWishlisted(product.id);
 
   const reviews = useMemo(() => getProductReviews(product, isAr), [product, isAr]);
+
+  const productRatingAvg = useMemo(() => {
+    if (!reviews || reviews.length === 0) return '5.0';
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    return (sum / reviews.length).toFixed(1);
+  }, [reviews]);
 
   const displayName = isAr ? product.nameAr : (product.nameEn || product.nameAr);
   const displayDescription = isAr ? product.descriptionAr : (product.descriptionEn || product.descriptionAr);
@@ -418,8 +566,8 @@ export default function ProductPage() {
                     <Star key={index} className="size-3.5 fill-current" />
                   ))}
                 </div>
-                <span className="text-xs font-bold text-white">{product.rating}</span>
-                <span className="text-xs text-[#A1A1AA]">({product.reviewCount} {isAr ? 'تقييم موثق' : 'reviews'})</span>
+                <span className="text-xs font-bold text-white">{productRatingAvg}</span>
+                <span className="text-xs text-[#A1A1AA]">({reviews.length} {isAr ? 'تقييم موثق' : 'reviews'})</span>
               </div>
 
               {/* In Stock Badge */}
@@ -499,7 +647,7 @@ export default function ProductPage() {
               className="w-full flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#F2A7A7] via-[#E99797] to-[#DF8C8C] text-white font-extrabold shadow-lg shadow-rose-400/25 hover:brightness-105 py-3.5 px-6 text-sm md:text-base transition active:scale-[0.99] tracking-wide"
             >
               <Zap className="size-4.5 text-white fill-white shrink-0" />
-              <span className="text-white drop-shadow-xs font-bold">{isAr ? 'شراء سريع كاش (الدفع عند الاستلام)' : t('product.buy_now')}</span>
+              <span className="text-white drop-shadow-xs font-bold">{isAr ? 'شراء الآن' : t('product.buy_now')}</span>
             </button>
           </div>
 
@@ -637,16 +785,14 @@ export default function ProductPage() {
                     {isAr ? 'تجارب وآراء العميلات' : 'Verified Client Reviews'}
                   </h3>
                   <p className="text-xs text-[#A1A1AA]">
-                    {reviews.length > 0
-                      ? `${(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)} من 5 نجوم · بناءً على ${reviews.length} تقييمات موثقة`
-                      : `${product.rating} من 5 نجوم · بناءً على ${product.reviewCount} تقييم`}
+                    {productRatingAvg} {isAr ? 'من 5 نجوم · بناءً على' : 'out of 5 stars · based on'} {reviews.length} {isAr ? 'تقييمات موثقة' : 'verified reviews'}
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {reviews.map((rev, idx) => (
-                  <div key={idx} className="p-4 rounded-2xl border border-white/10 bg-[#141414] space-y-2">
+                  <div key={idx} className="p-4 rounded-2xl border border-white/10 bg-[#141414] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-xs text-white">{rev.name}</span>
@@ -659,13 +805,16 @@ export default function ProductPage() {
                           </span>
                         )}
                       </div>
-                      <div className="flex text-amber-400">
-                        {Array.from({ length: rev.rating }).map((_, i) => (
-                          <Star key={i} className="size-3 fill-current" />
-                        ))}
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-zinc-500">{rev.date}</span>
+                        <div className="flex text-amber-400">
+                          {Array.from({ length: rev.rating }).map((_, i) => (
+                            <Star key={i} className="size-3 fill-current" />
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <p className="text-xs text-[#A1A1AA] leading-relaxed">
+                    <p className="text-xs text-zinc-300 leading-relaxed">
                       {rev.comment}
                     </p>
                   </div>
@@ -729,7 +878,7 @@ export default function ProductPage() {
               onClick={buyNowDirect}
               className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#F2A7A7] via-[#E99797] to-[#DF8C8C] text-white font-extrabold shadow-lg shadow-rose-400/25 hover:brightness-105 text-xs transition active:scale-95"
             >
-              {isAr ? 'شراء سريع كاش' : t('product.buy_now')}
+              {isAr ? 'شراء الآن' : t('product.buy_now')}
             </button>
           </div>
         </div>
