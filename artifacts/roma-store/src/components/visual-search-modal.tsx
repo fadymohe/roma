@@ -38,37 +38,6 @@ interface MatchResult {
   reasonEn: string;
 }
 
-// Sample presets mapping directly to real store images
-const DEMO_PRESETS = [
-  {
-    id: 'hero-2',
-    labelAr: 'أحمر شفاه وردي ملكي',
-    labelEn: 'Pink Royal Lipstick',
-    src: '/hero/hero-2.jpg',
-    fileName: 'hero-2.jpg',
-  },
-  {
-    id: 'hero-3',
-    labelAr: 'باليت مكياج وعطور',
-    labelEn: 'Makeup Palette & Perfume',
-    src: '/hero/hero-3.jpg',
-    fileName: 'hero-3.jpg',
-  },
-  {
-    id: 'hero-4',
-    labelAr: 'كريم بي بي وعناية',
-    labelEn: 'BB Cream & Skincare',
-    src: '/hero/hero-4.jpg',
-    fileName: 'hero-4.jpg',
-  },
-  {
-    id: 'hero-1',
-    labelAr: 'بلاشر ومكياج ناعم',
-    labelEn: 'Blush & Beauty Palette',
-    src: '/hero/hero-1.jpg',
-    fileName: 'hero-1.jpg',
-  },
-];
 
 function hammingDistance(s1: string, s2: string): number {
   if (!s1 || !s2) return 64;
@@ -505,11 +474,6 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
     }
   };
 
-  const handleSelectPreset = (preset: typeof DEMO_PRESETS[0]) => {
-    setSelectedImage(preset.src);
-    matchImage(preset.src, undefined, preset.fileName);
-  };
-
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
     add(product, product.variants?.[0]);
@@ -621,35 +585,6 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                   </button>
                 </div>
 
-                {/* Demo Presets Row */}
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-400">
-                    <Sparkles className="size-3 text-[#D4A5A5]" />
-                    <span>{isAr ? 'أو جربي المطابقة مع إحدى صور المتجر:' : 'Or test matching with store images:'}</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {DEMO_PRESETS.map((preset) => (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() => handleSelectPreset(preset)}
-                        className="group flex flex-col items-center p-2 rounded-xl bg-white/5 hover:bg-[#D4A5A5]/15 border border-white/10 hover:border-[#D4A5A5]/40 transition-all text-center cursor-pointer"
-                      >
-                        <div className="w-full aspect-[4/3] rounded-lg overflow-hidden mb-1.5 bg-[#0E0E0E] relative">
-                          <img
-                            src={preset.src}
-                            alt={preset.labelAr}
-                            className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <span className="text-[10px] font-medium text-zinc-300 group-hover:text-white line-clamp-1">
-                          {isAr ? preset.labelAr : preset.labelEn}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
             ) : (
               /* Phase 2: Scanning & Exact Results */
