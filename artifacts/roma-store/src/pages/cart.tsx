@@ -27,7 +27,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react';
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useCart } from '@/hooks/use-cart';
 import { useAuth } from '@/hooks/use-auth';
@@ -47,6 +47,7 @@ import {
 export default function CartPage() {
   const [, setLocation] = useLocation();
   const { lines, subtotal, setQuantity, remove, clear } = useCart();
+  const isSubmittingRef = useRef(false);
   const {
     user,
     isAuthenticated,
@@ -443,7 +444,7 @@ export default function CartPage() {
   // Submit Order (Executed in Payment Step)
   const submitOrder = async (event: FormEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting || isSubmittingRef.current) return;
 
     if (!validateShippingData()) {
       setCheckoutStep('shipping');
@@ -467,7 +468,8 @@ export default function CartPage() {
 
     setValidationError('');
     setIsSubmitting(true);
-    showLoader(isAr ? 'جاري تأكيد ومعالجة طلبك الفاخر...' : 'Processing your royal order...', 600);
+    isSubmittingRef.current = true;
+    showLoader(isAr ? 'جاري تأكيد ومعالجة طلبك الفاخر...' : 'Processing your royal order...', 500);
 
     const fallbackId = String(Math.floor(100000 + Math.random() * 900000));
     const selectedGov = GOVERNORATES.find((g) => g.id === governorate);
@@ -552,42 +554,21 @@ export default function CartPage() {
         console.warn('Supabase order upload notice:', sbErr);
       }
 
-      // 2. Dispatch to Backend Telegram Endpoints (/api/orders & /api/notify-order)
+      // 2. Dispatch SINGLE authoritative Telegram notification via /api/orders (strictly no duplicates)
       try {
-        await Promise.allSettled([
-          fetch('/api/notify-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderPayload),
+        await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...orderPayload,
+            skipDbInsert: true,
           }),
-          fetch('/api/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderPayload),
-          }),
-        ]);
+        });
       } catch (apiErr) {
         console.warn('Backend API notification dispatch notice:', apiErr);
       }
 
-      // 3. Direct browser Telegram alert failsafe with rich details & receipt info
-      await notifyTelegramNewOrder({
-        orderId: resolvedOrderId,
-        customerName: name.trim(),
-        customerPhone: phone.trim(),
-        shippingAddress: fullAddress,
-        paymentMethod: `${paymentLabel} (${paymentRef})`,
-        items: lines.map((line) => ({
-          name: line?.product?.nameAr || 'مستحضر عناية',
-          quantity: Number(line?.quantity) || 1,
-          price: Number(line?.product?.price) || 0,
-          variantName: line?.variant?.nameAr,
-        })),
-        shippingCost,
-        totalAmount: total,
-      }).catch((tgErr) => console.warn('Telegram direct alert notice:', tgErr));
-
-      // 4. Mark active carts as converted in Supabase
+      // 3. Mark active carts as converted in Supabase
       if (user?.id) {
         supabase
           .from('carts')
@@ -597,8 +578,8 @@ export default function CartPage() {
           .then(null, () => {});
       }
 
-      // 5. Save address & points if user logged in
-      if (user && address) {
+      // 4. Save address to user profile & addresses
+      if (user) {
         try {
           await addAddress(fullAddress);
           const earnedPoints = Math.round(total * 0.05);
@@ -607,6 +588,31 @@ export default function CartPage() {
           }
         } catch (_) {}
       }
+
+      // 5. Save recent order locally for instant tracking display in account
+      try {
+        const recentOrder = {
+          id: resolvedOrderId,
+          order_number: orderPayload.orderNumber || `ROMA-${resolvedOrderId}`,
+          user_id: user?.id || null,
+          customer_name: name.trim(),
+          phone: phone.trim(),
+          shipping_address: fullAddress,
+          total_amount: total,
+          status: 'pending',
+          items: lines.map((l) => ({
+            name: isAr ? l.product.nameAr : (l.product.nameEn || l.product.nameAr),
+            price: Number(l.product.price) || 0,
+            quantity: Number(l.quantity) || 1,
+            variant: isAr ? l.variant?.nameAr : (l.variant?.nameEn || l.variant?.nameAr),
+          })),
+          payment_method: paymentLabel,
+          created_at: new Date().toISOString(),
+        };
+        const prev = JSON.parse(localStorage.getItem('roma_recent_orders') || '[]');
+        localStorage.setItem('roma_recent_orders', JSON.stringify([recentOrder, ...prev.slice(0, 19)]));
+        sessionStorage.setItem('roma_latest_order_id', resolvedOrderId);
+      } catch (_) {}
 
       // 6. Build customer WhatsApp confirmation message & URL
       const waCustomerPhone = cleanPhone.startsWith('0')
@@ -654,18 +660,7 @@ export default function CartPage() {
         window.open(customerWaUrl, '_blank');
       } catch (_) {}
 
-      // 7. Complete view & clear cart & redirect to order tracking
-      setComplete({
-        id: resolvedOrderId,
-        total,
-        method: paymentLabel,
-        customerPhone: phone.trim(),
-        customerName: name.trim(),
-        fullAddress,
-        isFreeShip: isFreeShipping,
-        shippingAmt: shippingCost,
-        waUrl: customerWaUrl,
-      });
+      // 7. Clear cart immediately and clean all storage keys (Cart becomes completely empty)
       clear();
       try {
         localStorage.removeItem(DRAFT_CACHE_KEY);
@@ -673,41 +668,24 @@ export default function CartPage() {
         localStorage.removeItem('roma_auth_redirect');
       } catch (_) {}
 
-      // Redirect customer to real-time order tracking in /account
+      // 8. Direct instant redirect to Order Tracking in Account dashboard
       showLoader(
-        isAr ? 'تم تأكيد طلبكِ بنجاح! جاري الانتقال لصفحة تتبع الطلب...' : 'Order confirmed! Redirecting to tracking...',
-        1000
+        isAr ? 'تم تأكيد طلبكِ بنجاح! جاري فتح صفحة تتبع الطلب...' : 'Order confirmed! Opening order tracking...',
+        400
       );
-      setTimeout(() => {
-        setLocation('/account');
-      }, 800);
+      setLocation('/account?tab=orders', { replace: true });
     } catch (criticalErr) {
       console.error('Submit order caught error:', criticalErr);
-      const waCustomerPhone = cleanPhone.startsWith('0') ? `2${cleanPhone}` : `20${cleanPhone}`;
-      const customerWaUrl = `https://wa.me/${waCustomerPhone}?text=${encodeURIComponent(
-        `مرحباً أستاذ/ة ${name.trim()}، تم تسجيل طلبكِ رقم #ROMA-${fallbackId} بنجاح في متجر روما بمبلغ ${formatPrice(total)}.`
-      )}`;
-      setComplete({
-        id: fallbackId,
-        total,
-        method: paymentLabel,
-        customerPhone: phone.trim(),
-        customerName: name.trim(),
-        fullAddress,
-        isFreeShip: isFreeShipping,
-        shippingAmt: shippingCost,
-        waUrl: customerWaUrl,
-      });
       clear();
       try {
         localStorage.removeItem(DRAFT_CACHE_KEY);
+        localStorage.removeItem('roma_pending_checkout_step');
+        localStorage.removeItem('roma_auth_redirect');
       } catch (_) {}
-
-      setTimeout(() => {
-        setLocation('/account');
-      }, 800);
+      setLocation('/account?tab=orders', { replace: true });
     } finally {
       setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   };
 

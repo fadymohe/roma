@@ -33,6 +33,9 @@ function checkRateLimit(ip) {
   return record.count <= maxReq;
 }
 
+// Global in-memory set to prevent duplicate Telegram notifications for the same order
+const sentTelegramOrderIds = new Set();
+
 // Cache authoritative catalog to avoid repeated disk reads
 let cachedCatalog = null;
 function getCatalog() {
@@ -95,6 +98,7 @@ export default async function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
     const {
       orderId = Math.floor(100000 + Math.random() * 900000),
+      orderNumber = '',
       customerName = 'عميل المتجر',
       customerPhone = '',
       shippingAddress = '',
@@ -103,7 +107,11 @@ export default async function handler(req, res) {
       shippingCost = 0,
       userId = null,
       receiptImage = null,
+      skipDbInsert = false,
     } = body;
+
+    const dedupKey = String(orderId || orderNumber || `${customerPhone}_${items.length}`);
+    const isDuplicate = sentTelegramOrderIds.has(dedupKey);
 
     // =========================================================================
     // DEFENSE IN DEPTH: Server-Side Price & Total Calculation
@@ -184,9 +192,9 @@ export default async function handler(req, res) {
 
     const verifiedTotalAmount = Math.max(0, verifiedSubtotal + verifiedShippingCost);
 
-    // 1. Try saving to Supabase with verified total and status 'pending'
+    // 1. Try saving to Supabase with verified total and status 'pending' (if not already inserted)
     let supabaseResult = null;
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    if (!skipDbInsert && SUPABASE_URL && SUPABASE_ANON_KEY) {
       try {
         const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
           method: 'POST',
@@ -257,9 +265,16 @@ export default async function handler(req, res) {
       ],
     ];
 
-    // 3. Send Telegram notification from Cloud Server using environment secrets
+    // 3. Send Telegram notification from Cloud Server using environment secrets (Deduplicated)
     let telegramResult = null;
-    if (BOT_TOKEN && ADMIN_CHAT_ID) {
+    if (isDuplicate) {
+      console.log(`[ORDERS API] Order ${dedupKey} already sent to Telegram. Skipping duplicate message.`);
+    } else if (BOT_TOKEN && ADMIN_CHAT_ID) {
+      sentTelegramOrderIds.add(dedupKey);
+      if (sentTelegramOrderIds.size > 2000) {
+        const first = sentTelegramOrderIds.values().next().value;
+        sentTelegramOrderIds.delete(first);
+      }
       try {
         const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
           method: 'POST',

@@ -303,11 +303,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const addAddress = async (address: string) => {
     if (!address.trim() || !user) return;
     const clean = address.trim();
-    if (user.savedAddresses.includes(clean)) return;
-
-    const newAddresses = [clean, ...user.savedAddresses];
+    const existing = Array.isArray(user.savedAddresses) ? user.savedAddresses : [];
+    const newAddresses = [clean, ...existing.filter((a) => a !== clean)];
     const updated = { ...user, savedAddresses: newAddresses };
     setUser(updated);
+
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+    } catch (_) {}
 
     // Save to Supabase Auth metadata
     try {
@@ -320,9 +323,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Remove saved address
   const removeAddress = async (index: number) => {
     if (!user) return;
-    const newAddresses = user.savedAddresses.filter((_, i) => i !== index);
+    const existing = Array.isArray(user.savedAddresses) ? user.savedAddresses : [];
+    const newAddresses = existing.filter((_, i) => i !== index);
     const updated = { ...user, savedAddresses: newAddresses };
     setUser(updated);
+
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+    } catch (_) {}
 
     try {
       await supabase.auth.updateUser({
@@ -343,6 +351,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(updated);
 
     try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+    } catch (_) {}
+
+    try {
       await supabase.auth.updateUser({
         data: { savedPaymentMethods: newMethods },
       });
@@ -355,6 +367,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const newMethods = user.savedPaymentMethods.filter((m) => m.id !== id);
     const updated = { ...user, savedPaymentMethods: newMethods };
     setUser(updated);
+
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+    } catch (_) {}
 
     try {
       await supabase.auth.updateUser({
@@ -372,15 +388,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(updated);
 
     try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+    } catch (_) {}
+
+    try {
       await supabase.auth.updateUser({
         data: { points: newPoints, ordersCount: newOrdersCount },
       });
     } catch (_) {}
   };
 
-  // Fetch real order history from Supabase
+  // Fetch real order history from Supabase with instant local fallback
   const fetchUserOrders = async (): Promise<UserOrder[]> => {
     if (!user) return [];
+
+    let localRecent: UserOrder[] = [];
+    try {
+      const saved = localStorage.getItem('roma_recent_orders');
+      if (saved) {
+        localRecent = JSON.parse(saved);
+      }
+    } catch (_) {}
+
     try {
       // 1. Fetch by user_id
       const { data, error } = await supabase
@@ -389,31 +418,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return data;
+      let combined: UserOrder[] = [];
+      if (!error && Array.isArray(data)) {
+        combined = [...data];
       }
 
-      // 2. If no orders by user_id yet, fallback to searching by phone if available
-      if (user.phone && user.phone.length > 8) {
+      // 2. Fallback to searching by phone if user_id returns empty
+      if (combined.length === 0 && user.phone && user.phone.length > 8) {
         const cleanPhone = user.phone.replace(/\D+/g, '');
-        const { data: phoneOrders, error: phoneErr } = await supabase
+        const { data: phoneOrders } = await supabase
           .from('orders')
           .select('*')
           .ilike('phone', `%${cleanPhone}%`)
           .order('created_at', { ascending: false });
 
-        if (!phoneErr && Array.isArray(phoneOrders) && phoneOrders.length > 0) {
-          return phoneOrders;
+        if (Array.isArray(phoneOrders) && phoneOrders.length > 0) {
+          combined = [...phoneOrders];
         }
       }
 
-      if (!error && Array.isArray(data)) {
-        return data;
+      // Merge any recent orders from local storage
+      const existingIds = new Set(
+        combined.map((o: any) => String(o.order_number || o.id))
+      );
+      for (const rec of localRecent) {
+        const recKey = String(rec.order_number || rec.id);
+        if (!existingIds.has(recKey)) {
+          combined.unshift(rec);
+          existingIds.add(recKey);
+        }
       }
+
+      return combined;
     } catch (e) {
       console.warn('Could not fetch user orders:', e);
+      return localRecent;
     }
-    return [];
   };
 
   // Wishlist toggle

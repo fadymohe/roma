@@ -27,12 +27,20 @@ import { GOVERNORATES } from '@/lib/shipping';
 
 export default function AccountPage() {
   const [, setLocation] = useLocation();
-  const { user, isAuthenticated, setAuthModalOpen, logout, fetchUserOrders } = useAuth();
+  const { user, isAuthenticated, setAuthModalOpen, logout, fetchUserOrders, removeAddress } = useAuth();
   const { t, isAr, formatPrice, dir } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'rewards'>('orders');
   const [orders, setOrders] = useState<UserOrder[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+
+  const [recentOrderId, setRecentOrderId] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem('roma_latest_order_id');
+    } catch {
+      return null;
+    }
+  });
 
   // Profile Form State
   const [fullName, setFullName] = useState(user?.name || '');
@@ -46,6 +54,17 @@ export default function AccountPage() {
   const [lookupPhone, setLookupPhone] = useState('');
   const [lookupOrders, setLookupOrders] = useState<any[]>([]);
   const [isLookingUp, setIsLookingUp] = useState(false);
+
+  // Sync tab with URL query parameters (?tab=orders / ?tab=profile)
+  useEffect(() => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const tabParam = searchParams.get('tab');
+      if (tabParam === 'orders' || tabParam === 'profile' || tabParam === 'rewards') {
+        setActiveTab(tabParam as any);
+      }
+    } catch (_) {}
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -318,6 +337,36 @@ export default function AccountPage() {
         {/* TAB 1: MY ORDERS & REALTIME TRACKING STEP INDICATOR */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
+            {recentOrderId && (
+              <div className="rounded-2xl bg-gradient-to-r from-[#D4A5A5]/25 via-[#D4A5A5]/10 to-transparent border border-[#D4A5A5]/40 p-4.5 flex items-center justify-between gap-3 text-xs text-white shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="size-9 rounded-xl bg-[#D4A5A5]/20 flex items-center justify-center shrink-0">
+                    <Sparkles className="size-5 text-[#D4A5A5] animate-pulse" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-[#D4A5A5]">
+                      {isAr ? '🎉 تم تأكيد واستلام طلبكِ بنجاح!' : '🎉 Your order has been placed successfully!'}
+                    </p>
+                    <p className="text-[11px] text-[#A1A1AA] mt-0.5">
+                      {isAr
+                        ? `طلبكِ برقم (#ROMA-${recentOrderId}) تم تسجيله ويتم تجهيزه الآن بعناية. يمكنكِ متابعة مراحل الشحن مباشرة:`
+                        : `Order (#ROMA-${recentOrderId}) is being prepared. Track your delivery stages below:`}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    sessionStorage.removeItem('roma_latest_order_id');
+                    setRecentOrderId(null);
+                  }}
+                  className="text-[#A1A1AA] hover:text-white text-xs px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 shrink-0 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             {!user && (
               <div className="rounded-2xl border border-white/10 bg-[#141414] p-5 space-y-3">
                 <div className="flex items-center gap-2 text-sm font-bold text-white">
@@ -661,6 +710,56 @@ export default function AccountPage() {
                 </button>
               </div>
             </form>
+
+            {/* List of All Saved Addresses */}
+            {Array.isArray(user?.savedAddresses) && user.savedAddresses.length > 0 && (
+              <div className="pt-6 border-t border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <MapPin className="size-4 text-[#D4A5A5]" />
+                    <span>{isAr ? 'دفتر العناوين المحفوظة في حسابكِ:' : 'Saved Delivery Addresses:'}</span>
+                  </h3>
+                  <span className="text-[11px] text-[#A1A1AA]">
+                    {user.savedAddresses.length} {isAr ? 'عنوان مسجل' : 'addresses'}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {user.savedAddresses.map((addr, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1A1A1A] border border-white/5 text-xs text-white group hover:border-[#D4A5A5]/30 transition"
+                    >
+                      <div className="flex items-center gap-2.5 overflow-hidden">
+                        <MapPin className="size-4 text-[#D4A5A5] shrink-0" />
+                        <span className="truncate">{addr}</span>
+                        {idx === 0 && (
+                          <span className="shrink-0 text-[10px] bg-[#D4A5A5]/15 text-[#D4A5A5] border border-[#D4A5A5]/30 px-2 py-0.5 rounded-full font-semibold">
+                            {isAr ? 'العنوان الأخير المعتمد' : 'Latest Default'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setAddressLine(addr)}
+                          className="text-[11px] text-[#A1A1AA] hover:text-[#D4A5A5] px-2 py-1 rounded-lg bg-white/5 border border-white/10 transition cursor-pointer"
+                        >
+                          {isAr ? 'تعيين كافتراضي' : 'Use Default'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeAddress(idx)}
+                          className="text-red-400 hover:text-red-300 p-1.5 text-xs rounded-lg hover:bg-red-950/30 transition cursor-pointer"
+                          title={isAr ? 'حذف العنوان' : 'Remove address'}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
