@@ -19,7 +19,6 @@ import {
   Copy,
   Receipt,
   CreditCard,
-  Banknote,
   Smartphone,
   QrCode,
 } from 'lucide-react';
@@ -48,8 +47,8 @@ export default function CartPage() {
   const [address, setAddress] = useState(user?.savedAddresses?.[0] || '');
   const [notes, setNotes] = useState('');
 
-  // 4 Egyptian payment methods
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'vodafone_cash' | 'instapay' | 'fawry'>('cod');
+  // Egyptian digital payment methods
+  const [paymentMethod, setPaymentMethod] = useState<'vodafone_cash' | 'instapay' | 'fawry'>('instapay');
   
   // Specific inputs for local payments
   const [vodafoneSenderNumber, setVodafoneSenderNumber] = useState('');
@@ -174,9 +173,7 @@ export default function CartPage() {
     const fullAddress = `${address.trim()} — ${govName} (مصر)`;
 
     const paymentLabel =
-      paymentMethod === 'cod'
-        ? (isAr ? 'الدفع عند الاستلام (COD)' : 'Cash on Delivery')
-        : paymentMethod === 'vodafone_cash'
+      paymentMethod === 'vodafone_cash'
         ? (isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash')
         : paymentMethod === 'instapay'
         ? (isAr ? 'إنستاباي (InstaPay)' : 'InstaPay')
@@ -187,9 +184,7 @@ export default function CartPage() {
         ? `رقم المحول: ${vodafoneSenderNumber}`
         : paymentMethod === 'instapay'
         ? `مرجع إنستاباي: ${instapayReference}`
-        : paymentMethod === 'fawry'
-        ? `كود فوري: ${fawryCode}`
-        : 'الدفع نقداً للمندوب';
+        : `كود فوري: ${fawryCode}`;
 
     const orderPayload = {
       orderId: fallbackId,
@@ -198,7 +193,7 @@ export default function CartPage() {
       customerPhone: phone.trim(),
       shippingAddress: fullAddress,
       paymentMethod: paymentLabel,
-      paymentStatus: paymentMethod === 'cod' ? 'unpaid' : 'verified',
+      paymentStatus: 'verified',
       paymentReference: paymentRef,
       receiptImage: receiptImage || null,
       items: lines.map((line) => ({
@@ -775,18 +770,18 @@ export default function CartPage() {
 
             {/* ========================================================================= */}
             {/* 4. CHECKOUT & EGYPTIAN LOCAL PAYMENT WORKFLOWS                            */}
-            {/* [COD, Vodafone Cash, InstaPay, Fawry]                                     */}
+            {/* [InstaPay, Vodafone Cash, Fawry]                                          */}
             {/* ========================================================================= */}
             <div className="pt-4 border-t border-white/10 space-y-4">
               <label className="text-xs font-bold text-white block">
                 {isAr ? 'اختاري طريقة الدفع:' : 'Select Payment Method:'}
               </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* 1. Cash on Delivery (COD) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* 1. InstaPay */}
                 <label
                   className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
-                    paymentMethod === 'cod'
+                    paymentMethod === 'instapay'
                       ? 'border-[#D4A5A5] bg-[#D4A5A5]/10 shadow-sm'
                       : 'border-white/10 bg-[#1A1A1A] hover:border-white/20'
                   }`}
@@ -794,20 +789,20 @@ export default function CartPage() {
                   <input
                     type="radio"
                     name="payment_method"
-                    value="cod"
-                    checked={paymentMethod === 'cod'}
-                    onChange={() => setPaymentMethod('cod')}
+                    value="instapay"
+                    checked={paymentMethod === 'instapay'}
+                    onChange={() => setPaymentMethod('instapay')}
                     className="mt-1 accent-[#D4A5A5]"
                   />
                   <div>
                     <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                      <Banknote className="size-4 text-[#D4A5A5]" />
-                      <span>{isAr ? 'الدفع عند الاستلام (COD)' : 'Cash on Delivery'}</span>
+                      <CreditCard className="size-4 text-[#D4A5A5]" />
+                      <span>{isAr ? 'إنستاباي (InstaPay IPN)' : 'InstaPay Transfer'}</span>
                     </div>
                     <p className="text-[11px] text-[#A1A1AA] mt-1 leading-relaxed">
                       {isAr
-                        ? 'الدفع نقداً أو إنستاباي للمندوب عند استلام ومعاينة الطلب.'
-                        : 'Pay cash or InstaPay to courier upon package delivery.'}
+                        ? 'تحويل لحظي من أي بنك مصري عبر عنوان الدفع اللحظي.'
+                        : 'Instant bank transfer via InstaPay IPN address.'}
                     </p>
                   </div>
                 </label>
@@ -841,36 +836,7 @@ export default function CartPage() {
                   </div>
                 </label>
 
-                {/* 3. InstaPay */}
-                <label
-                  className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
-                    paymentMethod === 'instapay'
-                      ? 'border-[#D4A5A5] bg-[#D4A5A5]/10 shadow-sm'
-                      : 'border-white/10 bg-[#1A1A1A] hover:border-white/20'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment_method"
-                    value="instapay"
-                    checked={paymentMethod === 'instapay'}
-                    onChange={() => setPaymentMethod('instapay')}
-                    className="mt-1 accent-[#D4A5A5]"
-                  />
-                  <div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                      <CreditCard className="size-4 text-[#D4A5A5]" />
-                      <span>{isAr ? 'إنستاباي (InstaPay IPN)' : 'InstaPay Transfer'}</span>
-                    </div>
-                    <p className="text-[11px] text-[#A1A1AA] mt-1 leading-relaxed">
-                      {isAr
-                        ? 'تحويل لحظي من أي بنك مصري عبر عنوان الدفع اللحظي.'
-                        : 'Instant bank transfer via InstaPay IPN address.'}
-                    </p>
-                  </div>
-                </label>
-
-                {/* 4. Fawry */}
+                {/* 3. Fawry */}
                 <label
                   className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
                     paymentMethod === 'fawry'

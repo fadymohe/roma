@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export interface PaymentMethodItem {
   id: string;
-  type: 'cod' | 'vodafone' | 'card' | 'fawry';
+  type: 'instapay' | 'vodafone' | 'card' | 'fawry';
   title: string;
   details?: string;
   isDefault?: boolean;
@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ordersCount: Number(meta.ordersCount ?? 0),
       savedAddresses: Array.isArray(meta.savedAddresses) ? meta.savedAddresses : [],
       savedPaymentMethods: Array.isArray(meta.savedPaymentMethods) ? meta.savedPaymentMethods : [
-        { id: 'pm_cod', type: 'cod', title: 'الدفع عند الاستلام', isDefault: true },
+        { id: 'pm_insta', type: 'instapay', title: 'إنستاباي (InstaPay)', isDefault: true },
         { id: 'pm_voda', type: 'vodafone', title: 'فودافون كاش والمحافظ الإلكترونية' },
       ],
     };
@@ -199,7 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             ordersCount: 0,
             savedAddresses: [],
             savedPaymentMethods: [
-              { id: 'pm_cod', type: 'cod', title: 'الدفع عند الاستلام', isDefault: true },
+              { id: 'pm_insta', type: 'instapay', title: 'إنستاباي (InstaPay)', isDefault: true },
             ],
           },
         },
@@ -220,7 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             ordersCount: 0,
             savedAddresses: [],
             savedPaymentMethods: [
-              { id: 'pm_cod', type: 'cod', title: 'الدفع عند الاستلام', isDefault: true },
+              { id: 'pm_insta', type: 'instapay', title: 'إنستاباي (InstaPay)', isDefault: true },
             ],
           };
           setUser(fallbackUser);

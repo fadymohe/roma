@@ -347,7 +347,7 @@ async function sendNewOrderNotification(order) {
   const customerPhone = order.phone || shipping.phone || 'غير مسجل';
   const city = shipping.city || 'القاهرة';
   const address = order.shipping_address || shipping.fullAddress || 'غير محدد';
-  const paymentMethod = order.payment_method || 'الدفع عند الاستلام (COD)';
+  const paymentMethod = order.payment_method || 'إنستاباي / محفظة إلكترونية';
   const paymentRef = order.payment_reference || '';
   const total = Number(order.total_amount) || 0;
   const orderId = order.id || order.order_number;

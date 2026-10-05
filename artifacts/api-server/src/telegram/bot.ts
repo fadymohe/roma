@@ -125,7 +125,7 @@ export async function notifyMerchantNewOrder(order: TelegramOrderPayload) {
       `👤 <b>العميل:</b> ${escapeHtml(order.customerName || "عميل زائر")}\n` +
       `📞 <b>رقم الهاتف:</b> <code>${escapeHtml(order.customerPhone || "غير متوفر")}</code>\n` +
       `📍 <b>عنوان التوصيل:</b> ${escapeHtml(order.shippingAddress || "غير محدد")}\n` +
-      `💳 <b>طريقة الدفع:</b> ${escapeHtml(order.paymentMethod || "الدفع عند الاستلام")}\n` +
+      `💳 <b>طريقة الدفع:</b> ${escapeHtml(order.paymentMethod || "إنستاباي / محفظة إلكترونية")}\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `📦 <b>المنتجات المطلوبة:</b>\n${itemsHtml}\n\n` +
       (order.shippingCost ? `🚚 <b>تكلفة الشحن:</b> ${order.shippingCost} ج.م\n` : "") +

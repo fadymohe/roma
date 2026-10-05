@@ -496,7 +496,7 @@ export default function AccountPage() {
                             📍 {isAr ? 'العنوان:' : 'Address:'} {order.shipping_address || order.address}
                           </span>
                           <span>
-                            💳 {isAr ? 'طريقة الدفع:' : 'Payment:'} {order.payment_method || (isAr ? 'الدفع عند الاستلام' : 'COD')}
+                            💳 {isAr ? 'طريقة الدفع:' : 'Payment:'} {order.payment_method || (isAr ? 'إنستاباي / محفظة' : 'InstaPay / Wallet')}
                           </span>
                         </div>
                       </div>
@@ -657,7 +657,7 @@ export default function AccountPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white">{isAr ? 'طرق الدفع المحلية المعتمدة' : 'Accepted Egyptian Methods'}</h3>
-                  <span className="text-xs text-[#A1A1AA]">{isAr ? 'محافظ إلكترونية وإنستاباي والدفع عند الاستلام' : 'Wallets, InstaPay, COD'}</span>
+                  <span className="text-xs text-[#A1A1AA]">{isAr ? 'محافظ إلكترونية وإنستاباي وفوري' : 'Wallets, InstaPay, Fawry'}</span>
                 </div>
               </div>
 
@@ -671,8 +671,8 @@ export default function AccountPage() {
                   <span className="font-mono text-[#D4A5A5]">roma.beauty@instapay</span>
                 </div>
                 <div className="rounded-xl bg-[#1A1A1A] p-3 border border-white/5 flex items-center justify-between">
-                  <span className="text-white font-medium">الدفع عند الاستلام (COD)</span>
-                  <span className="text-emerald-400 font-bold">{isAr ? 'متاح لجميع المحافظات' : 'Available nationwide'}</span>
+                  <span className="text-white font-medium">سداد فوري (Fawry Pay)</span>
+                  <span className="text-[#D4A5A5] font-bold">{isAr ? 'متاح عبر منافذ فوري' : 'Available at Fawry POS'}</span>
                 </div>
               </div>
             </div>

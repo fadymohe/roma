@@ -72,7 +72,7 @@ const handleTestOrder = async (req: Request, res: Response) => {
     customerName: req.body?.customerName || "نورا الشريف (طلب تجريبي)",
     customerPhone: req.body?.customerPhone || "01098765432",
     shippingAddress: req.body?.shippingAddress || "القاهرة، المعادي، شارع 9",
-    paymentMethod: req.body?.paymentMethod || "الدفع عند الاستلام (COD)",
+    paymentMethod: req.body?.paymentMethod || "إنستاباي (InstaPay)",
     items: req.body?.items || [
       { name: "سيروم الهيالورونيك المركز (30ml)", quantity: 1, price: 89 },
       { name: "كريم تجديد خلايا الوجه (50ml)", quantity: 1, price: 148 },

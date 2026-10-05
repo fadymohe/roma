@@ -558,7 +558,7 @@ export default function ProductPage() {
             <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
               <Truck className="size-4 text-[#D4A5A5] mb-1" />
               <span className="text-[10px] font-bold text-white">{isAr ? 'شحن ٢٤-٤٨ ساعة' : '24-48h Delivery'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'دفع عند الاستلام' : 'Cash on Delivery'}</span>
+              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'دفع إلكتروني آمن' : 'Secure Payment'}</span>
             </div>
           </div>
         </div>
@@ -701,7 +701,7 @@ export default function ProductPage() {
             <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#141414] border border-white/5 shadow-2xs">
               <Truck className="size-3.5 text-[#D4A5A5] mb-0.5" />
               <span className="text-[10px] font-bold text-white leading-tight">{isAr ? 'شحن ٢٤-٤٨ ساعة' : '24-48h Delivery'}</span>
-              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'دفع عند الاستلام' : 'Cash on Delivery'}</span>
+              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'دفع إلكتروني آمن' : 'Secure Payment'}</span>
             </div>
           </div>
         </div>

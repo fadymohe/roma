@@ -241,7 +241,7 @@ router.get("/test-telegram", async (_req: Request, res: Response): Promise<void>
       customerName: "عميل تجريبي — اختبار الربط الفوري",
       customerPhone: "01099887766",
       shippingAddress: "القاهرة، المعادي، شارع النصر",
-      paymentMethod: "الدفع عند الاستلام (COD)",
+      paymentMethod: "إنستاباي (InstaPay)",
       items: [
         { name: "سيروم النضارة الطبيعي الفاخر (50ml)", quantity: 2, price: 175, variantName: "50ml" },
         { name: "كريم استعادة نضارة وترطيب الوجه", quantity: 1, price: 145 },
@@ -277,7 +277,7 @@ router.post("/notify-order", async (req: Request, res: Response): Promise<void> 
       customerName: body.customerName || body.name || "عميل زائر",
       customerPhone: body.customerPhone || body.phone || "غير متوفر",
       shippingAddress: body.shippingAddress || "غير محدد",
-      paymentMethod: body.paymentMethod || "الدفع عند الاستلام",
+      paymentMethod: body.paymentMethod || "إنستاباي (InstaPay)",
       items: Array.isArray(body.items) ? body.items : [],
       shippingCost: Number(body.shippingCost) || 0,
       totalAmount: Number(body.totalAmount) || 0,
@@ -298,7 +298,7 @@ router.post("/orders", async (req: Request, res: Response): Promise<void> => {
     const customerName = body.customerName || body.name || "عميل زائر";
     const customerPhone = body.customerPhone || body.phone || "غير متوفر";
     const shippingAddress = body.shippingAddress || "غير محدد";
-    const paymentMethod = body.paymentMethod || "الدفع عند الاستلام";
+    const paymentMethod = body.paymentMethod || "إنستاباي (InstaPay)";
     const shippingCost = Number(body.shippingCost) || 0;
 
     let itemsDetailed: any[] = [];

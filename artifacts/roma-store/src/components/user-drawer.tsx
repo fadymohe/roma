@@ -43,7 +43,7 @@ export function UserDrawer() {
 
   // New payment method state
   const [isAddingPayment, setIsAddingPayment] = useState(false);
-  const [selectedPayType, setSelectedPayType] = useState<'vodafone' | 'card' | 'fawry' | 'cod'>('vodafone');
+  const [selectedPayType, setSelectedPayType] = useState<'instapay' | 'vodafone' | 'card' | 'fawry'>('instapay');
   const [payTitle, setPayTitle] = useState('');
 
   useEffect(() => {
@@ -69,10 +69,10 @@ export function UserDrawer() {
   const handleSavePaymentMethod = async (e: React.FormEvent) => {
     e.preventDefault();
     const titles = {
+      instapay: payTitle.trim() || 'إنستاباي (InstaPay IPN)',
       vodafone: payTitle.trim() || 'فودافون كاش / محفظة إلكترونية',
       card: payTitle.trim() || 'بطاقة بنكية (Visa / Mastercard)',
       fawry: payTitle.trim() || 'فوري (Fawry Pay)',
-      cod: 'الدفع نقداً عند الاستلام',
     };
 
     await addPaymentMethod({
@@ -237,21 +237,21 @@ export function UserDrawer() {
                 <div className="grid grid-cols-2 gap-1.5 text-xs">
                   <button
                     type="button"
+                    onClick={() => setSelectedPayType('instapay')}
+                    className={`rounded-full py-1.5 px-2 border text-center transition ${
+                      selectedPayType === 'instapay' ? 'bg-[#4E7A5A] text-white border-[#4E7A5A]' : 'bg-white border-border'
+                    }`}
+                  >
+                    إنستاباي
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setSelectedPayType('vodafone')}
                     className={`rounded-full py-1.5 px-2 border text-center transition ${
                       selectedPayType === 'vodafone' ? 'bg-[#4E7A5A] text-white border-[#4E7A5A]' : 'bg-white border-border'
                     }`}
                   >
                     فودافون كاش
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPayType('card')}
-                    className={`rounded-full py-1.5 px-2 border text-center transition ${
-                      selectedPayType === 'card' ? 'bg-[#4E7A5A] text-white border-[#4E7A5A]' : 'bg-white border-border'
-                    }`}
-                  >
-                    بطاقة بنكية
                   </button>
                   <button
                     type="button"
@@ -264,24 +264,22 @@ export function UserDrawer() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setSelectedPayType('cod')}
+                    onClick={() => setSelectedPayType('card')}
                     className={`rounded-full py-1.5 px-2 border text-center transition ${
-                      selectedPayType === 'cod' ? 'bg-[#4E7A5A] text-white border-[#4E7A5A]' : 'bg-white border-border'
+                      selectedPayType === 'card' ? 'bg-[#4E7A5A] text-white border-[#4E7A5A]' : 'bg-white border-border'
                     }`}
                   >
-                    عند الاستلام
+                    بطاقة بنكية
                   </button>
                 </div>
 
-                {selectedPayType !== 'cod' && (
-                  <input
-                    type="text"
-                    value={payTitle}
-                    onChange={(e) => setPayTitle(e.target.value)}
-                    placeholder="ملاحظات (مثال: محفظتي 010XXXXX أو فيزا البنك الأهلي)"
-                    className="w-full rounded-full border border-border bg-white px-3.5 py-2 text-xs outline-none focus:border-[#76A080]"
-                  />
-                )}
+                <input
+                  type="text"
+                  value={payTitle}
+                  onChange={(e) => setPayTitle(e.target.value)}
+                  placeholder="ملاحظات (مثال: محفظتي 010XXXXX أو عنوان إنستاباي)"
+                  className="w-full rounded-full border border-border bg-white px-3.5 py-2 text-xs outline-none focus:border-[#76A080]"
+                />
 
                 <div className="flex justify-end gap-2 pt-1">
                   <button
