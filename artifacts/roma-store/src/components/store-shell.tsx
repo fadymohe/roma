@@ -592,20 +592,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
         </div>
 
         {/* Bottom copyright bar */}
-        <div className="border-t border-white/10 py-4 pb-20 md:pb-4">
-          <div className="roma-container flex flex-col items-center justify-between gap-3 text-xs text-zinc-400 md:flex-row">
+        <div className="border-t border-white/10 py-5 pb-20 md:pb-5">
+          <div className="roma-container flex items-center justify-center text-center text-xs text-zinc-400 font-medium">
             <span>© 2026 ROMA Luxury Cosmetics & Accessories · {isAr ? 'جميع الحقوق محفوظة' : 'All Rights Reserved'}</span>
-            <div className="flex items-center gap-4">
-              <span className="inline-flex items-center gap-1 text-[#D4A5A5] font-semibold">
-                <ShieldCheck className="size-3.5 text-[#D4A5A5]" />
-                {isAr ? 'دفع آمن وتشفير SSL' : '256-Bit SSL Encrypted'}
-              </span>
-              <span>·</span>
-              <span className="inline-flex items-center gap-1 text-[#D4A5A5] font-semibold">
-                <CheckCircle2 className="size-3.5 text-[#D4A5A5]" />
-                {isAr ? 'منتجات أصلية 100%' : '100% Authentic Luxury'}
-              </span>
-            </div>
           </div>
         </div>
       </footer>

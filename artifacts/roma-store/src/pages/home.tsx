@@ -529,7 +529,8 @@ export default function Home() {
 
       {/* Bestsellers Section - الأكثر طلباً (Amazon Products) */}
       <section className="roma-container">
-        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        {/* Header Row: Title & Subtitle on Right, Controls on Left */}
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
               {t('section.bestsellers_title')}
@@ -539,30 +540,10 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Category Filter Pills and Controls */}
-          <div className="flex flex-wrap items-center gap-3">
-            {featuredProducts.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 py-1">
-                {categoryPills.map((pill) => (
-                  <button
-                    key={pill.id}
-                    type="button"
-                    onClick={() => setActiveCategory(pill.id)}
-                    className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 ${
-                      activeCategory === pill.id
-                        ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md ring-2 ring-[#D4A5A5]/40'
-                        : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white'
-                    }`}
-                  >
-                    {pill.label}
-                  </button>
-                ))}
-              </div>
-            )}
-
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
             {/* Quick Header Arrow Controls */}
             {displayedProducts.length > 0 && (
-              <div className="hidden md:flex items-center gap-1.5 shrink-0 bg-[#141414] border border-white/10 p-1 rounded-xl">
+              <div className="hidden sm:flex items-center gap-1.5 shrink-0 bg-[#141414] border border-white/10 p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => handleScroll(bestsellersSliderRef, 'right')}
@@ -583,8 +564,36 @@ export default function Home() {
                 </button>
               </div>
             )}
+
+            <Link
+              href="/shop"
+              className="group inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A5A5] hover:text-[#0A0A0A] px-3.5 py-1.5 rounded-full bg-[#D4A5A5]/10 hover:bg-[#D4A5A5] border border-[#D4A5A5]/30 transition-all duration-300"
+            >
+              <span>{isAr ? 'تصفح كل المنتجات' : 'View All'}</span>
+              <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1 rtl:rotate-0 ltr:rotate-180" />
+            </Link>
           </div>
         </div>
+
+        {/* Dedicated Category Filter Pills Bar */}
+        {featuredProducts.length > 0 && (
+          <div className="mb-6 flex items-center gap-2 overflow-x-auto no-scrollbar py-1.5 -mx-4 px-4 md:mx-0 md:px-0">
+            {categoryPills.map((pill) => (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={() => setActiveCategory(pill.id)}
+                className={`rounded-xl px-4 py-2 text-xs font-bold whitespace-nowrap transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 ${
+                  activeCategory === pill.id
+                    ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md ring-2 ring-[#D4A5A5]/40 font-extrabold'
+                    : 'bg-[#141414] hover:bg-[#1A1A1A] border border-white/10 text-zinc-300 hover:text-white'
+                }`}
+              >
+                {pill.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Product Cards Smooth Slider with Floating Side Arrows */}
         {displayedProducts.length > 0 ? (
@@ -677,19 +686,19 @@ export default function Home() {
           <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-xs md:text-sm font-semibold text-rose-400 flex items-center gap-1.5">
-                  <Flame className="size-3.5 text-rose-400 animate-pulse" />
+                <span className="text-xs md:text-sm font-semibold text-amber-400 flex items-center gap-1.5">
+                  <Flame className="size-3.5 text-amber-400 animate-pulse" />
                   <span>{isAr ? 'عروض التوفير الخارقة' : 'Super Saver Deals'}</span>
                 </span>
 
                 {/* Live Countdown Badge */}
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 text-[11px] font-mono font-bold shadow-xs">
-                  <Timer className="size-3 text-rose-400 animate-pulse" />
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-mono font-bold shadow-xs">
+                  <Timer className="size-3 text-amber-400 animate-pulse" />
                   <span>{isAr ? 'ينتهي العرض خلال:' : 'Ends in:'}</span>
-                  <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.days}d</span>:
-                  <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.hours}h</span>:
-                  <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.minutes}m</span>:
-                  <span className="text-white bg-black/60 px-1 py-0.2 rounded border border-rose-500/20">{timeLeft.seconds}s</span>
+                  <span className="text-amber-200 bg-black/70 px-1 py-0.2 rounded border border-amber-500/30">{timeLeft.days}d</span>:
+                  <span className="text-amber-200 bg-black/70 px-1 py-0.2 rounded border border-amber-500/30">{timeLeft.hours}h</span>:
+                  <span className="text-amber-200 bg-black/70 px-1 py-0.2 rounded border border-amber-500/30">{timeLeft.minutes}m</span>:
+                  <span className="text-amber-200 bg-black/70 px-1 py-0.2 rounded border border-amber-500/30">{timeLeft.seconds}s</span>
                 </div>
               </div>
 
@@ -703,11 +712,11 @@ export default function Home() {
 
             <div className="flex items-center gap-2.5 self-start md:self-auto">
               {/* Quick Header Arrow Controls */}
-              <div className="hidden sm:flex items-center gap-1.5 shrink-0 bg-[#141414] border border-rose-500/20 p-1 rounded-xl">
+              <div className="hidden sm:flex items-center gap-1.5 shrink-0 bg-[#141414] border border-amber-500/25 p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => handleScroll(under10SliderRef, 'right')}
-                  className="size-8 rounded-lg flex items-center justify-center hover:bg-rose-500/20 text-rose-300 hover:text-white transition active:scale-90"
+                  className="size-8 rounded-lg flex items-center justify-center hover:bg-amber-500/20 text-amber-300 hover:text-white transition active:scale-90"
                   aria-label={isAr ? 'تحريك لليمين' : 'Scroll Right'}
                   title={isAr ? 'تحريك لليمين' : 'Scroll Right'}
                 >
@@ -716,7 +725,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => handleScroll(under10SliderRef, 'left')}
-                  className="size-8 rounded-lg flex items-center justify-center hover:bg-rose-500/20 text-rose-300 hover:text-white transition active:scale-90"
+                  className="size-8 rounded-lg flex items-center justify-center hover:bg-amber-500/20 text-amber-300 hover:text-white transition active:scale-90"
                   aria-label={isAr ? 'تحريك لليسار' : 'Scroll Left'}
                   title={isAr ? 'تحريك لليسار' : 'Scroll Left'}
                 >
@@ -726,7 +735,7 @@ export default function Home() {
 
               <Link
                 href="/shop?maxPrice=10"
-                className="group inline-flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-white px-3.5 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 transition-all duration-300"
+                className="group inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-[#0A0A0A] px-3.5 py-1.5 rounded-full bg-amber-500/10 hover:bg-gradient-to-r hover:from-amber-400 hover:to-amber-500 border border-amber-500/30 transition-all duration-300 shadow-xs hover:shadow-amber-500/20"
               >
                 <span>{isAr ? 'عرض جميع العروض' : 'View All Deals'}</span>
                 <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1 rtl:rotate-0 ltr:rotate-180" />
@@ -740,7 +749,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => handleScroll(under10SliderRef, 'left')}
-              className="absolute left-1 sm:left-2 md:-left-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-rose-500 text-white hover:text-white border border-rose-500/30 hover:border-rose-400 shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(244,63,94,0.5)] backdrop-blur-md transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-90 select-none"
+              className="absolute left-1 sm:left-2 md:-left-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-gradient-to-r hover:from-amber-400 hover:to-amber-500 text-amber-200 hover:text-[#0A0A0A] border border-amber-500/30 hover:border-amber-400 shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(245,158,11,0.5)] backdrop-blur-md transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-90 select-none"
               aria-label={isAr ? 'تحريك لليسار' : 'Scroll Left'}
               title={isAr ? 'تحريك لليسار' : 'Scroll Left'}
             >
@@ -751,7 +760,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => handleScroll(under10SliderRef, 'right')}
-              className="absolute right-1 sm:right-2 md:-right-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-rose-500 text-white hover:text-white border border-rose-500/30 hover:border-rose-400 shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(244,63,94,0.5)] backdrop-blur-md transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-90 select-none"
+              className="absolute right-1 sm:right-2 md:-right-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-gradient-to-r hover:from-amber-400 hover:to-amber-500 text-amber-200 hover:text-[#0A0A0A] border border-amber-500/30 hover:border-amber-400 shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(245,158,11,0.5)] backdrop-blur-md transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-90 select-none"
               aria-label={isAr ? 'تحريك لليمين' : 'Scroll Right'}
               title={isAr ? 'تحريك لليمين' : 'Scroll Right'}
             >
@@ -772,12 +781,12 @@ export default function Home() {
               <div className="w-[200px] sm:w-[240px] shrink-0 snap-start flex">
                 <Link
                   href="/shop"
-                  className="flex flex-col items-center justify-center text-center p-6 w-full h-full rounded-3xl border border-dashed border-rose-500/20 hover:border-rose-400 bg-[#141414]/50 hover:bg-[#141414] transition group"
+                  className="flex flex-col items-center justify-center text-center p-6 w-full h-full rounded-3xl border border-dashed border-amber-500/25 hover:border-amber-400 bg-[#141414]/50 hover:bg-[#141414] transition group"
                 >
-                  <div className="size-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                  <div className="size-12 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mb-3 group-hover:scale-110 transition">
                     <Flame className="size-5" />
                   </div>
-                  <span className="text-xs font-bold text-white group-hover:text-rose-400 transition">
+                  <span className="text-xs font-bold text-white group-hover:text-amber-400 transition">
                     {isAr ? 'تصفح كل عروض المتجر' : 'Browse All Deals'}
                   </span>
                   <span className="text-[10px] text-zinc-400 mt-1">
@@ -847,10 +856,14 @@ export default function Home() {
                         </span>
                       </div>
 
-                      {/* Review Quote with Refined Arabic Typography */}
-                      <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-normal italic relative z-10">
-                        "{isAr ? TESTIMONIALS[currentTestimonialIdx].quoteAr : TESTIMONIALS[currentTestimonialIdx].quoteEn}"
-                      </p>
+                      {/* Review Quote with Clear Arabic Typography */}
+                      <div className="relative z-10 rounded-xl bg-white/[0.03] p-3.5 sm:p-4 border border-white/[0.08] shadow-inner">
+                        <p className="text-[13px] sm:text-[14px] text-[#FFF7EC] leading-[1.8] sm:leading-[1.9] font-medium tracking-normal text-right">
+                          <span className="text-[#D4A5A5] font-serif text-base font-bold inline-block me-1">“</span>
+                          {isAr ? TESTIMONIALS[currentTestimonialIdx].quoteAr : TESTIMONIALS[currentTestimonialIdx].quoteEn}
+                          <span className="text-[#D4A5A5] font-serif text-base font-bold inline-block ms-1">”</span>
+                        </p>
+                      </div>
                     </div>
 
                     {/* Author Signature & City */}
@@ -941,10 +954,14 @@ export default function Home() {
                     </span>
                   </div>
 
-                  {/* Review Quote with Refined Arabic Typography */}
-                  <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-normal italic relative z-10">
-                    "{isAr ? tItem.quoteAr : tItem.quoteEn}"
-                  </p>
+                  {/* Review Quote with Clear Arabic Typography */}
+                  <div className="relative z-10 rounded-2xl bg-white/[0.03] p-4 sm:p-5 border border-white/[0.08] shadow-inner group-hover:border-[#D4A5A5]/30 transition-all duration-300">
+                    <p className="text-[14px] md:text-[15px] text-[#FFF7EC] leading-[1.85] font-medium tracking-normal text-right">
+                      <span className="text-[#D4A5A5] font-serif text-lg font-bold inline-block me-1">“</span>
+                      {isAr ? tItem.quoteAr : tItem.quoteEn}
+                      <span className="text-[#D4A5A5] font-serif text-lg font-bold inline-block ms-1">”</span>
+                    </p>
+                  </div>
                 </div>
 
                 {/* Author Signature & City */}
