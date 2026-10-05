@@ -531,10 +531,6 @@ export default function Home() {
       <section className="roma-container">
         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <span className="text-xs md:text-sm font-semibold text-[#D4A5A5] flex items-center gap-1.5">
-              <Sparkles className="size-3.5 text-[#D4A5A5] animate-pulse" />
-              <span>{isAr ? 'المختارات الأكثر طلباً' : 'Most Wanted Picks'}</span>
-            </span>
             <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
               {t('section.bestsellers_title')}
             </h2>

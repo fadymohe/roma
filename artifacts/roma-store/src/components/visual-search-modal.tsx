@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Camera, Sparkles, UploadCloud, X, CheckCircle2, ArrowLeft, RefreshCw, ShoppingBag, Zap, AlertCircle, SearchX, Search } from 'lucide-react';
+import { Camera, Sparkles, UploadCloud, X, CheckCircle2, ArrowLeft, RefreshCw, ShoppingBag, AlertCircle, SearchX, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/language-context';
 import { useLiveProducts, DEFAULT_PRODUCTS, Product, getProductDiscount, CATEGORIES } from '@/lib/catalog-data';
@@ -519,10 +519,6 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                   <h3 className="font-bold text-sm sm:text-base text-white">
                     {isAr ? 'البحث بمطابقة الصور' : 'Visual Product Match'}
                   </h3>
-                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-[#D4A5A5]/15 border border-[#D4A5A5]/30 text-[9px] font-bold text-[#D4A5A5]">
-                    <Sparkles className="size-2" />
-                    <span>Exact Match</span>
-                  </span>
                 </div>
                 <p className="text-[11px] text-zinc-400">
                   {isAr ? 'مطابقة الصورة مع صور منتجات المتجر الحقيقية بنسبة 100%' : 'Direct photo matching against store catalog'}
@@ -856,15 +852,11 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-3 border-t border-white/10 bg-[#141414] flex items-center justify-between text-[11px] text-zinc-400 shrink-0">
-            <span className="flex items-center gap-1 text-[10px] text-zinc-400">
-              <Zap className="size-3 text-amber-400" />
-              <span>Roma Exact Visual Matching Engine</span>
-            </span>
+          <div className="px-4 py-3 border-t border-white/10 bg-[#141414] flex items-center justify-end text-[11px] text-zinc-400 shrink-0">
             <button
               type="button"
               onClick={handleClose}
-              className="px-3.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold transition cursor-pointer"
+              className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition cursor-pointer"
             >
               {isAr ? 'إغلاق' : 'Close'}
             </button>
