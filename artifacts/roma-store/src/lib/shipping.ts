@@ -9,6 +9,7 @@ export interface Governorate {
 }
 
 export const MIN_ORDER_AMOUNT = 200;
+export const FREE_SHIPPING_THRESHOLD = 500;
 
 export const SHIPPING_RATES = {
   cairo_giza: 80,

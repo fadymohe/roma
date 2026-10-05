@@ -704,11 +704,15 @@ export default function AccountPage() {
               <div className="space-y-2 text-xs text-[#A1A1AA]">
                 <div className="rounded-xl bg-[#1A1A1A] p-3 border border-white/5 flex items-center justify-between">
                   <span className="text-white font-medium">فودافون كاش (Vodafone Cash)</span>
-                  <span className="font-mono text-[#D4A5A5]">01505566849</span>
+                  <span className="font-mono text-[#D4A5A5]">01030920536</span>
                 </div>
                 <div className="rounded-xl bg-[#1A1A1A] p-3 border border-white/5 flex items-center justify-between">
-                  <span className="text-white font-medium">عنوان إنستاباي (InstaPay)</span>
-                  <span className="font-mono text-[#D4A5A5]">roma.beauty@instapay</span>
+                  <span className="text-white font-medium">يوزر إنستاباي (InstaPay Username)</span>
+                  <span className="font-mono text-[#D4A5A5]">sbzgx</span>
+                </div>
+                <div className="rounded-xl bg-[#1A1A1A] p-3 border border-white/5 flex items-center justify-between">
+                  <span className="text-white font-medium">رقم هاتف إنستاباي (InstaPay Phone)</span>
+                  <span className="font-mono text-[#D4A5A5]">01150583501</span>
                 </div>
               </div>
             </div>

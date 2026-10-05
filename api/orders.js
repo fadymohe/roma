@@ -102,6 +102,7 @@ export default async function handler(req, res) {
       items = [],
       shippingCost = 0,
       userId = null,
+      receiptImage = null,
     } = body;
 
     // =========================================================================
@@ -175,10 +176,11 @@ export default async function handler(req, res) {
       return 90;
     }
 
+    const isFreeShipping = verifiedSubtotal >= 500;
     const calculatedShipping = resolveShippingByAddress(shippingAddress);
-    const verifiedShippingCost = [80, 90, 130].includes(Number(shippingCost))
-      ? Number(shippingCost)
-      : calculatedShipping;
+    const verifiedShippingCost = isFreeShipping
+      ? 0
+      : ([80, 90, 130].includes(Number(shippingCost)) ? Number(shippingCost) : calculatedShipping);
 
     const verifiedTotalAmount = Math.max(0, verifiedSubtotal + verifiedShippingCost);
 
@@ -275,6 +277,44 @@ export default async function handler(req, res) {
 
         if (!telegramResult?.ok) {
           console.error('Telegram API error response:', JSON.stringify(telegramResult));
+        }
+
+        // Send receipt screenshot/image to Telegram bot if provided
+        if (receiptImage) {
+          try {
+            if (typeof receiptImage === 'string' && receiptImage.startsWith('data:image/')) {
+              const matches = receiptImage.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+              if (matches) {
+                const mimeType = matches[1];
+                const buffer = Buffer.from(matches[2], 'base64');
+                const blob = new Blob([buffer], { type: mimeType });
+                const formData = new FormData();
+                formData.append('chat_id', ADMIN_CHAT_ID);
+                formData.append('photo', blob, `receipt_${orderId}.jpg`);
+                formData.append(
+                  'caption',
+                  `🧾 <b>صورة إيصال التحويل للطلب:</b> <code>#ROMA-${orderId}</code>\n👤 <b>العميل:</b> ${escapeHtml(customerName)}\n📞 <code>${escapeHtml(customerPhone)}</code>`
+                );
+                formData.append('parse_mode', 'HTML');
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                  method: 'POST',
+                  body: formData,
+                });
+              }
+            } else if (typeof receiptImage === 'string' && receiptImage.startsWith('http')) {
+              await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  chat_id: ADMIN_CHAT_ID,
+                  photo: receiptImage,
+                  caption: `🧾 صورة إيصال التحويل للطلب: #ROMA-${orderId} | العميل: ${customerName} (${customerPhone})`,
+                }),
+              });
+            }
+          } catch (photoErr) {
+            console.error('Telegram sendPhoto receipt dispatch notice:', photoErr);
+          }
         }
       } catch (tgErr) {
         console.error('Telegram dispatch error inside /api/orders:', JSON.stringify(tgErr));

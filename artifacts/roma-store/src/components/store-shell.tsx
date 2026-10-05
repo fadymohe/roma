@@ -25,6 +25,7 @@ import { IntegratedSearch } from '@/components/integrated-search';
 import { UserDrawer } from '@/components/user-drawer';
 import { WishlistDrawer } from '@/components/wishlist-drawer';
 import { SearchModal } from '@/components/search-modal';
+import { AuthModal } from '@/components/auth-modal';
 
 export function StoreShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -460,6 +461,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
         {/* Popups & Drawers */}
       <UserDrawer />
       <WishlistDrawer />
+      <AuthModal />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* Bespoke Luxury Dark Footer - Visible on Home Page Only */}

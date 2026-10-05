@@ -20,6 +20,7 @@ import {
   Receipt,
   CreditCard,
   Smartphone,
+  MessageCircle,
 } from 'lucide-react';
 import { useState, useEffect, type FormEvent } from 'react';
 import { Link } from 'wouter';
@@ -29,7 +30,7 @@ import { useLanguage } from '@/lib/language-context';
 import { useLuxuryLoader } from '@/components/luxury-loader';
 import { notifyTelegramNewOrder } from '@/lib/telegram';
 import { uploadOrderToSupabase, supabase } from '@/lib/supabase';
-import { GOVERNORATES, MIN_ORDER_AMOUNT, getShippingRate, getGovernorate } from '@/lib/shipping';
+import { GOVERNORATES, MIN_ORDER_AMOUNT, FREE_SHIPPING_THRESHOLD, getShippingRate, getGovernorate } from '@/lib/shipping';
 
 export default function CartPage() {
   const { lines, subtotal, setQuantity, remove, clear } = useCart();
@@ -69,11 +70,24 @@ export default function CartPage() {
   const remainingForMinOrder = Math.max(0, MIN_ORDER_AMOUNT - subtotal);
   const minOrderProgress = Math.min(100, Math.round((subtotal / MIN_ORDER_AMOUNT) * 100));
 
-  // Dynamic Governorate Shipping Calculation (Cairo & Giza: 80, Delta: 90, Upper Egypt & Hurghada: 130)
-  const shippingCost = getShippingRate(governorate);
+  // Dynamic Governorate Shipping & Free Shipping on 500+ EGP
+  const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
+  const rawShippingCost = getShippingRate(governorate);
+  const shippingCost = isFreeShipping ? 0 : rawShippingCost;
+  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const selectedGov = getGovernorate(governorate);
 
-  const [complete, setComplete] = useState<{ id: string; total: number; method: string } | null>(null);
+  const [complete, setComplete] = useState<{
+    id: string;
+    total: number;
+    method: string;
+    customerPhone?: string;
+    customerName?: string;
+    fullAddress?: string;
+    isFreeShip?: boolean;
+    shippingAmt?: number;
+    waUrl?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -152,13 +166,46 @@ export default function CartPage() {
       setValidationError(isAr ? 'يرجى إدخال الاسم بالكامل' : 'Please enter your full name');
       return;
     }
-    const cleanPhone = phone.replace(/\D+/g, '');
-    if (cleanPhone.length < 10) {
-      setValidationError(isAr ? 'يرجى إدخال رقم هاتف صحيح مكون من 11 رقماً' : 'Please enter a valid 11-digit phone number');
+    // Strict input validation for Phone (11 digits, starts with 010, 011, 012, or 015, only numbers)
+    const cleanPhone = phone.replace(/\D/g, '');
+    const validEgyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
+    if (!validEgyptianPhoneRegex.test(cleanPhone)) {
+      setValidationError(
+        isAr
+          ? 'رقم الهاتف الأساسي غير صحيح. يجب أن يتكون من 11 رقماً بالضبط ويبدأ بـ (010 أو 011 أو 012 أو 015) وبدون أحرف أو رموز.'
+          : 'Invalid phone number. Must be exactly 11 digits starting with 010, 011, 012, or 015 with numbers only.'
+      );
       return;
     }
-    if (!address.trim()) {
-      setValidationError(isAr ? 'يرجى كتابة عنوان التوصيل بالتفصيل' : 'Please enter detailed delivery address');
+
+    // Alternative Phone validation: must NOT match primary, and if provided must be valid 11 digits
+    const cleanAltPhone = altPhone.replace(/\D/g, '');
+    if (cleanAltPhone) {
+      if (cleanAltPhone === cleanPhone) {
+        setValidationError(
+          isAr
+            ? 'رقم الهاتف البديل لا يمكن أن يتطابق مع رقم الهاتف الأساسي.'
+            : 'Alternative phone number cannot match the primary phone number.'
+        );
+        return;
+      }
+      if (!validEgyptianPhoneRegex.test(cleanAltPhone)) {
+        setValidationError(
+          isAr
+            ? 'رقم الهاتف البديل غير صحيح. يجب أن يتكون من 11 رقماً ويبدأ بـ (010 أو 011 أو 012 أو 015).'
+            : 'Alternative phone number must be exactly 11 digits starting with 010, 011, 012, or 015.'
+        );
+        return;
+      }
+    }
+
+    // Address validation: must contain neighborhood/district and governorate in detail
+    if (!address.trim() || address.trim().length < 10) {
+      setValidationError(
+        isAr
+          ? 'يرجى كتابة العنوان بشكل تفصيلي يوضح الحي والمحافظة واسم الشارع ورقم المبنى لتسهيل وصول المندوب.'
+          : 'Please provide a detailed address including neighborhood/district, governorate and street.'
+      );
       return;
     }
 
@@ -315,12 +362,82 @@ export default function CartPage() {
         } catch (_) {}
       }
 
-      // 6. Complete view & clear cart
-      setComplete({ id: resolvedOrderId, total, method: paymentLabel });
+      // 6. Build customer WhatsApp confirmation message & URL
+      const waCustomerPhone = cleanPhone.startsWith('0')
+        ? `2${cleanPhone}`
+        : cleanPhone.startsWith('2')
+        ? cleanPhone
+        : `20${cleanPhone}`;
+
+      const itemsSummaryList = lines
+        .map(
+          (l) =>
+            `• ${l.quantity}x ${isAr ? l.product.nameAr : (l.product.nameEn || l.product.nameAr)}${
+              l.variant ? ` (${isAr ? l.variant.nameAr : l.variant.nameEn})` : ''
+            } — ${formatPrice(l.product.price * l.quantity)}`
+        )
+        .join('\n');
+
+      const customerWhatsAppMsg = isAr
+        ? `👑 مرحباً أستاذ/ة ${name.trim()} ✨\n` +
+          `تم تسجيل وتأكيد طلبكِ بنجاح من متجر ROMA للجمال ومستحضرات العناية الفاخرة 🌸\n\n` +
+          `🔖 رقم الطلب: #ROMA-${resolvedOrderId}\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `📦 محتويات الطلب:\n${itemsSummaryList}\n\n` +
+          `🚚 مصاريف الشحن: ${isFreeShipping ? 'شحن مجاني (عرض 500 ج.م) 🎁' : formatPrice(shippingCost)}\n` +
+          `💰 الإجمالي النهائي: ${formatPrice(total)}\n` +
+          `📍 عنوان التوصيل: ${fullAddress}\n` +
+          `💳 طريقة الدفع: ${paymentLabel}\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `💖 شكراً لتسوقكِ معنا! يتم تجهيز شحنتكِ بعناية والتوصيل لباب منزلكِ قريباً.`
+        : `👑 Hello ${name.trim()} ✨\n` +
+          `Your royal order has been recorded at ROMA! 🌸\n\n` +
+          `🔖 Order Number: #ROMA-${resolvedOrderId}\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `📦 Items:\n${itemsSummaryList}\n\n` +
+          `🚚 Shipping: ${isFreeShipping ? 'FREE Shipping 🎁' : formatPrice(shippingCost)}\n` +
+          `💰 Total Amount: ${formatPrice(total)}\n` +
+          `📍 Delivery Address: ${fullAddress}\n` +
+          `💳 Payment Method: ${paymentLabel}\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `Thank you for shopping with ROMA Cosmetics & Jewelry!`;
+
+      const customerWaUrl = `https://wa.me/${waCustomerPhone}?text=${encodeURIComponent(customerWhatsAppMsg)}`;
+
+      try {
+        window.open(customerWaUrl, '_blank');
+      } catch (_) {}
+
+      // 7. Complete view & clear cart
+      setComplete({
+        id: resolvedOrderId,
+        total,
+        method: paymentLabel,
+        customerPhone: phone.trim(),
+        customerName: name.trim(),
+        fullAddress,
+        isFreeShip: isFreeShipping,
+        shippingAmt: shippingCost,
+        waUrl: customerWaUrl,
+      });
       clear();
     } catch (criticalErr) {
       console.error('Submit order caught error:', criticalErr);
-      setComplete({ id: fallbackId, total, method: paymentLabel });
+      const waCustomerPhone = cleanPhone.startsWith('0') ? `2${cleanPhone}` : `20${cleanPhone}`;
+      const customerWaUrl = `https://wa.me/${waCustomerPhone}?text=${encodeURIComponent(
+        `مرحباً أستاذ/ة ${name.trim()}، تم تسجيل طلبكِ رقم #ROMA-${fallbackId} بنجاح في متجر روما بمبلغ ${formatPrice(total)}.`
+      )}`;
+      setComplete({
+        id: fallbackId,
+        total,
+        method: paymentLabel,
+        customerPhone: phone.trim(),
+        customerName: name.trim(),
+        fullAddress,
+        isFreeShip: isFreeShipping,
+        shippingAmt: shippingCost,
+        waUrl: customerWaUrl,
+      });
       clear();
     } finally {
       setIsSubmitting(false);
@@ -385,6 +502,23 @@ export default function CartPage() {
             )}
           </div>
 
+          {/* Direct Customer WhatsApp Invoice Dispatch */}
+          {complete.waUrl && (
+            <a
+              href={complete.waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full rounded-2xl bg-emerald-600 hover:bg-emerald-500 py-3.5 px-6 text-xs md:text-sm font-bold text-white shadow-lg shadow-emerald-950/50 transition active:scale-[0.99]"
+            >
+              <MessageCircle className="size-4 shrink-0" />
+              <span>
+                {isAr
+                  ? `إرسال تفاصيل الفاتورة إلى واتساب (${complete.customerPhone || phone}) 💬`
+                  : `Send Invoice to Customer WhatsApp (${complete.customerPhone || phone}) 💬`}
+              </span>
+            </a>
+          )}
+
           {/* Instant Order Tracking Button */}
           <Link
             href="/account"
@@ -447,9 +581,9 @@ export default function CartPage() {
   return (
     <div className="roma-container pt-4 pb-28 md:py-14 text-white" dir={dir}>
       {/* Top Free Shipping Progress Indicator */}
-      {/* Top Minimum Order & Shipping Information Indicator */}
-      <div className="mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold mb-2.5">
+      {/* Top Minimum Order & Free Shipping Banner */}
+      <div className="mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
           <div className="flex items-center gap-2 text-white">
             {!isMinOrderReached ? (
               <AlertCircle className="size-4 text-amber-400 shrink-0" />
@@ -462,8 +596,8 @@ export default function CartPage() {
                   ? `الحد الأدنى للطلب هو ${MIN_ORDER_AMOUNT} ج.م — أضيفي بقيمة ${remainingForMinOrder} ج.م إضافية لتأكيد الشراء`
                   : `Minimum order amount is ${MIN_ORDER_AMOUNT} EGP — Add ${remainingForMinOrder} EGP more to proceed`
                 : isAr
-                ? `✨ تم استيفاء الحد الأدنى للطلب (${MIN_ORDER_AMOUNT} ج.م) بنجاح — يمكنك إتمام الطلب الآن`
-                : `✨ Minimum order requirement (${MIN_ORDER_AMOUNT} EGP) met! You can checkout now`}
+                ? `✨ تم استيفاء الحد الأدنى للطلب (${MIN_ORDER_AMOUNT} ج.م) بنجاح`
+                : `✨ Minimum order requirement (${MIN_ORDER_AMOUNT} EGP) met!`}
             </span>
           </div>
 
@@ -491,6 +625,30 @@ export default function CartPage() {
           />
         </div>
 
+        {/* Free Shipping 500 EGP Threshold Alert */}
+        <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2">
+            <Truck className="size-4 text-[#D4A5A5] shrink-0" />
+            <span className="text-white font-medium">
+              {isFreeShipping
+                ? isAr
+                  ? '🎁 تهانينا! طلبكِ يتضمن شحناً مجانياً بالكامل لكافة محافظات مصر (عرض الطلبات فوق 500 ج.م)'
+                  : '🎁 Congratulations! You unlocked FREE shipping across Egypt (500+ EGP offer)'
+                : isAr
+                ? `🚚 أضيفي بقيمة ${formatPrice(remainingForFreeShipping)} إضافية للحصول على شحن مجاني بالكامل!`
+                : `🚚 Add ${formatPrice(remainingForFreeShipping)} more to enjoy 100% FREE shipping!`}
+            </span>
+          </div>
+          {isFreeShipping ? (
+            <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full text-[11px] border border-emerald-500/20">
+              {isAr ? 'شحن مجاني مفعل ✨' : 'FREE Shipping Active ✨'}
+            </span>
+          ) : (
+            <Link href="/shop" className="text-[11px] text-[#D4A5A5] hover:underline shrink-0 font-semibold">
+              {isAr ? 'أضيفي منتجات +' : 'Add Items +'}
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Main Layout: Cart Items on Left, Checkout Form on Right */}
@@ -593,7 +751,7 @@ export default function CartPage() {
                 </div>
               )}
 
-              <div className="flex justify-between text-[#A1A1AA]">
+              <div className="flex justify-between items-center text-[#A1A1AA]">
                 <span>
                   {isAr ? 'رسوم الشحن والتوصيل:' : 'Express Shipping:'}
                   {selectedGov && (
@@ -602,8 +760,15 @@ export default function CartPage() {
                     </span>
                   )}
                 </span>
-                <span className="font-mono-brand text-white font-bold">
-                  {formatPrice(shippingCost)}
+                <span className="font-mono-brand font-bold">
+                  {isFreeShipping ? (
+                    <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-lg text-xs font-bold">
+                      <Sparkles className="size-3 text-emerald-400" />
+                      {isAr ? 'شحن مجاني ✨' : 'FREE Shipping ✨'}
+                    </span>
+                  ) : (
+                    <span className="text-white">{formatPrice(shippingCost)}</span>
+                  )}
                 </span>
               </div>
 
@@ -710,15 +875,17 @@ export default function CartPage() {
 
                 <div>
                   <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                    {isAr ? 'رقم الهاتف المحمول (للتواصل)' : 'Mobile Phone'} *
+                    {isAr ? 'رقم الهاتف المحمول (11 رقماً - 010/011/012/015)' : 'Mobile Phone (11 digits, 010/011/012/015)'} *
                   </label>
                   <input
                     type="tel"
                     required
+                    inputMode="numeric"
+                    maxLength={11}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
                     placeholder="010XXXXXXXX"
-                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono tracking-wider"
                   />
                 </div>
               </div>
@@ -743,28 +910,30 @@ export default function CartPage() {
 
                 <div>
                   <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                    {isAr ? 'رقم هاتف بديل (اختياري)' : 'Alt Phone (optional)'}
+                    {isAr ? 'رقم هاتف بديل (اختياري - لا يطابق الأساسي)' : 'Alt Phone (optional - must not match primary)'}
                   </label>
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    maxLength={11}
                     value={altPhone}
-                    onChange={(e) => setAltPhone(e.target.value)}
+                    onChange={(e) => setAltPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
                     placeholder="01XXXXXXXXX"
-                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono tracking-wider"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                  {isAr ? 'العنوان التفصيلي (المنطقة، الشارع، رقم العمارة والشقة)' : 'Detailed Address'} *
+                  {isAr ? 'العنوان بالتفصيل (يجب أن يشمل الحي والمحافظة والشارع ورقم العمارة)' : 'Detailed Address (Include District, Governorate & Street)'} *
                 </label>
                 <input
                   type="text"
                   required
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder={isAr ? 'مثال: المعادي الجديدة، شارع النصر، عمارة 14 الدور الثالث...' : 'Street address, building, apartment...'}
+                  placeholder={isAr ? 'مثال تفصيلي: محافظة القاهرة - حي المعادي - شارع النصر، عمارة 14 الدور الثالث، شقة 5' : 'e.g. Cairo Governorate - Maadi District - El Nasr St, Building 14, Apt 5'}
                   className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
                 />
               </div>
@@ -858,11 +1027,11 @@ export default function CartPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'رقم محفظة فودافون كاش لمتجر روما:' : 'ROMA Vodafone Cash Wallet:'}</span>
-                      <strong className="text-base font-bold text-[#D4A5A5] font-mono">01505566849</strong>
+                      <strong className="text-base font-bold text-[#D4A5A5] font-mono">01030920536</strong>
                     </div>
                     <button
                       type="button"
-                      onClick={() => copyToClipboard('01505566849', 'voda')}
+                      onClick={() => copyToClipboard('01030920536', 'voda')}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/10"
                     >
                       <Copy className="size-3.5" />
@@ -877,8 +1046,9 @@ export default function CartPage() {
                     <input
                       type="tel"
                       required
+                      inputMode="numeric"
                       value={vodafoneSenderNumber}
-                      onChange={(e) => setVodafoneSenderNumber(e.target.value)}
+                      onChange={(e) => setVodafoneSenderNumber(e.target.value.replace(/\D/g, '').slice(0, 11))}
                       placeholder="010XXXXXXXX"
                       className="w-full rounded-xl border border-white/10 bg-[#141414] px-4 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
                     />
@@ -886,7 +1056,7 @@ export default function CartPage() {
 
                   <div>
                     <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                      {isAr ? 'إرفاق لقطة شاشة إيصال التحويل (اختياري لتسريع التأكيد):' : 'Upload Receipt Screenshot (optional):'}
+                      {isAr ? 'إرفاق لقطة شاشة إيصال التحويل (يتم إرسالها لبوت التلجرام):' : 'Upload Receipt Screenshot (sent to Telegram):'}
                     </label>
                     <div className="flex items-center gap-3">
                       <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-[#141414] hover:bg-white/5 text-xs text-white cursor-pointer transition">
@@ -906,19 +1076,36 @@ export default function CartPage() {
 
               {paymentMethod === 'instapay' && (
                 <div className="rounded-2xl border border-[#D4A5A5]/30 bg-[#1A1A1A] p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'عنوان إنستاباي لمتجر روما (IPA):' : 'ROMA InstaPay Address (IPA):'}</span>
-                      <strong className="text-base font-bold text-[#D4A5A5] font-mono">roma.beauty@instapay</strong>
+                  <div className="space-y-3 border-b border-white/5 pb-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'يوزر إنستاباي لمتجر روما (InstaPay User):' : 'InstaPay Username:'}</span>
+                        <strong className="text-base font-bold text-[#D4A5A5] font-mono">sbzgx</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('sbzgx', 'insta-user')}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/10"
+                      >
+                        <Copy className="size-3.5" />
+                        <span>{copiedKey === 'insta-user' ? (isAr ? 'تم النسخ!' : 'Copied!') : (isAr ? 'نسخ اليوزر' : 'Copy')}</span>
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard('roma.beauty@instapay', 'insta')}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/10"
-                    >
-                      <Copy className="size-3.5" />
-                      <span>{copiedKey === 'insta' ? (isAr ? 'تم النسخ!' : 'Copied!') : (isAr ? 'نسخ العنوان' : 'Copy')}</span>
-                    </button>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div>
+                        <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'أو التحويل برقم الموبايل (Phone):' : 'Or via Phone Number:'}</span>
+                        <strong className="text-base font-bold text-[#D4A5A5] font-mono">01150583501</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard('01150583501', 'insta-phone')}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/10"
+                      >
+                        <Copy className="size-3.5" />
+                        <span>{copiedKey === 'insta-phone' ? (isAr ? 'تم النسخ!' : 'Copied!') : (isAr ? 'نسخ الرقم' : 'Copy')}</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div>
@@ -937,7 +1124,7 @@ export default function CartPage() {
 
                   <div>
                     <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                      {isAr ? 'إرفاق لقطة شاشة العملية (اختياري لتسريع التأكيد):' : 'Upload Receipt Screenshot (optional):'}
+                      {isAr ? 'إرفاق لقطة شاشة العملية (يتم إرسالها لبوت التلجرام مع الطلب):' : 'Upload Receipt Screenshot (sent to Telegram with order):'}
                     </label>
                     <div className="flex items-center gap-3">
                       <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-[#141414] hover:bg-white/5 text-xs text-white cursor-pointer transition">
