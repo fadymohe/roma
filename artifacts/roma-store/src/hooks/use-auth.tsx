@@ -242,10 +242,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Google OAuth sign-in handler with automatic redirect to Google and callback to given url or /cart
+  // Google OAuth sign-in handler with automatic redirect to Google and callback to given url or /cart?step=payment
   const loginWithGoogle = async (customRedirectUrl?: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const redirectUrl = customRedirectUrl || `${window.location.origin}/cart`;
+      const redirectUrl = customRedirectUrl || `${window.location.origin}/cart?step=payment`;
+      try {
+        localStorage.setItem('roma_auth_redirect', redirectUrl);
+      } catch (_) {}
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

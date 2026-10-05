@@ -61,7 +61,20 @@ export default function CartPage() {
   const { showLoader } = useLuxuryLoader();
 
   // 3-Step Checkout Flow: 'shipping' -> 'auth' (if guest) -> 'payment'
-  const [checkoutStep, setCheckoutStep] = useState<'shipping' | 'auth' | 'payment'>('shipping');
+  const [checkoutStep, setCheckoutStep] = useState<'shipping' | 'auth' | 'payment'>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isPaymentParam = urlParams.get('step') === 'payment';
+      const isPaymentPath =
+        window.location.pathname.includes('/payment') ||
+        window.location.pathname.startsWith('/checkout');
+      const pendingStep = localStorage.getItem('roma_pending_checkout_step');
+      if (isPaymentParam || isPaymentPath || pendingStep === 'payment') {
+        return 'payment';
+      }
+    } catch (_) {}
+    return 'shipping';
+  });
 
   const DRAFT_CACHE_KEY = 'roma_shipping_draft';
 
@@ -159,10 +172,21 @@ export default function CartPage() {
       if (!phone && user.phone) setPhone(user.phone);
       if (!address && user.savedAddresses?.[0]) setAddress(user.savedAddresses[0]);
     }
-    // If user was on auth step and is now authenticated, auto-advance to payment step
-    if (isAuthenticated && checkoutStep === 'auth') {
-      setCheckoutStep('payment');
-    }
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isPaymentParam = urlParams.get('step') === 'payment';
+      const isPaymentPath =
+        window.location.pathname.includes('/payment') ||
+        window.location.pathname.startsWith('/checkout');
+      const pendingStep = localStorage.getItem('roma_pending_checkout_step');
+
+      // If user is authenticated and checkout was pending or in auth step or url requests payment:
+      if (isAuthenticated) {
+        if (checkoutStep === 'auth' || pendingStep === 'payment' || isPaymentParam || isPaymentPath) {
+          setCheckoutStep('payment');
+        }
+      }
+    } catch (_) {}
   }, [user, isAuthenticated, checkoutStep]);
 
   // 3. Keep inline auth fields pre-filled from shipping inputs
@@ -395,7 +419,11 @@ export default function CartPage() {
     setAuthError('');
     // Save draft in cache before navigating to Google
     validateShippingData();
-    const res = await loginWithGoogle(`${window.location.origin}/cart`);
+    try {
+      localStorage.setItem('roma_pending_checkout_step', 'payment');
+      localStorage.setItem('roma_auth_redirect', '/cart?step=payment');
+    } catch (_) {}
+    const res = await loginWithGoogle(`${window.location.origin}/cart?step=payment`);
     setAuthLoading(false);
     if (!res.success && res.error) {
       setAuthError(res.error);
@@ -641,6 +669,8 @@ export default function CartPage() {
       clear();
       try {
         localStorage.removeItem(DRAFT_CACHE_KEY);
+        localStorage.removeItem('roma_pending_checkout_step');
+        localStorage.removeItem('roma_auth_redirect');
       } catch (_) {}
 
       // Redirect customer to real-time order tracking in /account

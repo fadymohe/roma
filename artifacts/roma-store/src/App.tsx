@@ -49,10 +49,43 @@ function CategoryRedirect({ slug }: { slug: string }) {
   return null;
 }
 
+function AuthRedirectHandler() {
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    try {
+      const pendingStep = localStorage.getItem('roma_pending_checkout_step');
+      const authRedirect = localStorage.getItem('roma_auth_redirect');
+
+      // Intercept returns to homepage when checkout/payment step or specific redirect was pending
+      if (location === '/' || location === '') {
+        if (
+          pendingStep === 'payment' ||
+          authRedirect?.includes('cart') ||
+          authRedirect?.includes('checkout') ||
+          authRedirect?.includes('payment')
+        ) {
+          setLocation('/cart?step=payment', { replace: true });
+          return;
+        }
+
+        if (authRedirect && authRedirect !== '/') {
+          localStorage.removeItem('roma_auth_redirect');
+          setLocation(authRedirect, { replace: true });
+          return;
+        }
+      }
+    } catch (_) {}
+  }, [location, setLocation]);
+
+  return null;
+}
+
 function Router() {
   return (
     <StoreShell>
       <ScrollToTop />
+      <AuthRedirectHandler />
       <RoutedErrorBoundary>
         <Switch>
           <Route path="/" component={Home} />
@@ -67,6 +100,9 @@ function Router() {
           </Route>
           <Route path="/product/:slug" component={ProductPage} />
           <Route path="/cart" component={CartPage} />
+          <Route path="/cart/payment" component={CartPage} />
+          <Route path="/checkout" component={CartPage} />
+          <Route path="/checkout/payment" component={CartPage} />
           <Route path="/account" component={AccountPage} />
           <Route path="/auth" component={AuthPage} />
           <Route path="/login" component={AuthPage} />
