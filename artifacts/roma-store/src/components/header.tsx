@@ -68,8 +68,8 @@ export function Header({
             </span>
             <p className="truncate font-sans font-medium text-[11px] sm:text-[12px]">
               {isAr
-                ? 'الحد الأدنى للطلب 200 ج.م 🛍️ | الشحن: القاهرة والجيزة 80 ج • الدلتا 90 ج • الصعيد والغردقة 130 ج 🚚'
-                : 'Minimum Order 200 EGP 🛍️ | Shipping: Cairo & Giza 80 EGP • Delta 90 EGP • Upper Egypt & Hurghada 130 EGP 🚚'}
+                ? 'الحد الأدنى للطلب 200 ج.م 🛍️ | توصيل سريع ومباشر لكافة محافظات مصر 🚚'
+                : 'Minimum Order 200 EGP 🛍️ | Doorstep express delivery across all Egypt 🚚'}
             </p>
           </div>
 

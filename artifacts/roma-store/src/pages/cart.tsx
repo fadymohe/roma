@@ -20,7 +20,6 @@ import {
   Receipt,
   CreditCard,
   Smartphone,
-  QrCode,
 } from 'lucide-react';
 import { useState, useEffect, type FormEvent } from 'react';
 import { Link } from 'wouter';
@@ -34,7 +33,7 @@ import { GOVERNORATES, MIN_ORDER_AMOUNT, getShippingRate, getGovernorate } from 
 
 export default function CartPage() {
   const { lines, subtotal, setQuantity, remove, clear } = useCart();
-  const { user, setAuthModalOpen, addAddress, updateUserPoints } = useAuth();
+  const { user, isAuthenticated, setAuthModalOpen, addAddress, updateUserPoints } = useAuth();
   const { t, isAr, formatPrice, dir } = useLanguage();
   const { showLoader } = useLuxuryLoader();
 
@@ -47,13 +46,12 @@ export default function CartPage() {
   const [address, setAddress] = useState(user?.savedAddresses?.[0] || '');
   const [notes, setNotes] = useState('');
 
-  // Egyptian digital payment methods
-  const [paymentMethod, setPaymentMethod] = useState<'vodafone_cash' | 'instapay' | 'fawry'>('instapay');
+  // Egyptian digital payment methods (InstaPay & Vodafone Cash)
+  const [paymentMethod, setPaymentMethod] = useState<'vodafone_cash' | 'instapay'>('instapay');
   
   // Specific inputs for local payments
   const [vodafoneSenderNumber, setVodafoneSenderNumber] = useState('');
   const [instapayReference, setInstapayReference] = useState('');
-  const [fawryCode] = useState(() => `999${Math.floor(1000000 + Math.random() * 9000000)}`);
   const [receiptImage, setReceiptImage] = useState<string | null>(null);
   const [receiptFileName, setReceiptFileName] = useState<string>('');
 
@@ -139,6 +137,17 @@ export default function CartPage() {
     }
 
     // Strict input validation
+    // Require user to be authenticated / have an account
+    if (!isAuthenticated || !user) {
+      setValidationError(
+        isAr
+          ? 'يجب تسجيل الدخول أو إنشاء حساب أولاً لإتمام عملية الشراء'
+          : 'Please sign in or create an account to complete your purchase'
+      );
+      setAuthModalOpen(true);
+      return;
+    }
+
     if (!name.trim()) {
       setValidationError(isAr ? 'يرجى إدخال الاسم بالكامل' : 'Please enter your full name');
       return;
@@ -175,16 +184,12 @@ export default function CartPage() {
     const paymentLabel =
       paymentMethod === 'vodafone_cash'
         ? (isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash')
-        : paymentMethod === 'instapay'
-        ? (isAr ? 'إنستاباي (InstaPay)' : 'InstaPay')
-        : (isAr ? 'فوري (Fawry)' : 'Fawry Pay');
+        : (isAr ? 'إنستاباي (InstaPay)' : 'InstaPay');
 
     const paymentRef =
       paymentMethod === 'vodafone_cash'
         ? `رقم المحول: ${vodafoneSenderNumber}`
-        : paymentMethod === 'instapay'
-        ? `مرجع إنستاباي: ${instapayReference}`
-        : `كود فوري: ${fawryCode}`;
+        : `مرجع إنستاباي: ${instapayReference}`;
 
     const orderPayload = {
       orderId: fallbackId,
@@ -486,24 +491,6 @@ export default function CartPage() {
           />
         </div>
 
-        {/* Shipping Rates Summary Badge */}
-        <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-zinc-400">
-          <div className="flex items-center gap-1.5 text-zinc-300">
-            <Truck className="size-3.5 text-[#D4A5A5]" />
-            <span className="font-medium">{isAr ? 'تكلفة الشحن حسب المحافظة:' : 'Shipping Rates:'}</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 font-medium">
-            <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white">
-              {isAr ? 'القاهرة والجيزة: 80 ج.م' : 'Cairo & Giza: 80 EGP'}
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white">
-              {isAr ? 'الدلتا والقناة: 90 ج.م' : 'Delta: 90 EGP'}
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white">
-              {isAr ? 'الصعيد والغردقة: 130 ج.م' : 'Upper Egypt & Hurghada: 130 EGP'}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Main Layout: Cart Items on Left, Checkout Form on Right */}
@@ -669,6 +656,34 @@ export default function CartPage() {
               </p>
             </div>
 
+            {/* Account Required Banner if not logged in */}
+            {!isAuthenticated && (
+              <div className="rounded-2xl border border-[#D4A5A5]/40 bg-[#D4A5A5]/10 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-xl bg-[#D4A5A5]/20 flex items-center justify-center text-[#D4A5A5] shrink-0">
+                    <Lock className="size-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-white">
+                      {isAr ? 'إنشاء حساب أو تسجيل الدخول مطلوب لإتمام الشراء' : 'Account Required to Checkout'}
+                    </h4>
+                    <p className="text-[11px] text-[#A1A1AA] mt-0.5">
+                      {isAr
+                        ? 'لضمان حماية مشترياتكِ ومتابعة الشحنة ونقاط المكافآت، يُشترط تسجيل الدخول أولاً.'
+                        : 'Sign in or register to secure your order and track shipping in real-time.'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAuthModalOpen(true)}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] text-[#0A0A0A] text-xs font-bold transition shrink-0 shadow-md"
+                >
+                  {isAr ? 'تسجيل الدخول / حساب جديد ✨' : 'Sign In / Register ✨'}
+                </button>
+              </div>
+            )}
+
             {validationError && (
               <div className="rounded-2xl bg-red-950/50 border border-red-800/50 p-3.5 text-xs text-red-300 flex items-center gap-2">
                 <AlertCircle className="size-4 text-red-400 shrink-0" />
@@ -720,7 +735,7 @@ export default function CartPage() {
                   >
                     {GOVERNORATES.map((g) => (
                       <option key={g.id} value={g.id} className="bg-[#141414] text-white">
-                        {isAr ? `${g.nameAr} — شحن ${g.rate} ج.م` : `${g.nameEn} — ${g.rate} EGP Shipping`}
+                        {isAr ? g.nameAr : g.nameEn}
                       </option>
                     ))}
                   </select>
@@ -770,14 +785,14 @@ export default function CartPage() {
 
             {/* ========================================================================= */}
             {/* 4. CHECKOUT & EGYPTIAN LOCAL PAYMENT WORKFLOWS                            */}
-            {/* [InstaPay, Vodafone Cash, Fawry]                                          */}
+            {/* [InstaPay, Vodafone Cash]                                                 */}
             {/* ========================================================================= */}
             <div className="pt-4 border-t border-white/10 space-y-4">
               <label className="text-xs font-bold text-white block">
                 {isAr ? 'اختاري طريقة الدفع:' : 'Select Payment Method:'}
               </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* 1. InstaPay */}
                 <label
                   className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
@@ -832,35 +847,6 @@ export default function CartPage() {
                       {isAr
                         ? 'تحويل فوري إلى محفظة روما المعتمدة ورفع إشعار التحويل.'
                         : 'Transfer to official ROMA wallet & attach receipt.'}
-                    </p>
-                  </div>
-                </label>
-
-                {/* 3. Fawry */}
-                <label
-                  className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
-                    paymentMethod === 'fawry'
-                      ? 'border-[#D4A5A5] bg-[#D4A5A5]/10 shadow-sm'
-                      : 'border-white/10 bg-[#1A1A1A] hover:border-white/20'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment_method"
-                    value="fawry"
-                    checked={paymentMethod === 'fawry'}
-                    onChange={() => setPaymentMethod('fawry')}
-                    className="mt-1 accent-[#D4A5A5]"
-                  />
-                  <div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                      <QrCode className="size-4 text-[#D4A5A5]" />
-                      <span>{isAr ? 'فوري (Fawry Pay)' : 'Fawry Pay'}</span>
-                    </div>
-                    <p className="text-[11px] text-[#A1A1AA] mt-1 leading-relaxed">
-                      {isAr
-                        ? 'رقم سداد فوري لإتمام الدفع من أقرب ماكينة أو كشك فوري.'
-                        : 'Get a reference code to pay at any Fawry kiosk or POS.'}
                     </p>
                   </div>
                 </label>
@@ -968,44 +954,33 @@ export default function CartPage() {
                   </div>
                 </div>
               )}
-
-              {paymentMethod === 'fawry' && (
-                <div className="rounded-2xl border border-[#D4A5A5]/30 bg-[#1A1A1A] p-4 space-y-3 text-center sm:text-right">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-[11px] text-[#A1A1AA] block">{isAr ? 'كود السداد عبر فوري (Fawry Reference):' : 'Fawry Pay Code:'}</span>
-                      <strong className="text-lg font-bold text-amber-400 font-mono tracking-widest">{fawryCode}</strong>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(fawryCode, 'fawry')}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-semibold text-white border border-white/10"
-                    >
-                      <Copy className="size-3.5" />
-                      <span>{copiedKey === 'fawry' ? (isAr ? 'تم النسخ!' : 'Copied!') : (isAr ? 'نسخ الكود' : 'Copy')}</span>
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-[#A1A1AA] leading-relaxed">
-                    {isAr
-                      ? 'يمكنك التوجه لأي كشك أو ماكينة فوري واختيار "مدفوعات فوري باي" وإدخال هذا الكود خلال 48 ساعة لإتمام الطلب.'
-                      : 'Provide this code at any Fawry merchant under "Fawry Pay" within 48 hours to confirm order.'}
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Submit Button */}
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={isSubmitting || !isMinOrderReached}
+                onClick={(e) => {
+                  if (!isAuthenticated) {
+                    e.preventDefault();
+                    setAuthModalOpen(true);
+                  }
+                }}
+                disabled={isSubmitting || (isAuthenticated && !isMinOrderReached)}
                 className={`flex items-center justify-center gap-2 w-full rounded-2xl py-4 px-6 text-sm font-bold shadow-lg transition active:scale-[0.99] ${
-                  !isMinOrderReached
+                  !isAuthenticated
+                    ? 'bg-[#D4A5A5] hover:bg-[#C89595] text-[#0A0A0A] shadow-[#D4A5A5]/25 cursor-pointer'
+                    : !isMinOrderReached
                     ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed border border-white/10 opacity-70'
                     : 'bg-[#D4A5A5] hover:bg-[#C89595] text-[#0A0A0A] shadow-[#D4A5A5]/25 disabled:opacity-60'
                 }`}
               >
-                {!isMinOrderReached ? (
+                {!isAuthenticated ? (
+                  <>
+                    <Lock className="size-4 text-[#0A0A0A]" />
+                    <span>{isAr ? 'تسجيل الدخول / إنشاء حساب لإتمام الشراء 🔒' : 'Sign In / Register to Complete Purchase 🔒'}</span>
+                  </>
+                ) : !isMinOrderReached ? (
                   <>
                     <AlertCircle className="size-4 text-amber-400" />
                     <span>

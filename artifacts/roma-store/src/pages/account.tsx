@@ -17,14 +17,16 @@ import {
   Save,
   AlertCircle,
   LogOut,
+  Lock,
 } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { useAuth, type UserOrder } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
 import { supabase } from '@/lib/supabase';
 import { GOVERNORATES } from '@/lib/shipping';
 
 export default function AccountPage() {
+  const [, setLocation] = useLocation();
   const { user, isAuthenticated, setAuthModalOpen, logout, fetchUserOrders } = useAuth();
   const { t, isAr, formatPrice, dir } = useLanguage();
 
@@ -46,12 +48,14 @@ export default function AccountPage() {
   const [isLookingUp, setIsLookingUp] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (!user) {
+      setLocation('/auth');
+    } else {
       setFullName(user.name);
       if (user.phone) setPhone(user.phone);
       if (user.savedAddresses?.[0]) setAddressLine(user.savedAddresses[0]);
     }
-  }, [user]);
+  }, [user, setLocation]);
 
   // Load orders for logged in user
   useEffect(() => {
@@ -140,7 +144,43 @@ export default function AccountPage() {
     return 1; // pending
   };
 
-  const displayOrders = user ? orders : lookupOrders;
+  if (!user) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center py-20 px-4" dir={dir}>
+        <div className="max-w-md w-full rounded-3xl border border-white/10 bg-[#141414] p-8 text-center space-y-6 shadow-2xl">
+          <div className="size-16 rounded-2xl bg-[#D4A5A5]/10 border border-[#D4A5A5]/20 flex items-center justify-center mx-auto text-[#D4A5A5]">
+            <Lock className="size-8" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white mb-2">
+              {isAr ? 'تسجيل الدخول مطلوب' : 'Authentication Required'}
+            </h1>
+            <p className="text-xs text-[#A1A1AA] leading-relaxed">
+              {isAr
+                ? 'يرجى تسجيل الدخول أو إنشاء حساب جديد للوصول إلى لوحة التحكم ومتابعة طلباتكِ وعناوينكِ.'
+                : 'Please sign in or create an account to access your account dashboard, track orders, and manage addresses.'}
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/auth?tab=login"
+              className="w-full py-3 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] text-xs font-bold text-[#0A0A0A] transition shadow-md"
+            >
+              {isAr ? 'تسجيل الدخول الآن' : 'Sign In Now'}
+            </Link>
+            <Link
+              href="/auth?tab=register"
+              className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white transition"
+            >
+              {isAr ? 'إنشاء حساب جديد' : 'Create an Account'}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const displayOrders = orders;
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#F9FAFB] pb-24 pt-6" dir={dir}>
@@ -657,7 +697,7 @@ export default function AccountPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white">{isAr ? 'طرق الدفع المحلية المعتمدة' : 'Accepted Egyptian Methods'}</h3>
-                  <span className="text-xs text-[#A1A1AA]">{isAr ? 'محافظ إلكترونية وإنستاباي وفوري' : 'Wallets, InstaPay, Fawry'}</span>
+                  <span className="text-xs text-[#A1A1AA]">{isAr ? 'محافظ إلكترونية وإنستاباي' : 'Wallets & InstaPay'}</span>
                 </div>
               </div>
 
@@ -669,10 +709,6 @@ export default function AccountPage() {
                 <div className="rounded-xl bg-[#1A1A1A] p-3 border border-white/5 flex items-center justify-between">
                   <span className="text-white font-medium">عنوان إنستاباي (InstaPay)</span>
                   <span className="font-mono text-[#D4A5A5]">roma.beauty@instapay</span>
-                </div>
-                <div className="rounded-xl bg-[#1A1A1A] p-3 border border-white/5 flex items-center justify-between">
-                  <span className="text-white font-medium">سداد فوري (Fawry Pay)</span>
-                  <span className="text-[#D4A5A5] font-bold">{isAr ? 'متاح عبر منافذ فوري' : 'Available at Fawry POS'}</span>
                 </div>
               </div>
             </div>

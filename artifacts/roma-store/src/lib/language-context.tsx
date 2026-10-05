@@ -19,7 +19,7 @@ const translations: Record<Language, Record<string, string>> = {
     'brand.name': 'روما | ROMA',
     'brand.tagline': 'مستحضرات تجميل فاخرة وعناية استثنائية بالمرأة المصرية',
     'brand.currency': 'ج.م',
-    'common.free_shipping_notice': 'الحد الأدنى للطلب 200 ج.م 🛍️ | الشحن: القاهرة والجيزة 80 ج • الدلتا 90 ج • الصعيد والغردقة 130 ج 🚚',
+    'common.free_shipping_notice': 'الحد الأدنى للطلب 200 ج.م 🛍️ | توصيل سريع ومباشر لكافة محافظات مصر 🚚',
     'common.free_shipping_progress': 'أضيفي بقيمة {remaining} ج.م إضافية لاستيفاء الحد الأدنى للطلب (200 ج.م)',
     'common.free_shipping_qualified': '✨ تم استيفاء الحد الأدنى للطلب (200 ج.م) بنجاح! جاهز للتأكيد',
 
@@ -63,7 +63,7 @@ const translations: Record<Language, Record<string, string>> = {
     'trust.fast_shipping_title': 'توصيل لباب المنزل',
     'trust.fast_shipping_desc': 'شحن فوري للقاهرة والجيزة وجميع محافظات مصر',
     'trust.cod_title': 'دفع إلكتروني آمن وسريع',
-    'trust.cod_desc': 'تحويل فوري عبر إنستاباي، فودافون كاش ومنافذ فوري',
+    'trust.cod_desc': 'تحويل فوري عبر إنستاباي ومحافظ المحمول (فودافون كاش)',
     'trust.moh_title': 'مسجل بوزارة الصحة',
     'trust.moh_desc': 'جميع المنتجات حاصلة على تراخيص الجودة المصرية المعتمدة',
 
@@ -88,9 +88,9 @@ const translations: Record<Language, Record<string, string>> = {
     'product.size': 'الحجم:',
 
     // Product Details Page
-    'pdp.free_shipping_hint': 'توصيل فوري لكافة محافظات مصر من 80 ج.م',
+    'pdp.free_shipping_hint': 'توصيل فوري لباب المنزل لكافة محافظات مصر',
     'pdp.fast_delivery_estimate': 'التوصيل المتوقع: خلال 24 - 48 ساعة للقاهرة والجيزة',
-    'pdp.cod_available': 'الدفع متاح عبر إنستاباي، فودافون كاش وفوري',
+    'pdp.cod_available': 'الدفع متاح عبر إنستاباي ومحافظ المحمول (فودافون كاش)',
     'pdp.easy_returns': 'استبدال واسترجاع خلال 14 يوماً وفق قانون حماية المستهلك',
     'pdp.tab_description': 'الوصف والتفاصيل',
     'pdp.tab_ingredients': 'المكونات الفعالة',
@@ -212,7 +212,7 @@ const translations: Record<Language, Record<string, string>> = {
     'trust.fast_shipping_title': 'Doorstep Express Shipping',
     'trust.fast_shipping_desc': 'Instant delivery to Cairo, Giza, Alexandria, and all Egyptian governorates',
     'trust.cod_title': 'Fast & Secure Digital Payments',
-    'trust.cod_desc': 'Instant transfers via InstaPay, Vodafone Cash, or Fawry',
+    'trust.cod_desc': 'Instant transfers via InstaPay or Mobile Wallets (Vodafone Cash)',
     'trust.moh_title': 'MOH Egypt Certified',
     'trust.moh_desc': 'Fully licensed, lab-tested, and compliant with Egyptian health standards',
 
@@ -237,9 +237,9 @@ const translations: Record<Language, Record<string, string>> = {
     'product.size': 'Size:',
 
     // Product Details Page
-    'pdp.free_shipping_hint': 'Doorstep Express Delivery across Egypt from 80 EGP',
+    'pdp.free_shipping_hint': 'Doorstep Express Delivery across all Egyptian governorates',
     'pdp.fast_delivery_estimate': 'Estimated Delivery: Within 24 - 48h (Cairo & Giza)',
-    'pdp.cod_available': 'Instant payments via InstaPay, Vodafone Cash & Fawry',
+    'pdp.cod_available': 'Instant payments via InstaPay & Vodafone Cash',
     'pdp.easy_returns': '14-Day Returns & Exchanges compliant with Egyptian Consumer Law',
     'pdp.tab_description': 'Description & Benefits',
     'pdp.tab_ingredients': 'Active Ingredients',

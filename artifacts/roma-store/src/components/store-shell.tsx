@@ -584,7 +584,6 @@ export function StoreShell({ children }: { children: ReactNode }) {
               <div className="flex flex-wrap gap-1.5 text-[10px] font-semibold text-zinc-400">
                 <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-zinc-200">فودافون كاش</span>
                 <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-zinc-200">إنستاباي InstaPay</span>
-                <span className="rounded-lg bg-[#141414] px-2.5 py-1 border border-white/10 text-zinc-200">فوري Fawry</span>
               </div>
             </div>
           </div>

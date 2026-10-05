@@ -43,7 +43,7 @@ export function UserDrawer() {
 
   // New payment method state
   const [isAddingPayment, setIsAddingPayment] = useState(false);
-  const [selectedPayType, setSelectedPayType] = useState<'instapay' | 'vodafone' | 'card' | 'fawry'>('instapay');
+  const [selectedPayType, setSelectedPayType] = useState<'instapay' | 'vodafone' | 'card'>('instapay');
   const [payTitle, setPayTitle] = useState('');
 
   useEffect(() => {
@@ -72,7 +72,6 @@ export function UserDrawer() {
       instapay: payTitle.trim() || 'إنستاباي (InstaPay IPN)',
       vodafone: payTitle.trim() || 'فودافون كاش / محفظة إلكترونية',
       card: payTitle.trim() || 'بطاقة بنكية (Visa / Mastercard)',
-      fawry: payTitle.trim() || 'فوري (Fawry Pay)',
     };
 
     await addPaymentMethod({
@@ -234,7 +233,7 @@ export function UserDrawer() {
 
             {isAddingPayment && (
               <form onSubmit={handleSavePaymentMethod} className="mb-3 space-y-2 rounded-xl bg-[#FAFBF9] p-3 border border-[#DEE6E0]">
-                <div className="grid grid-cols-2 gap-1.5 text-xs">
+                <div className="grid grid-cols-3 gap-1.5 text-xs">
                   <button
                     type="button"
                     onClick={() => setSelectedPayType('instapay')}
@@ -252,15 +251,6 @@ export function UserDrawer() {
                     }`}
                   >
                     فودافون كاش
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPayType('fawry')}
-                    className={`rounded-full py-1.5 px-2 border text-center transition ${
-                      selectedPayType === 'fawry' ? 'bg-[#4E7A5A] text-white border-[#4E7A5A]' : 'bg-white border-border'
-                    }`}
-                  >
-                    فوري
                   </button>
                   <button
                     type="button"
