@@ -34,7 +34,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
-  loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: (customRedirectUrl?: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, phone?: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; message: string }>;
@@ -242,10 +242,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Google OAuth sign-in handler with automatic redirect to Google and callback to /account
-  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+  // Google OAuth sign-in handler with automatic redirect to Google and callback to given url or /cart
+  const loginWithGoogle = async (customRedirectUrl?: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const redirectUrl = `${window.location.origin}/account`;
+      const redirectUrl = customRedirectUrl || `${window.location.origin}/cart`;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
