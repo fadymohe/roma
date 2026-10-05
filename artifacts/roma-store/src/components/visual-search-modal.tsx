@@ -300,21 +300,22 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
 
         if (res.ok) {
           const data = await res.json();
-          if (data?.matchedProduct) {
+          if (data?.matchedProduct && data?.aiVerdict?.match_verdict?.status === 'exact_match') {
             const p = data.matchedProduct;
             setExactMatch({
               product: p,
-              matchScore: Math.round((data.aiVerdict?.match_verdict?.confidence_score || 0.95) * 100),
-              isExact: data.aiVerdict?.match_verdict?.status === 'exact_match',
+              matchScore: Math.round((data.aiVerdict?.match_verdict?.confidence_score || 0.98) * 100),
+              isExact: true,
               reasonAr: data.aiVerdict?.user_facing_message || 'تم مطابقة المنتج بالذكاء الاصطناعي بنجاح',
               reasonEn: 'AI visual product match',
             });
             setIsScanning(false);
             return;
-          } else if (data?.aiVerdict?.match_verdict?.status === 'not_found' && data?.aiVerdict?.visual_breakdown?.detected_product_type) {
-            setDetectedType(data.aiVerdict.visual_breakdown.detected_product_type);
-            setDetectedCategory(data.aiVerdict.match_verdict.recommended_category);
-            setUserMessage(data.aiVerdict.user_facing_message);
+          } else {
+            // Strictly NOT FOUND - never show approximate or substitute products
+            setDetectedType(data?.aiVerdict?.visual_breakdown?.detected_product_type || null);
+            setDetectedCategory(data?.aiVerdict?.match_verdict?.recommended_category || null);
+            setUserMessage(data?.aiVerdict?.user_facing_message || null);
             setIsNotFound(true);
             setIsScanning(false);
             return;

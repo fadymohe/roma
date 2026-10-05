@@ -2,50 +2,47 @@ import fs from 'fs';
 import path from 'path';
 
 // System prompt as defined for Roma Visual Product Matching Engine
-const SYSTEM_PROMPT = `أنت محرك رؤية حاسوبية وخبير متخصص في تدقيق ومطابقة منتجات التجميل، العطور، والعناية الشخصية لمتاجر التجارة الإلكترونية.
+const SYSTEM_PROMPT = `أنت محرك رؤية حاسوبية فائق الدقة متخصص في المطابقة الصارمة لمنتجات التجميل، العطور، والعناية الشخصية لمتجر "روما" (Roma).
 
-مهمتك:
-فحص الصورة المرفوعة بدقة وتجاوز التحديات البصرية الشائعة (مثل ضعف الإضاءة، زوايا التصوير المائلة، أو وجود نصوص غير واضحة)، ثم مطابقتها مع كتالوج المتجر المقدم أدناه.
-
----
-### خطوات التحليل الإلزامية:
-1. عزل الخلفية: تجاهل اليدين، الطاولات، أو أي عناصر محيطة وركّز فقط على العبوة/المنتج الأساسي.
-2. استخراج النصوص (OCR): اقرأ أي نص مكتوب على العبوة بدقة متناهية (اسم الماركة، اسم المنتج، الحجم بالملمتر/الجرام، أو رقم الدرجة).
-3. التحليل الشكلي واللوني: حدد نوع العبوة (أنبوب، قطارة، زجاجة رش، باليت، روج)، وحدد درجات الألوان بدقة (مثلاً: "وردي خوخي غير لامع" بدلاً من مجرد "وردي").
-4. المطابقة والتحقق: قارن المعطيات مع قائمة المنتجات المتاحة:
-   - مطابقة تامة (Exact): تطابق الماركة ونوع المنتج والدرجة بنسبة 100%.
-   - مطابقة تقريبية (Alternative): المنتج نفسه بنكهة/درجة أخرى، أو منتج بديل من نفس الفئة والوظيفة بدقة (مثلاً عطر مقابل عطر، روج مقابل روج، ولا يجوز نهائياً مطابقة عطر مع إكسسوار شعر).
-   - غير موجود (Not Found): لا يوجد تطابق منطقي داخل الكتالوج لنفس نوع المنتج.
+مهمتك الأساسية:
+فحص الصورة المرفوعة والتحقق بدقة 100% هل هذا المنتج بالتحديد (نفس الماركة، نفس الاسم، ونفس الموديل) موجود في كتالوج المتجر أم غير موجود.
 
 ---
-### قواعد المخرجات:
-- الرد يجب أن يكون كود JSON صالح فقط بدون أي نصوص، مقدمات، أو شروحات خارج الكود.
-- في حال وجود شك في قراءة نص على العبوة، اذكر القراءة البديلة المحتملة في حقل "ocr_alternative_guesses".
+### قواعد المطابقة الصارمة (Strict Matching Rules):
+1. مطابقة تامة فقط (exact_match):
+   - يجب أن يتطابق اسم الماركة ونوع المنتج والموديل تماماً مع أحد منتجات الكتالوج (مثال: عطر مهرة من لطافة يطابق فقط عطر مهرة من لطافة).
+   - نسبة الثقة (confidence_score) يجب أن تكون 0.90 أو أعلى.
+2. عدم المطابقة (not_found):
+   - ممنوع منعاً باتاً وأياً كانت الظروف مطابقة منتج مع منتج بديل، أو أقرب منتج، أو من ماركة مختلفة (مثلاً: ممنوع نهائياً مطابقة ايلاينر مايبيلين مع ايلاينر ام ان مينو، وممنوع مطابقة روج هدى بيوتي مع روج سيبيلي، وممنوع مطابقة عطر ديور مع عطر لطافة).
+   - إذا كان المنتج الظاهر في الصورة غير متوفر بنفسه في قائمة الكتالوج، فالنتيجة الإلزامية هي:
+     "status": "not_found"
+     "matched_product_id": null
+     "matched_product_name": null
+     "confidence_score": 0
 
 ---
-### صيغة الـ JSON المطلوبة:
+### صيغة الـ JSON المطلوبة حصراً:
 {
   "analysis_status": "success",
   "visual_breakdown": {
-    "detected_brand": "اسم الماركة المكتشف أو null",
-    "detected_product_type": "سيروم / روج / عطر / كريم...",
-    "detected_shade_or_color": "وصف الدرجة واللون بدقة",
-    "visible_text_ocr": ["النصوص الظاهرة على العبوة"],
-    "ocr_alternative_guesses": ["تخمينات بديلة للكلمات غير الواضحة"]
+    "detected_brand": "اسم الماركة بالإنجليزية أو العربية (مثل Maybelline أو Lattafa)",
+    "detected_product_type": "نوع المنتج (مثل ايلاينر سائل / عطر / روج)",
+    "detected_shade_or_color": "اللون أو الدرجة",
+    "visible_text_ocr": ["النصوص الظاهرة على العبوة"]
   },
   "match_verdict": {
-    "status": "exact_match / alternative_match / not_found",
-    "confidence_score": 0.95,
-    "matched_product_id": "معرف المنتج المطابق من الكتالوج كـ رقم أو null",
-    "matched_product_name": "اسم المنتج المطابق من الكتالوج أو null",
-    "recommended_category": "التصنيف المناسب داخل المتجر"
+    "status": "exact_match أو not_found",
+    "confidence_score": 0.98,
+    "matched_product_id": 1790732066384,
+    "matched_product_name": "اسم المنتج من الكتالوج أو null",
+    "recommended_category": "اسم التصنيف من المتجر"
   },
   "search_fallback": {
-    "clean_search_query": "استعلام بحث نصي نقي للبحث في محرك المتجر",
-    "tags": ["وسم 1", "وسم 2"]
+    "clean_search_query": "اسم المنتج النقي"
   },
-  "user_facing_message": "رسالة واضحة للمستخدم باللغة العربية توضح النتيجة بدقة"
+  "user_facing_message": "رسالة واضحة ودقيقة بالعربية"
 }`;
+
 
 function loadCatalog() {
   const searchPaths = [
@@ -180,50 +177,61 @@ ${JSON.stringify(compactCatalog)}`;
         try {
           const aiVerdict = JSON.parse(candidateText);
 
-          // Locate full product if matched
+          // Strictly check for verified exact match
           let matchedProduct = null;
+          const status = aiVerdict?.match_verdict?.status;
+          const confidence = Number(aiVerdict?.match_verdict?.confidence_score) || 0;
           const targetId = aiVerdict?.match_verdict?.matched_product_id;
-          const targetName = (aiVerdict?.match_verdict?.matched_product_name || '').toLowerCase().trim();
-          const cleanQuery = (aiVerdict?.search_fallback?.clean_search_query || '').toLowerCase().trim();
-          const ocrWords = Array.isArray(aiVerdict?.visual_breakdown?.visible_text_ocr)
-            ? aiVerdict.visual_breakdown.visible_text_ocr.map((w) => String(w).toLowerCase())
-            : [];
+          const detectedBrand = (aiVerdict?.visual_breakdown?.detected_brand || '').toLowerCase().trim();
 
-          // 1. Direct ID match
-          if (targetId) {
-            matchedProduct = allProducts.find(
+          // STRICT: Only evaluate product match if AI explicitly determined exact_match with confidence >= 0.90
+          if (status === 'exact_match' && confidence >= 0.90 && targetId) {
+            const candidate = allProducts.find(
               (p) => String(p.id).trim() === String(targetId).trim()
             );
-          }
 
-          // 2. Direct name match
-          if (!matchedProduct && targetName) {
-            matchedProduct = allProducts.find(
-              (p) => p.nameAr?.toLowerCase().includes(targetName) || targetName.includes(p.nameAr?.toLowerCase())
-            );
-          }
+            if (candidate) {
+              const candidateText = `${candidate.nameAr} ${candidate.nameEn || ''} ${candidate.descriptionAr || ''}`.toLowerCase();
+              let isBrandMismatch = false;
 
-          // 3. Query or OCR keyword match (e.g. Mohra, Lattafa)
-          if (!matchedProduct && (cleanQuery || ocrWords.length > 0)) {
-            const searchTokens = [...cleanQuery.split(/\s+/), ...ocrWords].filter((t) => t.length >= 3);
-            let bestScore = 0;
-            let bestProd = null;
-
-            for (const p of allProducts) {
-              const fullText = `${p.nameAr} ${p.nameEn || ''} ${p.descriptionAr || ''} ${p.slug}`.toLowerCase();
-              let count = 0;
-              for (const tok of searchTokens) {
-                if (fullText.includes(tok)) count++;
+              if (detectedBrand.length >= 3) {
+                // If candidate has a different brand, reject it!
+                if (detectedBrand.includes('maybelline') && !candidateText.includes('مايبيلين') && !candidateText.includes('maybelline')) {
+                  isBrandMismatch = true;
+                } else if (detectedBrand.includes('dior') && !candidateText.includes('ديور') && !candidateText.includes('dior')) {
+                  isBrandMismatch = true;
+                } else if (detectedBrand.includes('chanel') && !candidateText.includes('شانيل') && !candidateText.includes('chanel')) {
+                  isBrandMismatch = true;
+                } else if (detectedBrand.includes('huda') && !candidateText.includes('هدى') && !candidateText.includes('huda')) {
+                  isBrandMismatch = true;
+                } else if (detectedBrand.includes('sheglam') && !candidateText.includes('شي جلام') && !candidateText.includes('sheglam')) {
+                  isBrandMismatch = true;
+                } else if (detectedBrand.includes('kiko') && !candidateText.includes('كيكو') && !candidateText.includes('kiko')) {
+                  isBrandMismatch = true;
+                } else if (detectedBrand.includes('lattafa') && !candidateText.includes('لطافة') && !candidateText.includes('lattafa')) {
+                  isBrandMismatch = true;
+                }
               }
-              if (count > bestScore) {
-                bestScore = count;
-                bestProd = p;
+
+              if (!isBrandMismatch) {
+                matchedProduct = candidate;
               }
             }
+          }
 
-            if (bestScore >= 2 && bestProd) {
-              matchedProduct = bestProd;
-            }
+          // If no verified exact match, strictly mark as not_found
+          if (!matchedProduct) {
+            aiVerdict.match_verdict = {
+              status: 'not_found',
+              confidence_score: 0,
+              matched_product_id: null,
+              matched_product_name: null,
+              recommended_category: aiVerdict?.match_verdict?.recommended_category || null,
+            };
+            const itemHint = aiVerdict?.visual_breakdown?.detected_brand
+              ? `${aiVerdict.visual_breakdown.detected_brand} (${aiVerdict.visual_breakdown.detected_product_type || 'منتج'})`
+              : 'هذا الموديل بالتحديد';
+            aiVerdict.user_facing_message = `لم يتم العثور على ${itemHint} داخل المتجر حالياً، وحرصاً على المصداقية لم نقم بعرض منتج مختلف.`;
           }
 
           return res.status(200).json({
