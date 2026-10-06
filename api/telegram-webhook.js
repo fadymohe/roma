@@ -145,13 +145,36 @@ export default async function handler(req, res) {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
         let q = sbClient
           .from('orders')
-          .update({ status: action, updated_at: new Date().toISOString() });
+          .update({ status: action });
         if (isUuid) {
-          q = q.or(`id.eq.${cleanId},order_number.ilike.*${cleanId}*,order_number.eq.ROMA-${cleanId},order_number.eq.${cleanId}`);
+          q = q.or(`id.eq.${cleanId},order_number.ilike.%${cleanId}%,order_number.eq.ROMA-${cleanId},order_number.eq.${cleanId}`);
         } else {
-          q = q.or(`order_number.ilike.*${cleanId}*,order_number.eq.ROMA-${cleanId},order_number.eq.${cleanId}`);
+          q = q.or(`order_number.ilike.%${cleanId}%,order_number.eq.ROMA-${cleanId},order_number.eq.${cleanId}`);
         }
-        const { data: updatedRows } = await q.select();
+        let { data: updatedRows, error: upErr } = await q.select();
+
+        // Fallback: search recent orders if filter didn't match directly
+        if ((!updatedRows || updatedRows.length === 0) && cleanId.length >= 4) {
+          const { data: allRecent } = await sbClient
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(30);
+
+          if (Array.isArray(allRecent)) {
+            const matchedRow = allRecent.find((r) => {
+              const rClean = String(r.order_number || r.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+              return rClean.includes(cleanId) || cleanId.includes(rClean);
+            });
+            if (matchedRow) {
+              const res = await sbClient.from('orders').update({ status: action }).eq('id', matchedRow.id).select();
+              if (res.data && res.data.length > 0) {
+                updatedRows = res.data;
+              }
+            }
+          }
+        }
+
         if (updatedRows && updatedRows[0]) {
           const row = updatedRows[0];
           orderToNotify = {

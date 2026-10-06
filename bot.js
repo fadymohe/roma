@@ -855,12 +855,12 @@ async function handleUpdate(update) {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanOrderId);
         const sbClient = await getAuthenticatedSupabase();
         const filterOr = isUuid
-          ? `id.eq.${cleanOrderId},order_number.ilike.*${cleanOrderId}*,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`
-          : `order_number.ilike.*${cleanOrderId}*,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`;
+          ? `id.eq.${cleanOrderId},order_number.ilike.%${cleanOrderId}%,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`
+          : `order_number.ilike.%${cleanOrderId}%,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`;
 
         let { data: updatedRows, error: sbErr } = await sbClient
           .from('orders')
-          .update({ status: newStatusKey, updated_at: new Date().toISOString() })
+          .update({ status: newStatusKey })
           .or(filterOr)
           .select();
 
@@ -873,7 +873,7 @@ async function handleUpdate(update) {
               return rClean.includes(cleanOrderId) || cleanOrderId.includes(rClean);
             });
             if (matchedRow) {
-              const res = await sbClient.from('orders').update({ status: newStatusKey, updated_at: new Date().toISOString() }).eq('id', matchedRow.id).select();
+              const res = await sbClient.from('orders').update({ status: newStatusKey }).eq('id', matchedRow.id).select();
               if (res.data && res.data.length > 0) {
                 updatedRows = res.data;
               }

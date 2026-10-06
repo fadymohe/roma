@@ -34,7 +34,7 @@ async function syncCartToSupabase(cartData) {
     if (status === 'converted') {
       await sb
         .from('orders')
-        .update({ status: 'converted', updated_at: new Date().toISOString() })
+        .update({ status: 'converted' })
         .eq('order_number', cartOrderNum);
     } else {
       // Upsert cart_draft into orders table
@@ -53,7 +53,6 @@ async function syncCartToSupabase(cartData) {
               customer_name: customerName || 'عميلة المتجر',
               phone: cleanPhone,
               status: 'cart_draft',
-              updated_at: new Date().toISOString(),
             })
             .eq('id', existing[0].id);
         }

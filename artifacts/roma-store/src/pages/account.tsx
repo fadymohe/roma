@@ -185,31 +185,35 @@ export default function AccountPage() {
     refreshActiveOrders();
   }, [recentOrderId]);
 
-  // Live auto-refresh: Update order status every 8 seconds in realtime
+  // Live auto-refresh: Update order status every 4 seconds in realtime
   useEffect(() => {
     const timer = setInterval(async () => {
       if (activeTab !== 'orders') return;
 
       const targets = new Set<string>();
-      if (lookupOrders.length > 0) {
-        for (const o of lookupOrders.slice(0, 3)) {
-          const num = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-          if (num) targets.add(num);
-        }
-      } else {
-        try {
-          const raw = localStorage.getItem('roma_recent_orders');
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-              for (const o of parsed.slice(0, 3)) {
-                const clean = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-                if (clean) targets.add(clean);
-              }
+      if (recentOrderId) {
+        targets.add(String(recentOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim());
+      }
+      for (const o of lookupOrders.slice(0, 5)) {
+        const num = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+        if (num) targets.add(num);
+      }
+      for (const o of orders.slice(0, 5)) {
+        const num = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+        if (num) targets.add(num);
+      }
+      try {
+        const raw = localStorage.getItem('roma_recent_orders');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            for (const o of parsed.slice(0, 5)) {
+              const clean = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+              if (clean) targets.add(clean);
             }
           }
-        } catch (_) {}
-      }
+        }
+      } catch (_) {}
 
       for (const num of targets) {
         try {
@@ -218,13 +222,6 @@ export default function AccountPage() {
             const json = await res.json();
             if (json.success && Array.isArray(json.orders) && json.orders.length > 0) {
               syncOrderUpdates(json.orders);
-              setLookupOrders((prev) => {
-                const map = new Map(prev.map((o: any) => [String(o.order_number || o.id), o]));
-                for (const up of json.orders) {
-                  map.set(String(up.order_number || up.id), up);
-                }
-                return Array.from(map.values());
-              });
             }
           }
         } catch (_) {}
@@ -236,10 +233,10 @@ export default function AccountPage() {
           if (Array.isArray(res) && res.length > 0) setOrders(res);
         } catch (_) {}
       }
-    }, 8000);
+    }, 4000);
 
     return () => clearInterval(timer);
-  }, [activeTab, lookupOrders, user]);
+  }, [activeTab, lookupOrders, orders, recentOrderId, user]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -318,29 +315,39 @@ export default function AccountPage() {
   // Comprehensive order list merging: Lookup search + User history + Recent local orders
   const displayOrders = (() => {
     const map = new Map<string, any>();
-    // 1. Lookups take priority
-    for (const o of lookupOrders) {
+
+    const mergeOrder = (o: any) => {
+      if (!o) return;
       const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-      map.set(cleanKey, { ...o, order_number: `ROMA-${cleanKey}` });
-    }
-    // 2. User account orders
-    for (const o of orders) {
-      const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-      if (!map.has(cleanKey)) map.set(cleanKey, { ...o, order_number: `ROMA-${cleanKey}` });
-    }
-    // 3. Browser local storage recent orders fallback
+      const normalized = { ...o, order_number: `ROMA-${cleanKey}` };
+      if (!map.has(cleanKey)) {
+        map.set(cleanKey, normalized);
+      } else {
+        const existing = map.get(cleanKey);
+        const existingStep = getStepIndex(existing.status);
+        const newStep = getStepIndex(o.status);
+        // Whichever has more advanced status or is non-pending wins
+        if (newStep > existingStep || (existing.status === 'pending' && o.status && o.status !== 'pending')) {
+          map.set(cleanKey, { ...existing, ...normalized, status: o.status });
+        }
+      }
+    };
+
+    // 1. Lookups from API server
+    for (const o of lookupOrders) mergeOrder(o);
+    // 2. User account orders from DB
+    for (const o of orders) mergeOrder(o);
+    // 3. Browser local storage recent orders
     try {
       const raw = localStorage.getItem('roma_recent_orders');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          for (const o of parsed) {
-            const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-            if (!map.has(cleanKey)) map.set(cleanKey, { ...o, order_number: `ROMA-${cleanKey}` });
-          }
+          for (const o of parsed) mergeOrder(o);
         }
       }
     } catch (_) {}
+
     return Array.from(map.values());
   })();
 
