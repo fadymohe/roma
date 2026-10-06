@@ -497,6 +497,12 @@ function initSupabaseRealtime() {
     )
     .subscribe((status) => {
       console.log(`⚡ Supabase Realtime Subscription: ${status}`);
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        setTimeout(() => {
+          console.log('🔄 Reconnecting Supabase Realtime channel...');
+          initSupabaseRealtime();
+        }, 3000);
+      }
     });
 }
 
@@ -1794,7 +1800,9 @@ async function poll() {
     if (infoData.ok && infoData.result?.url) {
       console.log(`⚡ Telegram Webhook is active: ${infoData.result.url}`);
       console.log('🤖 Bot is running in Daemon Mode: Supabase Realtime + WhatsApp Bridge + Abandoned Cart Scheduler!');
-      return;
+      while (true) {
+        await new Promise((r) => setTimeout(r, 60000));
+      }
     }
   } catch (_) {}
 
