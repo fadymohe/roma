@@ -1,8 +1,4 @@
 import { getAuthenticatedSupabase, saveLocalOrder } from '../lib/supabase-server.js';
-import {
-  sendOrderConfirmationWhatsApp,
-  sendShippingUpdateWhatsApp,
-} from '../lib/whatsapp-bridge.js';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
@@ -174,18 +170,8 @@ export default async function handler(req, res) {
         console.error('Webhook database status update error:', dbErr);
       }
 
-      // 📱 Trigger WhatsApp message from +201505566847
-      try {
-        if (orderToNotify.customerPhone) {
-          if (action === 'confirmed') {
-            await sendOrderConfirmationWhatsApp(orderToNotify);
-          } else if (['shipped', 'delivered', 'cancelled'].includes(action)) {
-            await sendShippingUpdateWhatsApp(orderToNotify, action);
-          }
-        }
-      } catch (waErr) {
-        console.warn('Webhook WhatsApp notification notice:', waErr?.message);
-      }
+      // 📱 The local daemon (bot.js) listening to Supabase Realtime will automatically
+      // detect this order status UPDATE and dispatch the WhatsApp message via +201505566847.
 
       // 2. Acknowledge button click to Telegram with popup alert
       if (BOT_TOKEN && cq.id) {
