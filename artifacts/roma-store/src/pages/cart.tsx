@@ -26,6 +26,8 @@ import {
   Mail,
   Eye,
   EyeOff,
+  ChevronDown,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { Link, useLocation } from 'wouter';
@@ -140,6 +142,10 @@ export default function CartPage() {
     shippingAmt?: number;
     waUrl?: string;
   } | null>(null);
+
+  // Mobile UX: Responsive tab switcher between 'checkout' (قسم ادخال البيانات) and 'items' (سلة المنتجات)
+  const [mobileViewTab, setMobileViewTab] = useState<'checkout' | 'items'>('checkout');
+  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
 
   // 1. Load cached shipping draft on mount
   useEffect(() => {
@@ -943,10 +949,44 @@ export default function CartPage() {
         </div>
       </div>
 
+      {/* Mobile Top Segmented Control (lg:hidden) */}
+      <div className="lg:hidden mb-5 bg-[#161616] p-1.5 rounded-2xl border border-white/10 flex items-center gap-1.5 shadow-xl sticky top-20 z-20 backdrop-blur-md">
+        <button
+          type="button"
+          onClick={() => {
+            setMobileViewTab('checkout');
+            window.scrollTo({ top: 80, behavior: 'smooth' });
+          }}
+          className={`flex-1 py-3 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+            mobileViewTab === 'checkout'
+              ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/25'
+              : 'text-[#A1A1AA] hover:text-white'
+          }`}
+        >
+          <ClipboardCheck className="size-4" />
+          <span>{isAr ? 'بيانات الشحن والتأكيد' : 'Shipping & Checkout'}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setMobileViewTab('items');
+            window.scrollTo({ top: 80, behavior: 'smooth' });
+          }}
+          className={`flex-1 py-3 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+            mobileViewTab === 'items'
+              ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/25'
+              : 'text-[#A1A1AA] hover:text-white'
+          }`}
+        >
+          <ShoppingBag className="size-4" />
+          <span>{isAr ? `مراجعة السلة (${lines.length})` : `Cart Items (${lines.length})`}</span>
+        </button>
+      </div>
+
       {/* Main Layout: Cart Items on Left, Checkout Form on Right */}
       <div className="grid gap-8 lg:grid-cols-12 items-start">
         {/* Left Column: Bag Items & Coupon (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className={`lg:col-span-5 space-y-4 ${mobileViewTab === 'items' ? 'block' : 'hidden lg:block'}`}>
           <div className="rounded-3xl border border-white/10 bg-[#141414] p-5 md:p-6 shadow-xl">
             <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
               <h2 className="text-base font-bold text-white">
@@ -963,31 +1003,26 @@ export default function CartPage() {
 
             <div className="divide-y divide-white/5">
               {lines.map((line) => (
-                <div key={`${line.product.id}-${line.variant?.id}`} className="flex gap-3.5 py-4 items-center">
+                <div key={`${line.product.id}-${line.variant?.id}`} className="flex gap-3 py-3.5 items-start">
                   <img
                     src={line.product.imageUrl || ''}
                     alt={line.product.nameAr}
-                    className="size-20 rounded-2xl object-contain bg-[#161616] shrink-0 border border-white/10 p-1.5"
+                    className="size-16 sm:size-20 rounded-xl sm:rounded-2xl object-contain bg-[#161616] shrink-0 border border-white/10 p-1"
                   />
 
                   <div className="flex flex-1 flex-col justify-between min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h3 className="text-xs md:text-sm font-bold text-white line-clamp-1">
-                          {isAr ? line.product.nameAr : (line.product.nameEn || line.product.nameAr)}
-                        </h3>
-                        {line.variant && (
-                          <p className="text-[11px] text-[#D4A5A5] font-medium mt-0.5">
-                            {isAr ? line.variant.nameAr : (line.variant.nameEn || line.variant.nameAr)}
-                          </p>
-                        )}
-                      </div>
-                      <span className="font-mono-brand text-xs md:text-sm font-bold text-[#D4A5A5] shrink-0">
-                        {formatPrice(line.product.price * line.quantity)}
-                      </span>
+                    <div className="min-w-0">
+                      <h3 className="text-xs sm:text-sm font-bold text-white line-clamp-2 leading-snug">
+                        {isAr ? line.product.nameAr : (line.product.nameEn || line.product.nameAr)}
+                      </h3>
+                      {line.variant && (
+                        <p className="text-[11px] text-[#D4A5A5] font-medium mt-0.5">
+                          {isAr ? line.variant.nameAr : (line.variant.nameEn || line.variant.nameAr)}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="mt-3 flex items-center justify-between">
+                    <div className="mt-2.5 flex items-center justify-between gap-2 flex-wrap">
                       {/* Stepper */}
                       <div className="flex items-center rounded-full border border-white/10 bg-[#1A1A1A] px-2 py-0.5 shadow-2xs">
                         <button
@@ -1015,14 +1050,20 @@ export default function CartPage() {
                         </button>
                       </div>
 
-                      <button
-                        type="button"
-                        aria-label="Delete"
-                        onClick={() => remove(line.product.id, line.variant?.id)}
-                        className="rounded-full p-1.5 text-[#A1A1AA] hover:bg-red-500/10 hover:text-red-400 transition"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
+                      {/* Price and Delete Button */}
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono-brand text-xs sm:text-sm font-extrabold text-[#D4A5A5]">
+                          {formatPrice(line.product.price * line.quantity)}
+                        </span>
+                        <button
+                          type="button"
+                          aria-label="Delete"
+                          onClick={() => remove(line.product.id, line.variant?.id)}
+                          className="rounded-full p-1 text-[#A1A1AA] hover:bg-red-500/10 hover:text-red-400 transition cursor-pointer"
+                        >
+                          <Trash2 className="size-3.5 sm:size-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1096,12 +1137,117 @@ export default function CartPage() {
                 </span>
               )}
             </div>
+
+            {/* Mobile Call-To-Action: Proceed directly to Checkout Form */}
+            <div className="lg:hidden pt-4 mt-2 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileViewTab('checkout');
+                  window.scrollTo({ top: 80, behavior: 'smooth' });
+                }}
+                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#D4A5A5] to-[#B38888] text-[#0A0A0A] text-xs font-bold shadow-lg shadow-[#D4A5A5]/25 hover:opacity-95 active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>
+                  {isAr
+                    ? `الانتقال لإدخال بيانات الشحن والتوصيل (${formatPrice(total)})`
+                    : `Proceed to Shipping Info (${formatPrice(total)})`}
+                </span>
+                <ArrowLeft className="size-4 rtl:rotate-0 ltr:rotate-180" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Right Column: 3-Step Checkout Flow */}
-        <div className="lg:col-span-7">
-          <div className="rounded-3xl border border-white/10 bg-[#141414] p-6 md:p-8 shadow-xl space-y-6">
+        <div className={`lg:col-span-7 ${mobileViewTab === 'checkout' ? 'block' : 'hidden lg:block'}`}>
+          <div className="rounded-3xl border border-white/10 bg-[#141414] p-5 sm:p-6 md:p-8 shadow-xl space-y-6">
+            {/* Mobile Compact Order Summary Accordion (Visible on mobile checkout view) */}
+            <div className="lg:hidden rounded-2xl border border-white/10 bg-[#1A1A1A]/90 p-3.5 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
+                className="w-full flex items-center justify-between text-xs cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="size-8 rounded-xl bg-[#D4A5A5]/15 text-[#D4A5A5] flex items-center justify-center shrink-0">
+                    <ShoppingBag className="size-4" />
+                  </div>
+                  <div className="text-right">
+                    <span className="font-bold text-white block text-xs">
+                      {isAr ? `ملخص المشتريات (${lines.length} منتجات)` : `Order Summary (${lines.length} items)`}
+                    </span>
+                    <span className="text-[10px] text-[#A1A1AA]">
+                      {isMobileSummaryOpen
+                        ? (isAr ? 'اضغطي لطي القائمة ▴' : 'Tap to collapse ▴')
+                        : (isAr ? 'اضغطي لمعاينة المنتجات ▾' : 'Tap to expand ▾')}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono-brand text-sm font-extrabold text-[#D4A5A5]">
+                    {formatPrice(total)}
+                  </span>
+                  <ChevronDown
+                    className={`size-4 text-[#A1A1AA] transition-transform duration-200 ${
+                      isMobileSummaryOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
+              </button>
+
+              {isMobileSummaryOpen && (
+                <div className="mt-3 pt-3 border-t border-white/10 space-y-2.5 animate-in fade-in duration-200">
+                  <div className="max-h-56 overflow-y-auto divide-y divide-white/5 space-y-2 pe-1">
+                    {lines.map((line) => (
+                      <div
+                        key={`${line.product.id}-${line.variant?.id}`}
+                        className="flex items-center justify-between gap-2 pt-2 text-xs"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <img
+                            src={line.product.imageUrl || ''}
+                            alt={line.product.nameAr}
+                            className="size-11 rounded-xl object-contain bg-[#111] border border-white/10 p-1 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-white font-medium line-clamp-1 text-[11px]">
+                              {isAr ? line.product.nameAr : (line.product.nameEn || line.product.nameAr)}
+                            </p>
+                            <p className="text-[10px] text-[#A1A1AA]">
+                              {line.quantity}x {formatPrice(line.product.price)}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="font-mono-brand text-xs font-bold text-[#D4A5A5] shrink-0">
+                          {formatPrice(line.product.price * line.quantity)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileViewTab('items');
+                        window.scrollTo({ top: 80, behavior: 'smooth' });
+                      }}
+                      className="text-[11px] text-[#D4A5A5] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>{isAr ? 'تعديل الكميات أو حذف منتجات' : 'Edit quantities / items'}</span>
+                      <ArrowLeft className="size-3 rtl:rotate-0 ltr:rotate-180" />
+                    </button>
+                    <span className="text-[10px] text-[#A1A1AA]">
+                      {isFreeShipping
+                        ? (isAr ? 'شحن مجاني ✨' : 'Free Shipping ✨')
+                        : (isAr ? `الشحن: ${shippingCost} ج.م` : `Shipping: ${shippingCost} EGP`)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Step Progress Stepper Bar */}
             <div className="flex items-center justify-between pb-5 border-b border-white/10">
               {/* Step 1: Shipping */}
