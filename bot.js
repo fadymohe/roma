@@ -1789,25 +1789,114 @@ async function finalizeProduct(chatId, userId, session) {
   });
 }
 
-// ----------------- Long Polling Loop -----------------
+// ----------------- Fallback Order Watcher & Long Polling Loop -----------------
+
+const sentWhatsAppStatusKeys = new Set();
+
+async function pollOrdersFallbackRoutine() {
+  try {
+    const sbClient = await getAuthenticatedSupabase();
+    const { data: recentOrders, error } = await sbClient
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error || !Array.isArray(recentOrders)) return;
+
+    let orders = getOrders();
+    let ordersModified = false;
+
+    for (const row of recentOrders) {
+      if (!row || !row.status || row.status === 'cart_draft' || String(row.order_number || '').startsWith('CART-')) continue;
+      const cleanOrderId = String(row.order_number || row.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+      const statusKey = `${cleanOrderId}_${row.status}`;
+
+      // Sync local orders.json
+      const existingIdx = orders.findIndex(o => {
+        const oClean = String(o.orderId || o.orderNumber || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+        return oClean === cleanOrderId;
+      });
+      if (existingIdx !== -1) {
+        if (orders[existingIdx].status !== row.status) {
+          orders[existingIdx].status = row.status;
+          orders[existingIdx].updatedAt = row.updated_at || new Date().toISOString();
+          ordersModified = true;
+        }
+      } else {
+        orders.unshift({
+          orderId: cleanOrderId,
+          orderNumber: row.order_number || `ROMA-${cleanOrderId}`,
+          customerName: row.customer_name || row.shipping_details?.fullName || 'عميلة المتجر',
+          customerPhone: row.phone || row.shipping_details?.phone || 'غير مسجل',
+          shippingAddress: row.shipping_address || row.shipping_details?.fullAddress || '',
+          totalAmount: row.total_amount,
+          status: row.status,
+          items: Array.isArray(row.items) ? row.items : [],
+          createdAt: row.created_at || new Date().toISOString(),
+        });
+        ordersModified = true;
+      }
+
+      // Check if automated WhatsApp should be sent
+      if (['confirmed', 'shipped', 'delivered', 'cancelled'].includes(row.status)) {
+        if (!sentWhatsAppStatusKeys.has(statusKey)) {
+          sentWhatsAppStatusKeys.add(statusKey);
+          const targetPhone = row.phone || row.shipping_details?.phone;
+          if (targetPhone && targetPhone !== 'غير مسجل') {
+            const orderObj = {
+              orderId: cleanOrderId,
+              orderNumber: row.order_number || `ROMA-${cleanOrderId}`,
+              customerName: row.customer_name || row.shipping_details?.fullName || 'عميلة المتجر',
+              customerPhone: targetPhone,
+              shippingAddress: row.shipping_address || row.shipping_details?.fullAddress || '',
+              totalAmount: row.total_amount,
+              status: row.status,
+              items: Array.isArray(row.items) ? row.items : [],
+            };
+            try {
+              if (row.status === 'confirmed') {
+                console.log(`[WHATSAPP AUTO] Order ${cleanOrderId} confirmed -> sending WhatsApp to ${targetPhone}...`);
+                await sendOrderConfirmationWhatsApp(orderObj);
+              } else {
+                console.log(`[WHATSAPP AUTO] Order ${cleanOrderId} status ${row.status} -> sending WhatsApp to ${targetPhone}...`);
+                await sendShippingUpdateWhatsApp(orderObj, row.status);
+              }
+            } catch (err) {
+              console.warn('[WHATSAPP AUTO] Message send notice:', err?.message);
+            }
+          }
+        }
+      }
+    }
+
+    if (ordersModified) {
+      saveOrders(orders);
+    }
+  } catch (_) {}
+}
 
 let lastUpdateId = 0;
 async function poll() {
-  // Check if webhook is currently configured
+  // Check if webhook is active
   try {
     const infoRes = await fetch(`${BASE_URL}/getWebhookInfo`);
     const infoData = await infoRes.json();
     if (infoData.ok && infoData.result?.url) {
       console.log(`⚡ Telegram Webhook is active: ${infoData.result.url}`);
-      console.log('🤖 Bot is running in Daemon Mode: Supabase Realtime + WhatsApp Bridge + Abandoned Cart Scheduler!');
+      console.log('🤖 Bot is running in Hybrid Daemon Mode: Supabase Realtime + WhatsApp Automations + Orders Watcher + Abandoned Cart Scheduler!');
       while (true) {
-        await new Promise((r) => setTimeout(r, 60000));
+        await pollOrdersFallbackRoutine();
+        await new Promise((r) => setTimeout(r, 5000));
       }
     }
   } catch (_) {}
 
+  console.log('🤖 Telegram Bot is actively listening via Long Polling...');
+
   while (true) {
     try {
+      await pollOrdersFallbackRoutine();
       const res = await fetch(`${BASE_URL}/getUpdates?offset=${lastUpdateId + 1}&timeout=15`, {
         signal: AbortSignal.timeout(20000),
       });
@@ -1823,16 +1912,10 @@ async function poll() {
         }
       } else if (!data.ok) {
         if (data.error_code === 409) {
-          // If webhook was enabled while running, stop polling
-          if (String(data.description).includes('webhook')) {
-            console.log('⚡ Webhook activated. Transitioning to Realtime Daemon mode.');
-            return;
-          }
           console.warn(`⚠️ 409 Conflict: ${data.description}`);
           await new Promise((r) => setTimeout(r, 5000));
           continue;
         }
-        console.warn('Telegram getUpdates returned error:', data.description || data);
         await new Promise((r) => setTimeout(r, 3000));
       }
     } catch (err) {

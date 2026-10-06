@@ -282,6 +282,53 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, action, orderId });
     }
 
+    // Handle incoming text commands (/start, /menu, etc.)
+    if (update.message && BOT_TOKEN) {
+      const msg = update.message;
+      const chatId = msg.chat?.id;
+      const text = String(msg.text || '').trim();
+
+      if (chatId) {
+        const welcomeText =
+          `🌿 <b>لوحة تحكم إدارة متجر Roma المتكامل</b>\n\n` +
+          `مرحباً بك! يمكنك إدارة متجرك بالكامل ومتابعة وتحديث الطلبات مباشرة:\n\n` +
+          `• 📦 <b>متابعة الطلبات وتحديث الشحنات بنقرة واحدة</b>\n` +
+          `• 📡 <b>إرسال رسائل واتساب تلقائياً للعملاء للتأكيد والشحن من +201505566847</b>\n` +
+          `• 🛒 <b>استعادة السلات المتروكة بكوبونات خصم مؤتمتة</b>\n` +
+          `• 🛍️ <b>سحب ونشر المنتجات عبر روابط أمازون</b>\n\n` +
+          `اختر القسم المطلوب من الأزرار أدناه:`;
+
+        const menuKeyboard = [
+          [
+            { text: '📋 متابعة كل الطلبات', callback_data: 'nav_orders_all' },
+            { text: '🛒 السلات المتروكة', callback_data: 'nav_check_abandoned' },
+          ],
+          [
+            { text: '🏷️ المنتجات والمخزون', callback_data: 'nav_list_prod' },
+            { text: '➕ إضافة منتج جديد', callback_data: 'nav_add_prod' },
+          ],
+          [
+            { text: '🌐 زيارة متجر Roma المباشر', url: 'https://roma-eg.my' },
+          ],
+        ];
+
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: welcomeText,
+            parse_mode: 'HTML',
+            reply_markup: {
+              inline_keyboard: menuKeyboard,
+            },
+          }),
+        }).catch(() => {});
+
+        return res.status(200).json({ ok: true, message: 'Command handled' });
+      }
+    }
+
     return res.status(200).json({ ok: true, message: 'Update received' });
   } catch (err) {
     console.error('Telegram webhook handler critical error:', err);

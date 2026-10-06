@@ -90,7 +90,7 @@ export default function AccountPage() {
     loadOrders();
   }, [user]);
 
-  // Helper to sync updated orders into localStorage
+  // Helper to sync updated orders into localStorage and React state
   const syncOrderUpdates = (updatedList: any[]) => {
     if (!Array.isArray(updatedList) || updatedList.length === 0) return;
     try {
@@ -103,7 +103,7 @@ export default function AccountPage() {
             const upClean = String(up.order_number || up.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
             for (const loc of localList) {
               const locClean = String(loc.order_number || loc.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-              if (locClean === upClean || (upClean.length >= 4 && locClean.includes(upClean))) {
+              if (locClean === upClean || (upClean.length >= 4 && (locClean.includes(upClean) || upClean.includes(locClean)))) {
                 if (loc.status !== up.status) {
                   loc.status = up.status;
                   loc.updated_at = up.updated_at || new Date().toISOString();
@@ -118,6 +118,30 @@ export default function AccountPage() {
         }
       }
     } catch (_) {}
+
+    // Instantly update React state so the UI step progress bar advances live without page refresh
+    setLookupOrders((prev) => {
+      const map = new Map(prev.map((o: any) => [String(o.order_number || o.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim(), o]));
+      for (const up of updatedList) {
+        const cleanKey = String(up.order_number || up.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+        map.set(cleanKey, up);
+      }
+      return Array.from(map.values());
+    });
+
+    setOrders((prev) => {
+      return prev.map((ord: any) => {
+        const ordClean = String(ord.order_number || ord.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+        const match = updatedList.find((up: any) => {
+          const upClean = String(up.order_number || up.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+          return ordClean === upClean || (upClean.length >= 4 && (ordClean.includes(upClean) || upClean.includes(ordClean)));
+        });
+        if (match && match.status !== ord.status) {
+          return { ...ord, status: match.status, updated_at: match.updated_at || new Date().toISOString() };
+        }
+        return ord;
+      });
+    });
   };
 
   // Auto-fetch latest placed order details and recent orders on mount
@@ -297,12 +321,12 @@ export default function AccountPage() {
     // 1. Lookups take priority
     for (const o of lookupOrders) {
       const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-      map.set(cleanKey, o);
+      map.set(cleanKey, { ...o, order_number: `ROMA-${cleanKey}` });
     }
     // 2. User account orders
     for (const o of orders) {
       const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-      if (!map.has(cleanKey)) map.set(cleanKey, o);
+      if (!map.has(cleanKey)) map.set(cleanKey, { ...o, order_number: `ROMA-${cleanKey}` });
     }
     // 3. Browser local storage recent orders fallback
     try {
@@ -312,7 +336,7 @@ export default function AccountPage() {
         if (Array.isArray(parsed)) {
           for (const o of parsed) {
             const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-            if (!map.has(cleanKey)) map.set(cleanKey, o);
+            if (!map.has(cleanKey)) map.set(cleanKey, { ...o, order_number: `ROMA-${cleanKey}` });
           }
         }
       }
