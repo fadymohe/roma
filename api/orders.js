@@ -103,13 +103,18 @@ export default async function handler(req, res) {
       customerName = 'عميل المتجر',
       customerPhone = '',
       shippingAddress = '',
-      paymentMethod = 'الدفع عند الاستلام',
+      paymentMethod = 'فودافون كاش / المحافظ الإلكترونية',
       items = [],
       shippingCost = 0,
       userId = null,
       receiptImage = null,
       skipDbInsert = false,
     } = body;
+
+    let cleanPaymentMethod = String(paymentMethod || '').trim();
+    if (!cleanPaymentMethod || cleanPaymentMethod.includes('الاستلام') || /cod/i.test(cleanPaymentMethod)) {
+      cleanPaymentMethod = 'فودافون كاش / المحافظ الإلكترونية';
+    }
 
     const dedupKey = String(orderId || orderNumber || `${customerPhone}_${items.length}`);
     const isDuplicate = sentTelegramOrderIds.has(dedupKey);
@@ -196,6 +201,11 @@ export default async function handler(req, res) {
     const cleanId = String(orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
     const generatedOrderNumber = `ROMA-${cleanId}`;
 
+    const verifiedItemsWithPayment = verifiedItems.map((item) => ({
+      ...item,
+      payment_method: cleanPaymentMethod,
+    }));
+
     // 1. Dual-Persistence: Save to local orders.json immediately for instant zero-latency tracking
     saveLocalOrder({
       orderId: cleanId,
@@ -205,8 +215,8 @@ export default async function handler(req, res) {
       shippingAddress,
       totalAmount: verifiedTotalAmount,
       status: 'pending',
-      paymentMethod,
-      items: verifiedItems,
+      paymentMethod: cleanPaymentMethod,
+      items: verifiedItemsWithPayment,
       createdAt: new Date().toISOString(),
     });
 
@@ -240,7 +250,7 @@ export default async function handler(req, res) {
         customer_name: customerName,
         phone: customerPhone,
         shipping_address: shippingAddress,
-        items: verifiedItems,
+        items: verifiedItemsWithPayment,
         user_id: userId || null,
       });
     } catch (sbErr) {
@@ -264,7 +274,7 @@ export default async function handler(req, res) {
       `👤 <b>العميل:</b> ${escapeHtml(customerName)}\n` +
       `📞 <b>رقم الهاتف:</b> <code>${escapeHtml(customerPhone || 'غير متوفر')}</code>\n` +
       `📍 <b>عنوان التوصيل:</b> ${escapeHtml(shippingAddress)}\n` +
-      `💳 <b>طريقة الدفع:</b> ${escapeHtml(paymentMethod)}\n` +
+      `💳 <b>طريقة الدفع:</b> ${escapeHtml(cleanPaymentMethod)}\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `📦 <b>المنتجات المطلوبة:</b>\n${itemsHtml}\n\n` +
       (verifiedShippingCost ? `🚚 <b>الشحن:</b> ${verifiedShippingCost} ج.م\n` : '') +

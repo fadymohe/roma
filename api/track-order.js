@@ -26,23 +26,52 @@ export default async function handler(req, res) {
     const results = [];
     const seenKeys = new Set();
 
+    // Preload local orders into fast lookup maps to enrich Supabase rows with paymentMethod and local metadata
+    const localList = readLocalOrders();
+    const localByNum = new Map();
+    const localByPhone = new Map();
+    for (const loc of localList) {
+      const cleanNum = String(loc.orderNumber || loc.orderId || loc.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim().toLowerCase();
+      if (cleanNum) localByNum.set(cleanNum, loc);
+      const cleanPh = String(loc.customerPhone || loc.phone || '').replace(/\D+/g, '');
+      if (cleanPh) localByPhone.set(cleanPh, loc);
+    }
+
     const addOrder = (ord) => {
       if (!ord) return;
-      const key = String(ord.order_number || ord.orderNumber || ord.id || ord.orderId);
-      if (!seenKeys.has(key)) {
-        seenKeys.add(key);
+      const rawKey = String(ord.order_number || ord.orderNumber || ord.id || ord.orderId || '');
+      const cleanKey = rawKey.replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim().toLowerCase();
+      const cleanPhone = String(ord.phone || ord.customerPhone || '').replace(/\D+/g, '');
+
+      if (!seenKeys.has(cleanKey)) {
+        seenKeys.add(cleanKey);
+
+        const localMatch = localByNum.get(cleanKey) || (cleanPhone ? localByPhone.get(cleanPhone) : null);
+
+        let method =
+          ord.payment_method ||
+          ord.paymentMethod ||
+          localMatch?.paymentMethod ||
+          localMatch?.payment_method ||
+          (Array.isArray(ord.items) && ord.items.find((it) => it && it.payment_method)?.payment_method) ||
+          null;
+
+        if (!method || method.includes('الاستلام') || /cod/i.test(method)) {
+          method = 'فودافون كاش / المحافظ الإلكترونية';
+        }
+
         results.push({
-          id: ord.id || ord.orderId || key,
-          order_number: ord.order_number || ord.orderNumber || key,
+          id: ord.id || ord.orderId || cleanKey,
+          order_number: ord.order_number || ord.orderNumber || rawKey,
           status: ord.status || 'pending',
-          customer_name: ord.customer_name || ord.customerName || 'عميل المتجر',
-          phone: ord.phone || ord.customerPhone || '',
-          shipping_address: ord.shipping_address || ord.shippingAddress || '',
-          total_amount: Number(ord.total_amount || ord.totalAmount || 0),
-          payment_method: ord.payment_method || ord.paymentMethod || 'الدفع عند الاستلام',
-          items: Array.isArray(ord.items) ? ord.items : [],
-          created_at: ord.created_at || ord.createdAt || new Date().toISOString(),
-          updated_at: ord.updated_at || ord.updatedAt || null,
+          customer_name: ord.customer_name || ord.customerName || localMatch?.customerName || 'عميل المتجر',
+          phone: ord.phone || ord.customerPhone || localMatch?.customerPhone || '',
+          shipping_address: ord.shipping_address || ord.shippingAddress || localMatch?.shippingAddress || '',
+          total_amount: Number(ord.total_amount || ord.totalAmount || localMatch?.totalAmount || 0),
+          payment_method: method,
+          items: Array.isArray(ord.items) && ord.items.length > 0 ? ord.items : (Array.isArray(localMatch?.items) ? localMatch.items : []),
+          created_at: ord.created_at || ord.createdAt || localMatch?.createdAt || new Date().toISOString(),
+          updated_at: ord.updated_at || ord.updatedAt || localMatch?.updatedAt || null,
         });
       }
     };

@@ -124,7 +124,14 @@ export default function AccountPage() {
       const map = new Map(prev.map((o: any) => [String(o.order_number || o.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim(), o]));
       for (const up of updatedList) {
         const cleanKey = String(up.order_number || up.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-        map.set(cleanKey, up);
+        const existing = map.get(cleanKey);
+        const resolvedMethod =
+          up.payment_method && !up.payment_method.includes('الاستلام') && !/cod/i.test(up.payment_method)
+            ? up.payment_method
+            : existing?.payment_method && !existing.payment_method.includes('الاستلام')
+            ? existing.payment_method
+            : (isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash / E-Wallet');
+        map.set(cleanKey, { ...existing, ...up, payment_method: resolvedMethod });
       }
       return Array.from(map.values());
     });
@@ -752,7 +759,14 @@ export default function AccountPage() {
                             📍 {isAr ? 'العنوان:' : 'Address:'} {order.shipping_address || order.address}
                           </span>
                           <span>
-                            💳 {isAr ? 'طريقة الدفع:' : 'Payment:'} {order.payment_method || (isAr ? 'إنستاباي / محفظة' : 'InstaPay / Wallet')}
+                            💳 {isAr ? 'طريقة الدفع:' : 'Payment:'}{' '}
+                            {(() => {
+                              const pm = order.payment_method || order.paymentMethod;
+                              if (!pm || pm.includes('الاستلام') || /cod/i.test(pm)) {
+                                return isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash / E-Wallet';
+                              }
+                              return pm;
+                            })()}
                           </span>
                         </div>
                       </div>
@@ -760,7 +774,7 @@ export default function AccountPage() {
                       {/* Direct WhatsApp Concierge Button */}
                       <div className="flex items-center justify-end gap-2 pt-2">
                         <a
-                          href={`https://wa.me/201505566849?text=${encodeURIComponent(
+                          href={`https://wa.me/201505566847?text=${encodeURIComponent(
                             isAr
                               ? `مرحباً، أود الاستفسار عن حالة طلبي رقم #ROMA-${order.order_number || order.id}:`
                               : `Hello, I'd like to ask about my order #ROMA-${order.order_number || order.id}:`
