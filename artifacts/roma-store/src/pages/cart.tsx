@@ -1248,97 +1248,98 @@ export default function CartPage() {
               )}
             </div>
 
-            {/* Step Progress Stepper Bar */}
-            <div className="flex items-center justify-between pb-5 border-b border-white/10">
-              {/* Step 1: Shipping */}
-              <button
-                type="button"
-                onClick={() => setCheckoutStep('shipping')}
-                className="flex items-center gap-2 text-right group transition cursor-pointer"
-              >
-                <div
-                  className={`size-8 rounded-full flex items-center justify-center text-xs font-bold transition ${
-                    checkoutStep === 'shipping'
-                      ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20'
-                      : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  }`}
+            {/* Step Progress Stepper Bar - Perfectly Centered on Mobile & Desktop */}
+            <div className="pb-5 border-b border-white/10">
+              <div className="grid grid-cols-3 gap-2 relative max-w-md mx-auto items-start">
+                {/* Connecting track line */}
+                <div className="absolute top-4 left-[16%] right-[16%] h-0.5 bg-white/10 -z-0" />
+
+                {/* Step 1: Shipping */}
+                <button
+                  type="button"
+                  onClick={() => setCheckoutStep('shipping')}
+                  className="relative z-10 flex flex-col items-center text-center group transition cursor-pointer"
                 >
-                  {checkoutStep !== 'shipping' ? <Check className="size-4" /> : '1'}
-                </div>
-                <div>
-                  <span
-                    className={`text-xs font-bold block transition ${
-                      checkoutStep === 'shipping' ? 'text-white' : 'text-[#A1A1AA] group-hover:text-white'
+                  <div
+                    className={`size-8 sm:size-9 rounded-full flex items-center justify-center text-xs font-bold transition shadow-md ${
+                      checkoutStep === 'shipping'
+                        ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-[#D4A5A5]/25 ring-4 ring-[#D4A5A5]/20'
+                        : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                     }`}
                   >
-                    {isAr ? 'بيانات الشحن' : 'Shipping Info'}
-                  </span>
-                  <span className="text-[10px] text-[#A1A1AA] block">
-                    {isAr ? 'المحافظة والعنوان' : 'Address'}
-                  </span>
-                </div>
-              </button>
+                    {checkoutStep !== 'shipping' ? <Check className="size-4" /> : '1'}
+                  </div>
+                  <div className="mt-2 text-center">
+                    <span
+                      className={`text-xs font-bold block transition ${
+                        checkoutStep === 'shipping' ? 'text-white' : 'text-[#A1A1AA] group-hover:text-white'
+                      }`}
+                    >
+                      {isAr ? 'بيانات الشحن' : 'Shipping Info'}
+                    </span>
+                    <span className="text-[10px] text-[#A1A1AA] block mt-0.5">
+                      {isAr ? 'المحافظة والعنوان' : 'Address'}
+                    </span>
+                  </div>
+                </button>
 
-              <div className="h-0.5 w-6 sm:w-12 bg-white/10" />
-
-              {/* Step 2: Account / Auth */}
-              <div className="flex items-center gap-2 text-right">
-                <div
-                  className={`size-8 rounded-full flex items-center justify-center text-xs font-bold transition ${
-                    checkoutStep === 'auth'
-                      ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20'
-                      : isAuthenticated
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-[#1A1A1A] text-[#A1A1AA] border border-white/10'
-                  }`}
-                >
-                  {isAuthenticated ? <Check className="size-4" /> : '2'}
-                </div>
-                <div>
-                  <span
-                    className={`text-xs font-bold block transition ${
-                      checkoutStep === 'auth' ? 'text-white' : 'text-[#A1A1AA]'
+                {/* Step 2: Account / Auth */}
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div
+                    className={`size-8 sm:size-9 rounded-full flex items-center justify-center text-xs font-bold transition shadow-md ${
+                      checkoutStep === 'auth'
+                        ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-[#D4A5A5]/25 ring-4 ring-[#D4A5A5]/20'
+                        : isAuthenticated
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-[#1A1A1A] text-[#A1A1AA] border border-white/10'
                     }`}
                   >
-                    {isAr ? 'الحساب والتسجيل' : 'Account'}
-                  </span>
-                  <span className="text-[10px] text-[#A1A1AA] block">
-                    {isAuthenticated ? (isAr ? 'مسجل الدخول ✓' : 'Signed in') : (isAr ? 'إلزامي للطلب' : 'Required')}
-                  </span>
+                    {isAuthenticated ? <Check className="size-4" /> : '2'}
+                  </div>
+                  <div className="mt-2 text-center">
+                    <span
+                      className={`text-xs font-bold block transition ${
+                        checkoutStep === 'auth' ? 'text-white' : 'text-[#A1A1AA]'
+                      }`}
+                    >
+                      {isAr ? 'الحساب والتسجيل' : 'Account'}
+                    </span>
+                    <span className="text-[10px] text-[#A1A1AA] block mt-0.5">
+                      {isAuthenticated ? (isAr ? 'مسجل الدخول ✓' : 'Signed in') : (isAr ? 'إلزامي للطلب' : 'Required')}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <div className="h-0.5 w-6 sm:w-12 bg-white/10" />
-
-              {/* Step 3: Payment */}
-              <div className="flex items-center gap-2 text-right">
-                <div
-                  className={`size-8 rounded-full flex items-center justify-center text-xs font-bold transition ${
-                    checkoutStep === 'payment'
-                      ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20'
-                      : 'bg-[#1A1A1A] text-[#A1A1AA] border border-white/10'
-                  }`}
-                >
-                  3
-                </div>
-                <div>
-                  <span
-                    className={`text-xs font-bold block transition ${
-                      checkoutStep === 'payment' ? 'text-white' : 'text-[#A1A1AA]'
+                {/* Step 3: Payment */}
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div
+                    className={`size-8 sm:size-9 rounded-full flex items-center justify-center text-xs font-bold transition shadow-md ${
+                      checkoutStep === 'payment'
+                        ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-[#D4A5A5]/25 ring-4 ring-[#D4A5A5]/20'
+                        : 'bg-[#1A1A1A] text-[#A1A1AA] border border-white/10'
                     }`}
                   >
-                    {isAr ? 'طريقة الدفع' : 'Payment'}
-                  </span>
-                  <span className="text-[10px] text-[#A1A1AA] block">
-                    {isAr ? 'إنستاباي وفودافون' : 'InstaPay & Voda'}
-                  </span>
+                    3
+                  </div>
+                  <div className="mt-2 text-center">
+                    <span
+                      className={`text-xs font-bold block transition ${
+                        checkoutStep === 'payment' ? 'text-white' : 'text-[#A1A1AA]'
+                      }`}
+                    >
+                      {isAr ? 'طريقة الدفع' : 'Payment'}
+                    </span>
+                    <span className="text-[10px] text-[#A1A1AA] block mt-0.5">
+                      {isAr ? 'إنستاباي / محفظة' : 'InstaPay/Wallet'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Validation Error Banner */}
             {validationError && (
-              <div className="rounded-2xl bg-red-950/50 border border-red-800/50 p-3.5 text-xs text-red-300 flex items-center gap-2 animate-in fade-in duration-200">
+              <div className="rounded-2xl bg-red-950/50 border border-red-800/50 p-3.5 text-xs text-red-300 flex items-center justify-center text-center gap-2 animate-in fade-in duration-200">
                 <AlertCircle className="size-4 text-red-400 shrink-0" />
                 <span>{validationError}</span>
               </div>
@@ -1349,12 +1350,15 @@ export default function CartPage() {
             {/* ========================================================================= */}
             {checkoutStep === 'shipping' && (
               <div className="space-y-5 animate-in fade-in duration-200">
-                <div>
-                  <h2 className="text-lg md:text-xl font-bold font-display text-white flex items-center gap-2">
-                    <Truck className="size-5 text-[#D4A5A5]" />
-                    <span>{isAr ? 'بيانات الشحن والتوصيل (مصر)' : 'Shipping & Delivery (Egypt)'}</span>
+                {/* Centered Section Header for Mobile & Desktop */}
+                <div className="text-center pb-2">
+                  <div className="inline-flex items-center justify-center size-10 rounded-2xl bg-[#D4A5A5]/15 border border-[#D4A5A5]/30 text-[#D4A5A5] mb-2 shadow-sm">
+                    <Truck className="size-5" />
+                  </div>
+                  <h2 className="text-lg md:text-xl font-bold font-display text-white text-center">
+                    {isAr ? 'بيانات الشحن والتوصيل (مصر)' : 'Shipping & Delivery (Egypt)'}
                   </h2>
-                  <p className="text-xs text-[#A1A1AA] mt-1">
+                  <p className="text-xs text-[#A1A1AA] mt-1 text-center max-w-md mx-auto">
                     {isAr
                       ? 'توصيل فوري لباب المنزل خلال 24 - 48 ساعة لجميع المحافظات المصرية.'
                       : 'Fast doorstep delivery across all Egyptian governorates.'}
