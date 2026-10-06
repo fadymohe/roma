@@ -518,7 +518,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
               <Link href="/policies" className="block hover:text-zinc-200 transition">
                 {isAr ? 'سياسة الخصوصية وحماية البيانات' : 'Privacy & Data Protection'}
               </Link>
-              <Link href="/account" className="block hover:text-zinc-200 transition">
+              <Link href="/account?tab=orders" className="block hover:text-zinc-200 transition">
                 {isAr ? 'متابعة وتتبع طلباتي' : 'Track My Orders'}
               </Link>
               <div className="pt-2">

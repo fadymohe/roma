@@ -400,15 +400,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch real order history from Supabase with instant local fallback
   const fetchUserOrders = async (): Promise<UserOrder[]> => {
-    if (!user) return [];
-
     let localRecent: UserOrder[] = [];
     try {
       const saved = localStorage.getItem('roma_recent_orders');
       if (saved) {
-        localRecent = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) localRecent = parsed;
       }
     } catch (_) {}
+
+    if (!user) {
+      // For guest visitors, return their locally saved orders immediately
+      return localRecent;
+    }
 
     try {
       // 1. Fetch by user_id
@@ -425,16 +429,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // 2. Fallback to searching by phone if user_id returns empty
       if (combined.length === 0 && user.phone && user.phone.length > 8) {
-        const cleanPhone = user.phone.replace(/\D+/g, '');
-        const { data: phoneOrders } = await supabase
-          .from('orders')
-          .select('*')
-          .ilike('phone', `%${cleanPhone}%`)
-          .order('created_at', { ascending: false });
-
-        if (Array.isArray(phoneOrders) && phoneOrders.length > 0) {
-          combined = [...phoneOrders];
-        }
+        try {
+          const cleanPhone = user.phone.replace(/\D+/g, '');
+          const res = await fetch(`/api/track-order?phone=${encodeURIComponent(cleanPhone)}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.orders)) {
+              combined = [...json.orders];
+            }
+          }
+        } catch (_) {}
       }
 
       // Merge any recent orders from local storage

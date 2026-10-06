@@ -67,34 +67,155 @@ export default function AccountPage() {
   }, []);
 
   useEffect(() => {
-    if (!user) {
-      setLocation('/auth');
-    } else {
+    if (user) {
       setFullName(user.name);
       if (user.phone) setPhone(user.phone);
       if (user.savedAddresses?.[0]) setAddressLine(user.savedAddresses[0]);
     }
-  }, [user, setLocation]);
+  }, [user]);
 
-  // Load orders for logged in user
+  // Load orders for logged in or guest user
   useEffect(() => {
     async function loadOrders() {
-      if (user) {
-        setLoadingOrders(true);
-        try {
-          const res = await fetchUserOrders();
-          setOrders(res || []);
-        } catch (e) {
-          console.warn('Orders fetch error:', e);
-        } finally {
-          setLoadingOrders(false);
-        }
-      } else {
+      setLoadingOrders(true);
+      try {
+        const res = await fetchUserOrders();
+        setOrders(res || []);
+      } catch (e) {
+        console.warn('Orders fetch error:', e);
+      } finally {
         setLoadingOrders(false);
       }
     }
     loadOrders();
   }, [user]);
+
+  // Helper to sync updated orders into localStorage
+  const syncOrderUpdates = (updatedList: any[]) => {
+    if (!Array.isArray(updatedList) || updatedList.length === 0) return;
+    try {
+      const raw = localStorage.getItem('roma_recent_orders');
+      if (raw) {
+        const localList = JSON.parse(raw);
+        if (Array.isArray(localList)) {
+          let changed = false;
+          for (const up of updatedList) {
+            const upClean = String(up.order_number || up.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+            for (const loc of localList) {
+              const locClean = String(loc.order_number || loc.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+              if (locClean === upClean || (upClean.length >= 4 && locClean.includes(upClean))) {
+                if (loc.status !== up.status) {
+                  loc.status = up.status;
+                  loc.updated_at = up.updated_at || new Date().toISOString();
+                  changed = true;
+                }
+              }
+            }
+          }
+          if (changed) {
+            localStorage.setItem('roma_recent_orders', JSON.stringify(localList));
+          }
+        }
+      }
+    } catch (_) {}
+  };
+
+  // Auto-fetch latest placed order details and recent orders on mount
+  useEffect(() => {
+    async function refreshActiveOrders() {
+      const targets = new Set<string>();
+      if (recentOrderId) {
+        targets.add(String(recentOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, ''));
+      }
+
+      try {
+        const raw = localStorage.getItem('roma_recent_orders');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            for (const o of parsed.slice(0, 5)) {
+              const clean = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+              if (clean) targets.add(clean);
+            }
+          }
+        }
+      } catch (_) {}
+
+      for (const target of targets) {
+        try {
+          const res = await fetch(`/api/track-order?orderNumber=${encodeURIComponent(target)}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.orders) && json.orders.length > 0) {
+              syncOrderUpdates(json.orders);
+              setLookupOrders((prev) => {
+                const combined = [...json.orders, ...prev];
+                return Array.from(new Map(combined.map((o: any) => [String(o.order_number || o.id), o])).values());
+              });
+            }
+          }
+        } catch (_) {}
+      }
+    }
+
+    refreshActiveOrders();
+  }, [recentOrderId]);
+
+  // Live auto-refresh: Update order status every 8 seconds in realtime
+  useEffect(() => {
+    const timer = setInterval(async () => {
+      if (activeTab !== 'orders') return;
+
+      const targets = new Set<string>();
+      if (lookupOrders.length > 0) {
+        for (const o of lookupOrders.slice(0, 3)) {
+          const num = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+          if (num) targets.add(num);
+        }
+      } else {
+        try {
+          const raw = localStorage.getItem('roma_recent_orders');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              for (const o of parsed.slice(0, 3)) {
+                const clean = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+                if (clean) targets.add(clean);
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
+      for (const num of targets) {
+        try {
+          const res = await fetch(`/api/track-order?orderNumber=${encodeURIComponent(num)}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.orders) && json.orders.length > 0) {
+              syncOrderUpdates(json.orders);
+              setLookupOrders((prev) => {
+                const map = new Map(prev.map((o: any) => [String(o.order_number || o.id), o]));
+                for (const up of json.orders) {
+                  map.set(String(up.order_number || up.id), up);
+                }
+                return Array.from(map.values());
+              });
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (user) {
+        try {
+          const res = await fetchUserOrders();
+          if (Array.isArray(res) && res.length > 0) setOrders(res);
+        } catch (_) {}
+      }
+    }, 8000);
+
+    return () => clearInterval(timer);
+  }, [activeTab, lookupOrders, user]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,24 +252,31 @@ export default function AccountPage() {
 
   const handleLookupOrders = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lookupPhone.trim()) return;
+    const query = lookupPhone.trim();
+    if (!query) return;
     setIsLookingUp(true);
 
     try {
-      const clean = lookupPhone.trim().replace(/\D+/g, '');
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .ilike('phone', `%${clean}%`)
-        .order('created_at', { ascending: false });
+      const cleanDigits = query.replace(/\D+/g, '');
+      const isPhone = cleanDigits.length >= 10 && (cleanDigits.startsWith('01') || cleanDigits.startsWith('201'));
+      const param = isPhone
+        ? `phone=${encodeURIComponent(cleanDigits)}`
+        : `orderNumber=${encodeURIComponent(query)}`;
 
-      if (!error && Array.isArray(data)) {
-        setLookupOrders(data);
+      const res = await fetch(`/api/track-order?${param}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.orders)) {
+          setLookupOrders(json.orders);
+        } else {
+          setLookupOrders([]);
+        }
       } else {
         setLookupOrders([]);
       }
     } catch (e) {
       console.warn('Guest lookup error:', e);
+      setLookupOrders([]);
     } finally {
       setIsLookingUp(false);
     }
@@ -163,43 +291,34 @@ export default function AccountPage() {
     return 1; // pending
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center py-20 px-4" dir={dir}>
-        <div className="max-w-md w-full rounded-3xl border border-white/10 bg-[#141414] p-8 text-center space-y-6 shadow-2xl">
-          <div className="size-16 rounded-2xl bg-[#D4A5A5]/10 border border-[#D4A5A5]/20 flex items-center justify-center mx-auto text-[#D4A5A5]">
-            <Lock className="size-8" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-white mb-2">
-              {isAr ? 'تسجيل الدخول مطلوب' : 'Authentication Required'}
-            </h1>
-            <p className="text-xs text-[#A1A1AA] leading-relaxed">
-              {isAr
-                ? 'يرجى تسجيل الدخول أو إنشاء حساب جديد للوصول إلى لوحة التحكم ومتابعة طلباتكِ وعناوينكِ.'
-                : 'Please sign in or create an account to access your account dashboard, track orders, and manage addresses.'}
-            </p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <Link
-              href="/auth?tab=login"
-              className="w-full py-3 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] text-xs font-bold text-[#0A0A0A] transition shadow-md"
-            >
-              {isAr ? 'تسجيل الدخول الآن' : 'Sign In Now'}
-            </Link>
-            <Link
-              href="/auth?tab=register"
-              className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white transition"
-            >
-              {isAr ? 'إنشاء حساب جديد' : 'Create an Account'}
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const displayOrders = orders;
+  // Comprehensive order list merging: Lookup search + User history + Recent local orders
+  const displayOrders = (() => {
+    const map = new Map<string, any>();
+    // 1. Lookups take priority
+    for (const o of lookupOrders) {
+      const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+      map.set(cleanKey, o);
+    }
+    // 2. User account orders
+    for (const o of orders) {
+      const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+      if (!map.has(cleanKey)) map.set(cleanKey, o);
+    }
+    // 3. Browser local storage recent orders fallback
+    try {
+      const raw = localStorage.getItem('roma_recent_orders');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          for (const o of parsed) {
+            const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+            if (!map.has(cleanKey)) map.set(cleanKey, o);
+          }
+        }
+      }
+    } catch (_) {}
+    return Array.from(map.values());
+  })();
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#F9FAFB] pb-24 pt-6" dir={dir}>
@@ -349,8 +468,8 @@ export default function AccountPage() {
                     </p>
                     <p className="text-[11px] text-[#A1A1AA] mt-0.5">
                       {isAr
-                        ? `طلبكِ برقم (#ROMA-${recentOrderId}) تم تسجيله ويتم تجهيزه الآن بعناية. يمكنكِ متابعة مراحل الشحن مباشرة:`
-                        : `Order (#ROMA-${recentOrderId}) is being prepared. Track your delivery stages below:`}
+                        ? `طلبكِ برقم (#ROMA-${String(recentOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '')}) تم تسجيله ويتم تجهيزه الآن بعناية. يمكنكِ متابعة مراحل الشحن مباشرة:`
+                        : `Order (#ROMA-${String(recentOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '')}) is being prepared. Track your delivery stages below:`}
                     </p>
                   </div>
                 </div>
@@ -367,30 +486,47 @@ export default function AccountPage() {
               </div>
             )}
 
-            {!user && (
-              <div className="rounded-2xl border border-white/10 bg-[#141414] p-5 space-y-3">
+            {/* Universal Real-Time Tracking Search (by Phone or Order Number) */}
+            <div className="rounded-2xl border border-white/10 bg-[#141414] p-5 space-y-3 shadow-lg">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-bold text-white">
                   <Phone className="size-4 text-[#D4A5A5]" />
-                  <span>{isAr ? 'تتبع طلبك برقم الهاتف المحمول (بدون تسجيل):' : 'Track Order by Mobile Number:'}</span>
+                  <span>{isAr ? 'البحث عن طلب ومتابعة الشحن مباشرة:' : 'Search & Track Order Live:'}</span>
                 </div>
-                <form onSubmit={handleLookupOrders} className="flex gap-2">
-                  <input
-                    type="tel"
-                    value={lookupPhone}
-                    onChange={(e) => setLookupPhone(e.target.value)}
-                    placeholder={isAr ? 'أدخلي رقم الهاتف المستخدم في الطلب (مثال: 010...)' : 'Enter phone used in order...'}
-                    className="flex-1 rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
-                  />
+                {lookupOrders.length > 0 && (
                   <button
-                    type="submit"
-                    disabled={isLookingUp}
-                    className="rounded-xl bg-[#D4A5A5] px-5 py-2.5 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition shrink-0"
+                    type="button"
+                    onClick={() => {
+                      setLookupOrders([]);
+                      setLookupPhone('');
+                    }}
+                    className="text-[11px] text-[#A1A1AA] hover:text-white underline cursor-pointer"
                   >
-                    {isLookingUp ? (isAr ? 'جاري البحث...' : 'Searching...') : (isAr ? 'بحث عن الطلب' : 'Track')}
+                    {isAr ? 'إعادة التعيين' : 'Clear search'}
                   </button>
-                </form>
+                )}
               </div>
-            )}
+              <form onSubmit={handleLookupOrders} className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={lookupPhone}
+                  onChange={(e) => setLookupPhone(e.target.value)}
+                  placeholder={
+                    isAr
+                      ? 'أدخلي رقم الهاتف أو رقم الطلب (مثال: 010... أو ROMA-206876)'
+                      : 'Enter phone or order ID (e.g. 010... or ROMA-...)'
+                  }
+                  className="flex-1 rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
+                />
+                <button
+                  type="submit"
+                  disabled={isLookingUp}
+                  className="rounded-xl bg-[#D4A5A5] px-6 py-3 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition shrink-0 shadow-md cursor-pointer disabled:opacity-50"
+                >
+                  {isLookingUp ? (isAr ? 'جاري البحث...' : 'Searching...') : (isAr ? 'تتبع الطلب الآن 🔍' : 'Track Order 🔍')}
+                </button>
+              </form>
+            </div>
 
             {loadingOrders ? (
               <div className="py-12 text-center text-[#A1A1AA] text-sm flex items-center justify-center gap-2">
@@ -434,7 +570,7 @@ export default function AccountPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-[#A1A1AA]">{isAr ? 'رقم الطلب:' : 'Order ID:'}</span>
                             <strong className="text-sm font-bold font-mono text-[#D4A5A5]">
-                              #ROMA-{order.order_number || order.id}
+                              #ROMA-{String(order.order_number || order.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '')}
                             </strong>
                           </div>
                           <span className="text-[11px] text-[#A1A1AA] block mt-0.5 font-mono">
@@ -616,6 +752,37 @@ export default function AccountPage() {
 
         {/* TAB 2: PROFILE SETTINGS */}
         {activeTab === 'profile' && (
+          !user ? (
+            <div className="rounded-3xl border border-white/10 bg-[#141414] p-8 text-center space-y-6 shadow-xl">
+              <div className="size-16 rounded-2xl bg-[#D4A5A5]/10 border border-[#D4A5A5]/20 flex items-center justify-center mx-auto text-[#D4A5A5]">
+                <Lock className="size-8" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  {isAr ? 'تسجيل الدخول مطلوب لإدارة الملف الشخصي' : 'Authentication Required'}
+                </h3>
+                <p className="text-xs text-[#A1A1AA] max-w-sm mx-auto leading-relaxed">
+                  {isAr
+                    ? 'يرجى تسجيل الدخول أو إنشاء حساب جديد لحفظ بياناتكِ، وعناوين التوصيل، وتفضيلات الشراء.'
+                    : 'Please sign in or create an account to manage your profile settings, saved addresses, and preferences.'}
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row justify-center gap-3 max-w-xs mx-auto">
+                <Link
+                  href="/auth?tab=login"
+                  className="w-full py-2.5 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] text-xs font-bold text-[#0A0A0A] transition shadow-md"
+                >
+                  {isAr ? 'تسجيل الدخول' : 'Sign In'}
+                </Link>
+                <Link
+                  href="/auth?tab=register"
+                  className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white transition"
+                >
+                  {isAr ? 'إنشاء حساب جديد' : 'Register'}
+                </Link>
+              </div>
+            </div>
+          ) : (
           <div className="rounded-3xl border border-white/10 bg-[#141414] p-6 md:p-8 space-y-6 shadow-xl">
             <div>
               <h2 className="text-lg md:text-xl font-bold font-display text-white">
@@ -761,6 +928,7 @@ export default function AccountPage() {
               </div>
             )}
           </div>
+          )
         )}
 
         {/* TAB 3: REWARDS & LOCAL PAYMENT INFO */}

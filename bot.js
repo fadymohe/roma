@@ -9,6 +9,14 @@ import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
 import { scrapeAmazonProduct, downloadAmazonImages } from './amazon-scraper.js';
+import {
+  initWhatsApp,
+  sendOrderConfirmationWhatsApp,
+  sendShippingUpdateWhatsApp,
+  sendAbandonedCartWhatsApp,
+  MERCHANT_PHONE,
+} from './lib/whatsapp-bridge.js';
+import { getAuthenticatedSupabase } from './lib/supabase-server.js';
 
 // Prevent process crashing from unhandled errors
 process.on('uncaughtException', (err) => {
@@ -46,7 +54,7 @@ process.on('exit', () => {
   } catch (_) {}
 });
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8358497211:AAF5Tr2e3VHXSt5K1BEvxqa-8bgIaHj-nwA';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8358497211:AAGFxuBElCIFNorRaqJek09AWR6ed52B8CM';
 const ADMIN_CHAT_ID = String(process.env.TELEGRAM_ADMIN_CHAT_ID || '8940310160');
 const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
@@ -129,7 +137,8 @@ function getOrders() {
 async function getAllOrdersCombined() {
   const local = getOrders();
   try {
-    const { data, error } = await supabase
+    const sbClient = await getAuthenticatedSupabase();
+    const { data, error } = await sbClient
       .from('orders')
       .select('*')
       .order('created_at', { ascending: false });
@@ -420,11 +429,69 @@ function initSupabaseRealtime() {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'orders' },
       async (payload) => {
-        console.log('⚡ Realtime Order INSERT detected:', payload.new?.id);
+        console.log('⚡ Realtime Order INSERT detected:', payload.new?.id, payload.new?.order_number);
         try {
-          await sendNewOrderNotification(payload.new);
+          if (payload.new?.status !== 'cart_draft' && !payload.new?.order_number?.startsWith('CART-')) {
+            await sendNewOrderNotification(payload.new);
+          }
         } catch (err) {
           console.error('Realtime notification error:', err);
+        }
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'orders' },
+      async (payload) => {
+        const newRow = payload.new;
+        const oldRow = payload.old;
+        console.log('⚡ Realtime Order UPDATE detected:', newRow?.order_number, 'Status:', newRow?.status);
+
+        if (newRow && newRow.status !== oldRow?.status) {
+          const targetPhone = newRow.phone || newRow.shipping_details?.phone;
+          const cleanOrderId = String(newRow.order_number || newRow.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+
+          const order = {
+            orderId: cleanOrderId,
+            orderNumber: newRow.order_number || `ROMA-${cleanOrderId}`,
+            customerName: newRow.customer_name || newRow.shipping_details?.fullName || 'عميلة المتجر',
+            customerPhone: targetPhone,
+            shippingAddress: newRow.shipping_address || newRow.shipping_details?.fullAddress || '',
+            totalAmount: newRow.total_amount,
+            status: newRow.status,
+            items: Array.isArray(newRow.items) ? newRow.items : [],
+          };
+
+          // Also save to local orders.json
+          try {
+            let orders = getOrders();
+            const existingIdx = orders.findIndex(o => {
+              const oClean = String(o.orderId || o.orderNumber || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+              return oClean === cleanOrderId;
+            });
+            if (existingIdx !== -1) {
+              orders[existingIdx].status = newRow.status;
+              orders[existingIdx].updatedAt = new Date().toISOString();
+            } else {
+              orders.unshift({ ...order, createdAt: newRow.created_at || new Date().toISOString() });
+            }
+            saveOrders(orders);
+          } catch (_) {}
+
+          // Auto-send WhatsApp message from +201505566847
+          if (targetPhone && targetPhone !== 'غير مسجل') {
+            try {
+              if (newRow.status === 'confirmed') {
+                console.log(`[WHATSAPP] Realtime auto-sending order confirmation to ${targetPhone}...`);
+                await sendOrderConfirmationWhatsApp(order);
+              } else if (['shipped', 'delivered', 'cancelled'].includes(newRow.status)) {
+                console.log(`[WHATSAPP] Realtime auto-sending shipping status (${newRow.status}) to ${targetPhone}...`);
+                await sendShippingUpdateWhatsApp(order, newRow.status);
+              }
+            } catch (waErr) {
+              console.warn('[WHATSAPP] Realtime automated message error:', waErr?.message);
+            }
+          }
         }
       }
     )
@@ -435,61 +502,81 @@ function initSupabaseRealtime() {
 
 // ----------------- Abandoned Cart Recovery Runner -----------------
 
+const ABANDONED_CARTS_FILE = path.join(__dirname, 'abandoned_carts.json');
+
 async function checkAbandonedCartsRoutine() {
   try {
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-    const { data: abandonedCarts, error } = await supabase
-      .from('carts')
-      .select('id, user_id, session_id, last_activity_at, profiles(full_name, phone)')
-      .eq('status', 'active')
-      .lt('last_activity_at', twoHoursAgo)
-      .is('recovery_email_sent_at', null);
+    if (fs.existsSync(ABANDONED_CARTS_FILE)) {
+      try {
+        const carts = JSON.parse(fs.readFileSync(ABANDONED_CARTS_FILE, 'utf8'));
+        let fileUpdated = false;
 
-    if (!error && Array.isArray(abandonedCarts) && abandonedCarts.length > 0) {
-      console.log(`🛒 Found ${abandonedCarts.length} abandoned carts to recover.`);
-      for (const cart of abandonedCarts) {
-        const coupon = 'COMEBACK15';
-        await supabase
-          .from('carts')
-          .update({
-            status: 'abandoned',
-            recovery_email_sent_at: new Date().toISOString(),
-            coupon_code: coupon,
-          })
-          .eq('id', cart.id);
+        for (const cart of carts) {
+          const lastActivity = cart.lastActivityAt || cart.createdAt || 0;
+          const isOlderThan5Min = (Date.now() - lastActivity) >= 5 * 60 * 1000;
 
-        const customerName = cart.profiles?.full_name || 'عميلة المتجر';
-        const phone = cart.profiles?.phone || 'غير مسجل';
-        const recoveryUrl = `https://roma-eg.my/cart?recovery_id=${cart.id}&coupon=${coupon}`;
+          if (cart.status === 'active' && !cart.recoverySent && isOlderThan5Min && cart.phone) {
+            cart.recoverySent = true;
+            cart.status = 'abandoned';
+            cart.recoverySentAt = new Date().toISOString();
+            fileUpdated = true;
 
-        const msg =
-          `🛒 *تنبيه سلة مهجورة (Abandoned Cart)*\n` +
-          `━━━━━━━━━━━━━━━━━━\n` +
-          `👤 *العميلة:* ${customerName}\n` +
-          `📞 *الهاتف:* \`${phone}\`\n` +
-          `🕒 *سلة متروكة منذ أكثر من ساعتين*\n` +
-          `🎟️ *تم إنشاء كود استعادة:* \`${coupon}\` (-15%)\n` +
-          `🔗 [رابط استعادة السلة](${recoveryUrl})`;
+            const coupon = 'ROMA10';
+            const customerName = cart.customerName || 'عميلة المتجر';
+            const phone = cart.phone;
+            const recoveryUrl = `https://roma-eg.my/cart?recovery_id=${cart.id}&coupon=${coupon}`;
 
-        const admins = getKnownAdmins();
-        const cleanPhone = phone && phone !== 'غير مسجل' ? String(phone).replace(/\D+/g, '') : '';
-        const waPhone = cleanPhone ? (cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone.startsWith('2') ? cleanPhone : '20' + cleanPhone) : '201505566849';
-        const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، نهديكِ كود خصم 15% إضافي ${coupon} لإكمال سلتكِ بمتجر روما: ${recoveryUrl}`)}`;
+            console.log(`🛒 [ABANDONED CART] Inactive >= 5 mins detected for ${phone}. Auto-sending recovery via WhatsApp...`);
 
-        for (const adminId of admins) {
-          await tg('sendMessage', {
-            chat_id: adminId,
-            text: msg,
-            parse_mode: 'Markdown',
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  { text: 'واتساب العميلة 💬', url: waUrl },
-                ],
-              ],
-            },
-          });
+            // 📱 Send WhatsApp message from merchant (+201505566847) to customer
+            try {
+              await sendAbandonedCartWhatsApp({
+                id: cart.id,
+                customerName,
+                customerPhone: phone,
+                items: cart.items,
+                recoveryUrl,
+              });
+            } catch (waErr) {
+              console.warn('[WHATSAPP] Abandoned cart message error:', waErr?.message);
+            }
+
+            // 🔔 Notify admin on Telegram
+            const msg =
+              `🛒 *تنبيه سلة مهجورة (متروكة منذ 5 دقائق)*\n` +
+              `━━━━━━━━━━━━━━━━━━\n` +
+              `👤 *العميلة:* ${customerName}\n` +
+              `📞 *الهاتف:* \`${phone}\`\n` +
+              `💰 *قيمة السلة:* ${cart.total || 0} ج.م\n` +
+              `🕒 *سلة متروكة منذ 5 دقائق*\n` +
+              `🎟️ *تم إرسال كود خصم تلقائياً عبر واتساب:* \`${coupon}\` (-10%)\n` +
+              `🔗 [رابط استعادة السلة](${recoveryUrl})`;
+
+            const admins = getKnownAdmins();
+            const cleanPhone = String(phone).replace(/\D+/g, '');
+            const waPhone = cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone.startsWith('2') ? cleanPhone : '20' + cleanPhone;
+            const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، نهديكِ كود خصم 10% إضافي ${coupon} لإكمال سلتكِ بمتجر روما: ${recoveryUrl}`)}`;
+
+            for (const adminId of admins) {
+              await tg('sendMessage', {
+                chat_id: adminId,
+                text: msg,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: 'واتساب العميلة 💬', url: waUrl }],
+                  ],
+                },
+              });
+            }
+          }
         }
+
+        if (fileUpdated) {
+          fs.writeFileSync(ABANDONED_CARTS_FILE, JSON.stringify(carts, null, 2), 'utf8');
+        }
+      } catch (fErr) {
+        console.warn('Local abandoned carts processing error:', fErr.message);
       }
     }
   } catch (err) {
@@ -723,8 +810,12 @@ async function handleUpdate(update) {
 
     // Normalize legacy/alternative callbacks
     let actionData = data;
-    if (data.startsWith('accept_')) {
-      actionData = `ord_status_confirmed_${data.replace('accept_', '')}`;
+    if (data.startsWith('accept_') || data.startsWith('confirm_')) {
+      actionData = `ord_status_confirmed_${data.replace(/^(accept_|confirm_)/, '')}`;
+    } else if (data.startsWith('ship_')) {
+      actionData = `ord_status_shipped_${data.replace('ship_', '')}`;
+    } else if (data.startsWith('deliver_')) {
+      actionData = `ord_status_delivered_${data.replace('deliver_', '')}`;
     } else if (data.startsWith('cancel_')) {
       actionData = `ord_status_cancelled_${data.replace('cancel_', '')}`;
     }
@@ -735,35 +826,123 @@ async function handleUpdate(update) {
     if (actionData.startsWith('ord_status_')) {
       const parts = actionData.replace('ord_status_', '').split('_');
       const newStatusKey = parts[0];
-      const orderId = parts.slice(1).join('_');
+      const rawOrderId = parts.slice(1).join('_');
+      const cleanOrderId = String(rawOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
 
       let orders = getOrders();
-      let order = orders.find((o) => String(o.orderId) === String(orderId) || String(o.orderNumber) === String(orderId));
+      let order = orders.find(
+        (o) => {
+          const locClean = String(o.orderId || o.orderNumber || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+          return (
+            String(o.orderId) === String(rawOrderId) ||
+            String(o.orderNumber) === String(rawOrderId) ||
+            locClean === cleanOrderId ||
+            (cleanOrderId.length >= 4 && (locClean.includes(cleanOrderId) || cleanOrderId.includes(locClean)))
+          );
+        }
+      );
 
       const statusObj = STATUS_MAP[newStatusKey] || { label: newStatusKey };
 
-      if (order) {
-        order.status = newStatusKey;
-        order.updatedAt = new Date().toISOString();
-      } else {
-        order = {
-          orderId,
-          status: newStatusKey,
-          updatedAt: new Date().toISOString(),
-          customerName: 'عميلة المتجر',
-        };
-        orders.unshift(order);
-      }
-      saveOrders(orders);
-
-      // Update Supabase Database record
+      // Update Supabase Database record safely with flexible ILIKE and UUID matching
       try {
-        await supabase
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanOrderId);
+        const sbClient = await getAuthenticatedSupabase();
+        const filterOr = isUuid
+          ? `id.eq.${cleanOrderId},order_number.ilike.*${cleanOrderId}*,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`
+          : `order_number.ilike.*${cleanOrderId}*,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`;
+
+        let { data: updatedRows, error: sbErr } = await sbClient
           .from('orders')
           .update({ status: newStatusKey, updated_at: new Date().toISOString() })
-          .or(`id.eq.${orderId},order_number.eq.${orderId}`);
+          .or(filterOr)
+          .select();
+
+        // If not found by filterOr, try looking up recent orders to find the match
+        if ((!updatedRows || updatedRows.length === 0) && cleanOrderId.length >= 4) {
+          const { data: allRecent } = await sbClient.from('orders').select('*').order('created_at', { ascending: false }).limit(20);
+          if (Array.isArray(allRecent)) {
+            const matchedRow = allRecent.find((r) => {
+              const rClean = String(r.order_number || r.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+              return rClean.includes(cleanOrderId) || cleanOrderId.includes(rClean);
+            });
+            if (matchedRow) {
+              const res = await sbClient.from('orders').update({ status: newStatusKey, updated_at: new Date().toISOString() }).eq('id', matchedRow.id).select();
+              if (res.data && res.data.length > 0) {
+                updatedRows = res.data;
+              }
+            }
+          }
+        }
+
+        if (sbErr) {
+          console.warn('Supabase status update error:', sbErr.message);
+        } else {
+          console.log(`[BOT] Order ${cleanOrderId} status updated to ${newStatusKey} in Supabase:`, updatedRows?.length, 'rows');
+        }
+
+        const sbRow = updatedRows && updatedRows[0];
+        if (sbRow) {
+          if (!order) {
+            order = {
+              orderId: cleanOrderId,
+              orderNumber: sbRow.order_number || `ROMA-${cleanOrderId}`,
+              customerName: sbRow.shipping_details?.fullName || sbRow.customer_name || 'عميلة المتجر',
+              customerPhone: sbRow.phone || sbRow.shipping_details?.phone || 'غير مسجل',
+              shippingAddress: sbRow.shipping_details?.fullAddress || sbRow.shipping_address || 'غير محدد',
+              totalAmount: sbRow.total_amount,
+              status: newStatusKey,
+              paymentMethod: sbRow.payment_method || 'الدفع عند الاستلام',
+              items: Array.isArray(sbRow.items) ? sbRow.items : [],
+              createdAt: sbRow.created_at,
+              updatedAt: new Date().toISOString(),
+            };
+            orders.unshift(order);
+          } else {
+            order.status = newStatusKey;
+            order.customerPhone = sbRow.phone || sbRow.shipping_details?.phone || order.customerPhone;
+            order.customerName = sbRow.shipping_details?.fullName || sbRow.customer_name || order.customerName;
+            order.shippingAddress = sbRow.shipping_details?.fullAddress || sbRow.shipping_address || order.shippingAddress;
+            order.totalAmount = sbRow.total_amount || order.totalAmount;
+            order.items = sbRow.items || order.items;
+            order.updatedAt = new Date().toISOString();
+          }
+        } else {
+          if (order) {
+            order.status = newStatusKey;
+            order.updatedAt = new Date().toISOString();
+          } else {
+            order = {
+              orderId: cleanOrderId,
+              orderNumber: `ROMA-${cleanOrderId}`,
+              status: newStatusKey,
+              updatedAt: new Date().toISOString(),
+              customerName: 'عميلة المتجر',
+            };
+            orders.unshift(order);
+          }
+        }
+        saveOrders(orders);
+
+        // 📱 Automatically send WhatsApp message to customer from +201505566847 without human intervention
+        try {
+          const targetPhone = order.customerPhone || order.phone;
+          if (targetPhone && targetPhone !== 'غير مسجل') {
+            if (newStatusKey === 'confirmed') {
+              console.log(`[WHATSAPP] Auto-sending order confirmation to ${targetPhone}...`);
+              await sendOrderConfirmationWhatsApp(order);
+            } else if (['shipped', 'delivered', 'cancelled'].includes(newStatusKey)) {
+              console.log(`[WHATSAPP] Auto-sending shipping status (${newStatusKey}) to ${targetPhone}...`);
+              await sendShippingUpdateWhatsApp(order, newStatusKey);
+            }
+          } else {
+            console.warn(`[WHATSAPP] Order ${cleanOrderId} has no customer phone number. Message skipped.`);
+          }
+        } catch (waErr) {
+          console.warn('[WHATSAPP] Automated message notice:', waErr?.message);
+        }
       } catch (err) {
-        console.warn('Supabase status update error:', err?.message);
+        console.warn('Supabase status update exception:', err?.message);
       }
 
       await tg('answerCallbackQuery', {
@@ -771,18 +950,30 @@ async function handleUpdate(update) {
         text: `تم تحديث الحالة إلى: ${statusObj.label}`,
       });
 
-      // Update message text or caption dynamically
-      const updateNotice = `\n\n📌 *تحديث الحالة:* ${statusObj.label}\n🕒 *التوقيت:* ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
+      // Cleanly replace old status in message text/caption
+      const rawContent = cb.message.caption !== undefined ? (cb.message.caption || '') : (cb.message.text || '');
+      // Strip any previously appended update notices
+      let baseContent = rawContent.replace(/\n*📌 \*?تحديث الحالة:\*?[\s\S]*?(?=\n\n|\n*$|$)/gi, '').trim();
+      // Replace the main status line
+      const statusRegex = /(الحالة|الحالة الحالية):[^\n]*/i;
+      if (statusRegex.test(baseContent)) {
+        baseContent = baseContent.replace(statusRegex, `الحالة: *${statusObj.label}*`);
+      } else {
+        baseContent += `\n━━━━━━━━━━━━━━━━━━\nالحالة: *${statusObj.label}*`;
+      }
+
+      const updateNotice = `\n\n📌 *آخر تحديث:* ${statusObj.label}\n🕒 *التوقيت:* ${new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`;
+      const finalContent = baseContent + updateNotice;
 
       const newKeyboard = {
         inline_keyboard: [
           [
-            { text: '✅ تم التأكيد', callback_data: `ord_status_confirmed_${orderId}` },
-            { text: '🚚 قيد الشحن', callback_data: `ord_status_shipped_${orderId}` },
+            { text: newStatusKey === 'confirmed' ? '✅ مؤكد حالياً' : '✅ تأكيد الطلب', callback_data: `ord_status_confirmed_${cleanOrderId}` },
+            { text: newStatusKey === 'shipped' ? '🚚 قيد الشحن حالياً' : '🚚 قيد الشحن', callback_data: `ord_status_shipped_${cleanOrderId}` },
           ],
           [
-            { text: '✨ تم التسليم', callback_data: `ord_status_delivered_${orderId}` },
-            { text: '❌ إلغاء الطلب', callback_data: `ord_status_cancelled_${orderId}` },
+            { text: newStatusKey === 'delivered' ? '✨ تم التسليم حالياً' : '✨ تم التسليم', callback_data: `ord_status_delivered_${cleanOrderId}` },
+            { text: newStatusKey === 'cancelled' ? '❌ ملغي حالياً' : '❌ إلغاء الطلب', callback_data: `ord_status_cancelled_${cleanOrderId}` },
           ],
           [
             { text: '📋 عرض كل الطلبات', callback_data: 'nav_orders_all' },
@@ -794,7 +985,7 @@ async function handleUpdate(update) {
         await tg('editMessageCaption', {
           chat_id: chatId,
           message_id: msgId,
-          caption: (cb.message.caption || '') + updateNotice,
+          caption: finalContent,
           parse_mode: 'Markdown',
           reply_markup: newKeyboard,
         });
@@ -802,7 +993,7 @@ async function handleUpdate(update) {
         await tg('editMessageText', {
           chat_id: chatId,
           message_id: msgId,
-          text: (cb.message.text || '') + updateNotice,
+          text: finalContent,
           parse_mode: 'Markdown',
           reply_markup: newKeyboard,
         });
@@ -1596,6 +1787,15 @@ async function finalizeProduct(chatId, userId, session) {
 
 let lastUpdateId = 0;
 async function poll() {
+  // Ensure any stale webhook is deleted before long polling starts
+  try {
+    const delRes = await fetch(`${BASE_URL}/deleteWebhook?drop_pending_updates=false`);
+    const delData = await delRes.json();
+    if (delData.ok) {
+      console.log('✅ Telegram Webhook status cleared for polling mode.');
+    }
+  } catch (_) {}
+
   while (true) {
     try {
       const res = await fetch(`${BASE_URL}/getUpdates?offset=${lastUpdateId + 1}&timeout=15`, {
@@ -1612,6 +1812,14 @@ async function poll() {
           }
         }
       } else if (!data.ok) {
+        if (data.error_code === 409) {
+          console.warn(`⚠️ 409 Conflict: ${data.description}`);
+          if (String(data.description).includes('webhook')) {
+            await fetch(`${BASE_URL}/deleteWebhook?drop_pending_updates=false`).catch(() => {});
+          }
+          await new Promise((r) => setTimeout(r, 2500));
+          continue;
+        }
         console.warn('Telegram getUpdates returned error:', data.description || data);
         await new Promise((r) => setTimeout(r, 3000));
       }
@@ -1626,9 +1834,10 @@ async function poll() {
 
 console.log('🤖 Telegram Bot @romaupbot is RUNNING with Realtime Order Tracking & Stock Management!');
 
-// Start Realtime listener & Abandoned Cart Interval
+// Start Realtime listener, WhatsApp Bridge & Abandoned Cart Interval (every 60s for 5-min carts)
 initSupabaseRealtime();
-setInterval(checkAbandonedCartsRoutine, 15 * 60 * 1000); // Check every 15 mins
+initWhatsApp();
+setInterval(checkAbandonedCartsRoutine, 60 * 1000); // Check every 1 minute
 
 const startupText =
   `🟢 *تم تشغيل نظام إدارة متجر Roma المتكامل بنجاح!*\n\n` +

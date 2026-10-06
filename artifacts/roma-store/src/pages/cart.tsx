@@ -197,6 +197,30 @@ export default function CartPage() {
     if (email && !authEmail) setAuthEmail(email);
   }, [name, phone, email]);
 
+  // 4. Report cart activity for 5-minute automated abandoned cart recovery
+  useEffect(() => {
+    if (lines.length === 0) return;
+    const cleanPh = phone.trim().replace(/\D+/g, '');
+    const debounceTimer = setTimeout(() => {
+      fetch('/api/cart-activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: phone.trim() || user?.phone || '',
+          customerName: name.trim() || user?.name || 'عميلة المتجر',
+          items: lines.map((l) => ({
+            nameAr: isAr ? l.product.nameAr : (l.product.nameEn || l.product.nameAr),
+            price: l.product.price,
+            quantity: l.quantity,
+          })),
+          total: subtotal,
+          status: 'active',
+        }),
+      }).catch(() => {});
+    }, 1500);
+    return () => clearTimeout(debounceTimer);
+  }, [lines, phone, name, subtotal]);
+
   const handleGovernorateChange = (newGovId: string) => {
     setGovernorate(newGovId);
     const dists = getDistricts(newGovId);
@@ -511,64 +535,86 @@ export default function CartPage() {
     };
 
     try {
-      // 1. Upload to Supabase database (matching real table columns)
+      // 1. Dispatch authoritative order persistence & Telegram notification via /api/orders
       let resolvedOrderId: string = fallbackId;
+      let orderSubmittedSuccessfully = false;
+
       try {
-        const fullAddressWithGov = `${govName} - ${fullAddress}${notes ? ` (ملاحظات: ${notes.trim()})` : ''}`;
-        const orderItemsPayload = lines.map((l) => ({
-          product_id: l.product.id,
-          name: isAr ? l.product.nameAr : (l.product.nameEn || l.product.nameAr),
-          price: Number(l.product.price) || 0,
-          quantity: Number(l.quantity) || 1,
-          variant: isAr ? l.variant?.nameAr : (l.variant?.nameEn || l.variant?.nameAr || null),
-          image: l.product.imageUrl || '',
-          payment_method: paymentMethod,
-          shipping_cost: shippingCost,
-          coupon: couponSuccess ? couponCode.trim().toUpperCase() : null,
-          discount: discountAmount,
-        }));
-
-        const { data: newOrder, error: sbError } = await supabase
-          .from('orders')
-          .insert({
-            order_number: `ROMA-${fallbackId}`,
-            user_id: user?.id || null,
-            customer_name: name.trim(),
-            phone: phone.trim(),
-            shipping_address: fullAddressWithGov,
-            total_amount: total,
-            status: 'pending',
-            items: orderItemsPayload,
-          })
-          .select()
-          .single();
-
-        if (!sbError && newOrder?.id) {
-          resolvedOrderId = String(newOrder.id);
-          orderPayload.orderId = resolvedOrderId;
-          orderPayload.orderNumber = newOrder.order_number || `ROMA-${resolvedOrderId.slice(0, 8).toUpperCase()}`;
-        } else if (sbError) {
-          console.warn('Supabase order upload notice:', sbError.message);
-        }
-      } catch (sbErr) {
-        console.warn('Supabase order upload notice:', sbErr);
-      }
-
-      // 2. Dispatch SINGLE authoritative Telegram notification via /api/orders (strictly no duplicates)
-      try {
-        await fetch('/api/orders', {
+        const apiRes = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...orderPayload,
-            skipDbInsert: true,
+            skipDbInsert: false,
           }),
         });
+        if (apiRes.ok) {
+          const apiJson = await apiRes.json();
+          if (apiJson.orderId) {
+            resolvedOrderId = String(apiJson.orderId);
+            orderPayload.orderId = resolvedOrderId;
+            orderPayload.orderNumber = `ROMA-${resolvedOrderId}`;
+            orderSubmittedSuccessfully = true;
+          }
+        }
       } catch (apiErr) {
         console.warn('Backend API notification dispatch notice:', apiErr);
       }
 
-      // 3. Mark active carts as converted in Supabase
+      // 2. Direct Supabase fallback if API was unavailable
+      if (!orderSubmittedSuccessfully) {
+        try {
+          const fullAddressWithGov = `${govName} - ${fullAddress}${notes ? ` (ملاحظات: ${notes.trim()})` : ''}`;
+          const orderItemsPayload = lines.map((l) => ({
+            product_id: l.product.id,
+            name: isAr ? l.product.nameAr : (l.product.nameEn || l.product.nameAr),
+            price: Number(l.product.price) || 0,
+            quantity: Number(l.quantity) || 1,
+            variant: isAr ? l.variant?.nameAr : (l.variant?.nameEn || l.variant?.nameAr || null),
+            image: l.product.imageUrl || '',
+            payment_method: paymentMethod,
+            shipping_cost: shippingCost,
+            coupon: couponSuccess ? couponCode.trim().toUpperCase() : null,
+            discount: discountAmount,
+          }));
+
+          const { data: newOrder, error: sbError } = await supabase
+            .from('orders')
+            .insert({
+              order_number: `ROMA-${fallbackId}`,
+              user_id: user?.id || null,
+              customer_name: name.trim(),
+              phone: phone.trim(),
+              shipping_address: fullAddressWithGov,
+              total_amount: total,
+              status: 'pending',
+              items: orderItemsPayload,
+            })
+            .select()
+            .single();
+
+          if (!sbError && newOrder?.id) {
+            resolvedOrderId = String(newOrder.id);
+            orderPayload.orderId = resolvedOrderId;
+            orderPayload.orderNumber = newOrder.order_number || `ROMA-${resolvedOrderId.slice(0, 8).toUpperCase()}`;
+          }
+        } catch (sbErr) {
+          console.warn('Supabase order upload fallback notice:', sbErr);
+        }
+      }
+
+      // 3. Mark active carts as converted in cart-activity and Supabase
+      try {
+        fetch('/api/cart-activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: phone.trim(),
+            status: 'converted',
+          }),
+        }).catch(() => {});
+      } catch (_) {}
+
       if (user?.id) {
         supabase
           .from('carts')
@@ -591,9 +637,10 @@ export default function CartPage() {
 
       // 5. Save recent order locally for instant tracking display in account
       try {
+        const cleanResolved = String(resolvedOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
         const recentOrder = {
-          id: resolvedOrderId,
-          order_number: orderPayload.orderNumber || `ROMA-${resolvedOrderId}`,
+          id: cleanResolved,
+          order_number: `ROMA-${cleanResolved}`,
           user_id: user?.id || null,
           customer_name: name.trim(),
           phone: phone.trim(),
@@ -611,7 +658,7 @@ export default function CartPage() {
         };
         const prev = JSON.parse(localStorage.getItem('roma_recent_orders') || '[]');
         localStorage.setItem('roma_recent_orders', JSON.stringify([recentOrder, ...prev.slice(0, 19)]));
-        sessionStorage.setItem('roma_latest_order_id', resolvedOrderId);
+        sessionStorage.setItem('roma_latest_order_id', cleanResolved);
       } catch (_) {}
 
       // 6. Build customer WhatsApp confirmation message & URL
@@ -766,7 +813,7 @@ export default function CartPage() {
 
           {/* Instant Order Tracking Button */}
           <Link
-            href="/account"
+            href="/account?tab=orders"
             className="flex items-center justify-center gap-2 w-full rounded-2xl bg-[#D4A5A5] hover:bg-[#C89595] py-3.5 px-6 text-xs md:text-sm font-bold text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/20 transition"
           >
             <Truck className="size-4" />

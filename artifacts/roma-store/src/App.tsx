@@ -104,6 +104,8 @@ function Router() {
           <Route path="/checkout" component={CartPage} />
           <Route path="/checkout/payment" component={CartPage} />
           <Route path="/account" component={AccountPage} />
+          <Route path="/track" component={AccountPage} />
+          <Route path="/track-order" component={AccountPage} />
           <Route path="/auth" component={AuthPage} />
           <Route path="/login" component={AuthPage} />
           <Route path="/register" component={AuthPage} />

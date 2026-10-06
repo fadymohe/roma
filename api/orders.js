@@ -1,11 +1,12 @@
 import fs from 'fs';
 import path from 'path';
+import { getAuthenticatedSupabase, saveLocalOrder, insertSupabaseOrder } from '../lib/supabase-server.js';
 
 // Read secrets strictly from environment variables (No hardcoded credentials)
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://dsgrgbmvbvqwzizbbwxf.supabase.co';
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -192,35 +193,58 @@ export default async function handler(req, res) {
 
     const verifiedTotalAmount = Math.max(0, verifiedSubtotal + verifiedShippingCost);
 
-    // 1. Try saving to Supabase with verified total and status 'pending' (if not already inserted)
-    let supabaseResult = null;
-    if (!skipDbInsert && SUPABASE_URL && SUPABASE_ANON_KEY) {
-      try {
-        const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-            Prefer: 'return=representation',
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            status: 'pending',
-            payment_status: 'unpaid',
-            total_amount: verifiedTotalAmount,
-            customer_name: customerName,
-            phone: customerPhone,
-            shipping_address: shippingAddress,
-            items: verifiedItems,
-          }),
-        });
-        if (sbRes.ok) {
-          supabaseResult = await sbRes.json();
+    const cleanId = String(orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+    const generatedOrderNumber = `ROMA-${cleanId}`;
+
+    // 1. Dual-Persistence: Save to local orders.json immediately for instant zero-latency tracking
+    saveLocalOrder({
+      orderId: cleanId,
+      orderNumber: generatedOrderNumber,
+      customerName,
+      customerPhone,
+      shippingAddress,
+      totalAmount: verifiedTotalAmount,
+      status: 'pending',
+      paymentMethod,
+      items: verifiedItems,
+      createdAt: new Date().toISOString(),
+    });
+
+    // Mark any matching cart as converted in abandoned_carts.json
+    try {
+      const cartsFile = path.join(process.cwd(), 'abandoned_carts.json');
+      if (fs.existsSync(cartsFile)) {
+        const carts = JSON.parse(fs.readFileSync(cartsFile, 'utf8'));
+        const cleanPh = String(customerPhone).replace(/\D+/g, '');
+        let updated = false;
+        for (const c of carts) {
+          if (c.cleanPhone === cleanPh || c.phone === customerPhone) {
+            c.status = 'converted';
+            c.convertedAt = Date.now();
+            updated = true;
+          }
         }
-      } catch (sbErr) {
-        console.warn('Supabase insert inside /api/orders notice:', sbErr);
+        if (updated) {
+          fs.writeFileSync(cartsFile, JSON.stringify(carts, null, 2), 'utf8');
+        }
       }
+    } catch (_) {}
+
+    // 2. Persist to Supabase Database with authenticated client (bypasses anon RLS failure)
+    let supabaseResult = null;
+    try {
+      supabaseResult = await insertSupabaseOrder({
+        order_number: generatedOrderNumber,
+        status: 'pending',
+        total_amount: verifiedTotalAmount,
+        customer_name: customerName,
+        phone: customerPhone,
+        shipping_address: shippingAddress,
+        items: verifiedItems,
+        user_id: userId || null,
+      });
+    } catch (sbErr) {
+      console.warn('Supabase insert inside /api/orders notice:', sbErr);
     }
 
     // 2. Format HTML Notification for Telegram
@@ -235,7 +259,7 @@ export default async function handler(req, res) {
 
     const text =
       `🛍️ <b>طلب شراء جديد تم استلامه في متجر ROMA!</b>\n` +
-      `🔖 رقم الطلب: <code>#ROMA-${orderId}</code>\n` +
+      `🔖 رقم الطلب: <code>#ROMA-${cleanId}</code>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `👤 <b>العميل:</b> ${escapeHtml(customerName)}\n` +
       `📞 <b>رقم الهاتف:</b> <code>${escapeHtml(customerPhone || 'غير متوفر')}</code>\n` +
@@ -251,17 +275,21 @@ export default async function handler(req, res) {
     const cleanPhone = (customerPhone || '').replace(/\D+/g, '');
     const waPhone = cleanPhone.startsWith('0') ? `2${cleanPhone}` : cleanPhone.startsWith('2') ? cleanPhone : `20${cleanPhone}`;
     const waUrl = cleanPhone
-      ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، بخصوص طلبكِ رقم #ROMA-${orderId} من متجر Roma:`)}`
+      ? `https://wa.me/${waPhone}?text=${encodeURIComponent(`مرحباً أستاذ/ة ${customerName}، بخصوص طلبكِ رقم #ROMA-${cleanId} من متجر Roma:`)}`
       : 'https://roma-eg.my';
 
-    // Interactive buttons: Accept, Cancel, WhatsApp Direct Contact
+    // Interactive buttons: Accept, Ship, WhatsApp Direct Contact
     const keyboard = [
       [
-        { text: 'قبول الطلب ✅', callback_data: `accept_${orderId}` },
-        { text: 'إلغاء الطلب ❌', callback_data: `cancel_${orderId}` },
+        { text: '✅ تأكيد الطلب', callback_data: `ord_status_confirmed_${cleanId}` },
+        { text: '🚚 قيد الشحن', callback_data: `ord_status_shipped_${cleanId}` },
       ],
       [
-        { text: 'محادثة العميل عبر واتساب 💬', url: waUrl },
+        { text: '✨ تم التسليم', callback_data: `ord_status_delivered_${cleanId}` },
+        { text: '❌ إلغاء الطلب', callback_data: `ord_status_cancelled_${cleanId}` },
+      ],
+      [
+        { text: 'محادثة العميلة عبر واتساب 💬', url: waUrl },
       ],
     ];
 
