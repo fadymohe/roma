@@ -1787,12 +1787,14 @@ async function finalizeProduct(chatId, userId, session) {
 
 let lastUpdateId = 0;
 async function poll() {
-  // Ensure any stale webhook is deleted before long polling starts
+  // Check if webhook is currently configured
   try {
-    const delRes = await fetch(`${BASE_URL}/deleteWebhook?drop_pending_updates=false`);
-    const delData = await delRes.json();
-    if (delData.ok) {
-      console.log('✅ Telegram Webhook status cleared for polling mode.');
+    const infoRes = await fetch(`${BASE_URL}/getWebhookInfo`);
+    const infoData = await infoRes.json();
+    if (infoData.ok && infoData.result?.url) {
+      console.log(`⚡ Telegram Webhook is active: ${infoData.result.url}`);
+      console.log('🤖 Bot is running in Daemon Mode: Supabase Realtime + WhatsApp Bridge + Abandoned Cart Scheduler!');
+      return;
     }
   } catch (_) {}
 
@@ -1813,11 +1815,13 @@ async function poll() {
         }
       } else if (!data.ok) {
         if (data.error_code === 409) {
-          console.warn(`⚠️ 409 Conflict: ${data.description}`);
+          // If webhook was enabled while running, stop polling
           if (String(data.description).includes('webhook')) {
-            await fetch(`${BASE_URL}/deleteWebhook?drop_pending_updates=false`).catch(() => {});
+            console.log('⚡ Webhook activated. Transitioning to Realtime Daemon mode.');
+            return;
           }
-          await new Promise((r) => setTimeout(r, 2500));
+          console.warn(`⚠️ 409 Conflict: ${data.description}`);
+          await new Promise((r) => setTimeout(r, 5000));
           continue;
         }
         console.warn('Telegram getUpdates returned error:', data.description || data);
@@ -1827,7 +1831,7 @@ async function poll() {
       if (err.name !== 'TimeoutError') {
         console.warn('Telegram polling retry:', err?.message || err);
       }
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 2000));
     }
   }
 }
