@@ -6,7 +6,7 @@
     "customerPhone": "01030920536",
     "shippingAddress": "15 ش حسين عثمان الصفا والمروة الطوابق فيصل الجيزة - حي بدر - القاهرة (مصر)",
     "totalAmount": 943,
-    "status": "confirmed",
+    "status": "shipped",
     "items": [
       {
         "id": 1790732716934,
@@ -42,7 +42,7 @@
       }
     ],
     "createdAt": "2026-10-06T09:59:06.898886+00:00",
-    "updatedAt": "2026-10-06T10:03:54.649Z"
+    "updatedAt": "2026-10-06T10:11:35.420Z"
   },
   {
     "orderId": "SYS-TEST",

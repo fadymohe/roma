@@ -47,7 +47,41 @@ export default async function handler(req, res) {
       }
     };
 
-    // 1. Search in local orders.json
+    // 1. Search in authoritative Supabase Database first (live real-time status)
+    try {
+      const sbClient = await getAuthenticatedSupabase();
+      let query = sbClient
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (orderNumber) {
+        const cleanNum = String(orderNumber).trim().replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '');
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanNum);
+        if (isUuid) {
+          query = query.or(`id.eq.${cleanNum},order_number.ilike.%${cleanNum}%,order_number.eq.ROMA-${cleanNum},order_number.eq.${cleanNum}`);
+        } else {
+          query = query.or(`order_number.eq.ROMA-${cleanNum},order_number.eq.${cleanNum},order_number.ilike.%${cleanNum}%`);
+        }
+      } else if (phone) {
+        const cleanPhone = String(phone).replace(/\D+/g, '');
+        if (cleanPhone.length >= 8) {
+          query = query.ilike('phone', `%${cleanPhone}%`);
+        }
+      }
+
+      const { data, error } = await query;
+      if (!error && Array.isArray(data)) {
+        for (const row of data) {
+          addOrder(row);
+        }
+      }
+    } catch (sbErr) {
+      console.warn('Track order Supabase search note:', sbErr.message);
+    }
+
+    // 2. Fallback to local orders.json only for records not found in Supabase
     try {
       const localList = readLocalOrders();
       for (const loc of localList) {
@@ -67,40 +101,6 @@ export default async function handler(req, res) {
       }
     } catch (locErr) {
       console.warn('Track order local search note:', locErr.message);
-    }
-
-    // 2. Search in Supabase Database using authenticated backend client
-    try {
-      const sbClient = await getAuthenticatedSupabase();
-      let query = sbClient
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (orderNumber) {
-        const cleanNum = String(orderNumber).trim().replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '');
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanNum);
-        if (isUuid) {
-          query = query.or(`id.eq.${cleanNum},order_number.ilike.*${cleanNum}*,order_number.eq.ROMA-${cleanNum},order_number.eq.${cleanNum}`);
-        } else {
-          query = query.or(`order_number.eq.ROMA-${cleanNum},order_number.eq.${cleanNum},order_number.ilike.*${cleanNum}*`);
-        }
-      } else if (phone) {
-        const cleanPhone = String(phone).replace(/\D+/g, '');
-        if (cleanPhone.length >= 8) {
-          query = query.ilike('phone', `%${cleanPhone}%`);
-        }
-      }
-
-      const { data, error } = await query;
-      if (!error && Array.isArray(data)) {
-        for (const row of data) {
-          addOrder(row);
-        }
-      }
-    } catch (sbErr) {
-      console.warn('Track order Supabase search note:', sbErr.message);
     }
 
     return res.status(200).json({
