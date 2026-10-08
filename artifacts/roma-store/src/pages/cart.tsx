@@ -128,6 +128,7 @@ export default function CartPage() {
   const rawShippingCost = getShippingRate(governorate);
   const shippingCost = isFreeShipping ? 0 : rawShippingCost;
   const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+  const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
   const selectedGov = getGovernorate(governorate);
 
   const [complete, setComplete] = useState<{
@@ -351,22 +352,13 @@ export default function CartPage() {
     }
 
     // 5. Detailed Address validation:
-    // Must contain letters, numbers, and spaces only (NO special symbols)
+    // 3. Detailed address validation (Symbols and special characters allowed)
     const trimmedAddress = address.trim();
-    if (!trimmedAddress || trimmedAddress.length < 5) {
+    if (!trimmedAddress || trimmedAddress.length < 3) {
       setValidationError(
         isAr
           ? 'يرجى كتابة العنوان بالتفصيل (اسم الشارع ورقم المبنى والشقة).'
           : 'Please enter detailed address (street, building, apartment).'
-      );
-      return false;
-    }
-    const validAddressRegex = /^[\u0600-\u06FFa-zA-Z0-9\s]+$/;
-    if (!validAddressRegex.test(trimmedAddress)) {
-      setValidationError(
-        isAr
-          ? 'العنوان التفصيلي يجب أن يحتوي على أحرف وأرقام ومسافات فقط دون أي رموز خاصة.'
-          : 'Detailed address must contain letters and numbers only without special symbols.'
       );
       return false;
     }
@@ -421,10 +413,10 @@ export default function CartPage() {
 
   const handleInlineRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const regName = authName.trim() || name.trim();
+    const regName = authName.trim() || name.trim() || (isAr ? 'عميلة روما' : 'Roma Customer');
     const regPhone = authPhone.trim() || phone.trim();
-    if (!regName || !authEmail.trim() || !authPassword) {
-      setAuthError(isAr ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
+    if (!authEmail.trim() || !authPassword) {
+      setAuthError(isAr ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور' : 'Please enter email and password');
       return;
     }
     if (authPassword.length < 6) {
@@ -458,16 +450,6 @@ export default function CartPage() {
     }
   };
 
-  const handleInlineDemo = async () => {
-    setAuthLoading(true);
-    setAuthError('');
-    const res = await login('noura@roma-eg.my', 'Password123!');
-    setAuthLoading(false);
-    if (res.success) {
-      setCheckoutStep('payment');
-    }
-  };
-
   // Submit Order (Executed in Payment Step)
   const submitOrder = async (event: FormEvent) => {
     event.preventDefault();
@@ -496,12 +478,12 @@ export default function CartPage() {
     setValidationError('');
     setIsSubmitting(true);
     isSubmittingRef.current = true;
-    showLoader(isAr ? 'جاري تأكيد ومعالجة طلبك الفاخر...' : 'Processing your royal order...', 500);
+    showLoader(isAr ? 'جاري تأكيد ومعالجة طلبك...' : 'Processing your order...', 500);
 
     const fallbackId = String(Math.floor(100000 + Math.random() * 900000));
     const selectedGov = GOVERNORATES.find((g) => g.id === governorate);
     const govName = isAr ? selectedGov?.nameAr : (selectedGov?.nameEn || 'Cairo');
-    const fullAddress = `${address.trim()} - حي ${district} - ${govName} (مصر)`;
+    const fullAddress = `${address.trim()} - حي ${district} - ${govName}`;
 
     const paymentLabel =
       paymentMethod === 'vodafone_cash'
@@ -676,14 +658,16 @@ export default function CartPage() {
         .map(
           (l) =>
             `• ${l.quantity}x ${isAr ? l.product.nameAr : (l.product.nameEn || l.product.nameAr)}${
-              l.variant ? ` (${isAr ? l.variant.nameAr : l.variant.nameEn})` : ''
+              l.variant && l.variant.nameAr !== 'الحجم القياسي' && l.variant.nameEn !== 'Standard'
+                ? ` (${isAr ? l.variant.nameAr : l.variant.nameEn})`
+                : ''
             } — ${formatPrice(l.product.price * l.quantity)}`
         )
         .join('\n');
 
       const customerWhatsAppMsg = isAr
         ? `👑 مرحباً أستاذ/ة ${name.trim()} ✨\n` +
-          `تم تسجيل وتأكيد طلبكِ بنجاح من متجر ROMA للجمال ومستحضرات العناية الفاخرة 🌸\n\n` +
+          `تم تسجيل وتأكيد طلبكِ بنجاح من متجر ROMA للجمال والعناية 🌸\n\n` +
           `🔖 رقم الطلب: #ROMA-${resolvedOrderId}\n` +
           `━━━━━━━━━━━━━━━━━━\n` +
           `📦 محتويات الطلب:\n${itemsSummaryList}\n\n` +
@@ -878,72 +862,102 @@ export default function CartPage() {
     <div className="roma-container pt-4 pb-28 md:py-14 text-white" dir={dir}>
       {/* Top Free Shipping Progress Indicator */}
       {/* Top Minimum Order & Free Shipping Banner */}
-      <div className="mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
-          <div className="flex items-center gap-2 text-white">
-            {!isMinOrderReached ? (
-              <AlertCircle className="size-4 text-amber-400 shrink-0" />
-            ) : (
-              <Check className="size-4 text-emerald-400 shrink-0" />
-            )}
-            <span>
-              {!isMinOrderReached
-                ? isAr
-                  ? `الحد الأدنى للطلب هو ${MIN_ORDER_AMOUNT} ج.م — أضيفي بقيمة ${remainingForMinOrder} ج.م إضافية لتأكيد الشراء`
-                  : `Minimum order amount is ${MIN_ORDER_AMOUNT} EGP — Add ${remainingForMinOrder} EGP more to proceed`
-                : isAr
-                ? `✨ تم استيفاء الحد الأدنى للطلب (${MIN_ORDER_AMOUNT} ج.م) بنجاح`
-                : `✨ Minimum order requirement (${MIN_ORDER_AMOUNT} EGP) met!`}
-            </span>
+      <div className="mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl space-y-4">
+        {/* 1. Minimum Order Requirement (200 EGP) */}
+        <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
+            <div className="flex items-center gap-2 text-white">
+              {!isMinOrderReached ? (
+                <AlertCircle className="size-4 text-amber-400 shrink-0" />
+              ) : (
+                <Check className="size-4 text-emerald-400 shrink-0" />
+              )}
+              <span>
+                {!isMinOrderReached
+                  ? isAr
+                    ? `الحد الأدنى للطلب هو ${MIN_ORDER_AMOUNT} ج.م — أضيفي بقيمة ${remainingForMinOrder} ج.م إضافية لتأكيد الشراء`
+                    : `Minimum order amount is ${MIN_ORDER_AMOUNT} EGP — Add ${remainingForMinOrder} EGP more to proceed`
+                  : isAr
+                  ? `✨ تم استيفاء الحد الأدنى للطلب (${MIN_ORDER_AMOUNT} ج.م) بنجاح`
+                  : `✨ Minimum order requirement (${MIN_ORDER_AMOUNT} EGP) met!`}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              {!isMinOrderReached && (
+                <Link
+                  href="/shop"
+                  className="text-[11px] font-semibold text-[#D4A5A5] hover:underline"
+                >
+                  {isAr ? 'تصفح المنتجات ←' : 'Browse items →'}
+                </Link>
+              )}
+              <span className="font-mono-brand text-[#D4A5A5] bg-[#D4A5A5]/10 px-2 py-0.5 rounded-full border border-[#D4A5A5]/20">
+                {minOrderProgress}%
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto">
-            {!isMinOrderReached && (
-              <Link
-                href="/shop"
-                className="text-[11px] font-semibold text-[#D4A5A5] hover:underline"
+          <div className="h-2 w-full rounded-full bg-[#1A1A1A] overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                isMinOrderReached
+                  ? 'bg-gradient-to-r from-[#D4A5A5] to-emerald-400'
+                  : 'bg-gradient-to-r from-rose-500 via-amber-400 to-[#D4A5A5]'
+              }`}
+              style={{ width: `${minOrderProgress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* 2. Free Shipping Threshold (500 EGP) */}
+        <div className="pt-3 border-t border-white/5 space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
+            <div className="flex items-center gap-2">
+              <Truck className="size-4 text-[#D4A5A5] shrink-0" />
+              <span className="text-white font-medium">
+                {isFreeShipping
+                  ? isAr
+                    ? '🎁 تهانينا! حصلتِ على شحن مجاني بالكامل لطلبكِ (عرض الطلبات فوق 500 ج.م)'
+                    : '🎁 Congratulations! You unlocked 100% FREE shipping (500+ EGP offer)'
+                  : isAr
+                  ? `🚚 أضيفي بقيمة ${formatPrice(remainingForFreeShipping)} إضافية للحصول على شحن مجاني بالكامل!`
+                  : `🚚 Add ${formatPrice(remainingForFreeShipping)} more to enjoy 100% FREE shipping!`}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              {isFreeShipping ? (
+                <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full text-[11px] border border-emerald-500/20">
+                  {isAr ? 'شحن مجاني مفعل ✨' : 'FREE Shipping ✨'}
+                </span>
+              ) : (
+                <Link href="/shop" className="text-[11px] text-[#D4A5A5] hover:underline shrink-0 font-semibold">
+                  {isAr ? 'أضيفي منتجات +' : 'Add Items +'}
+                </Link>
+              )}
+              <span
+                className={`font-mono-brand px-2 py-0.5 rounded-full border text-[11px] ${
+                  isFreeShipping
+                    ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                    : 'text-[#D4A5A5] bg-[#D4A5A5]/10 border-[#D4A5A5]/20'
+                }`}
               >
-                {isAr ? 'تصفح المنتجات ←' : 'Browse items →'}
-              </Link>
-            )}
-            <span className="font-mono-brand text-[#D4A5A5]">{minOrderProgress}%</span>
+                {freeShippingProgress}%
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="h-2 w-full rounded-full bg-[#1A1A1A] overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              isMinOrderReached
-                ? 'bg-gradient-to-r from-[#D4A5A5] to-emerald-400'
-                : 'bg-gradient-to-r from-rose-500 via-amber-400 to-[#D4A5A5]'
-            }`}
-            style={{ width: `${minOrderProgress}%` }}
-          />
-        </div>
-
-        {/* Free Shipping 500 EGP Threshold Alert */}
-        <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2">
-            <Truck className="size-4 text-[#D4A5A5] shrink-0" />
-            <span className="text-white font-medium">
-              {isFreeShipping
-                ? isAr
-                  ? '🎁 تهانينا! طلبكِ يتضمن شحناً مجانياً بالكامل لكافة محافظات مصر (عرض الطلبات فوق 500 ج.م)'
-                  : '🎁 Congratulations! You unlocked FREE shipping across Egypt (500+ EGP offer)'
-                : isAr
-                ? `🚚 أضيفي بقيمة ${formatPrice(remainingForFreeShipping)} إضافية للحصول على شحن مجاني بالكامل!`
-                : `🚚 Add ${formatPrice(remainingForFreeShipping)} more to enjoy 100% FREE shipping!`}
-            </span>
+          <div className="h-2 w-full rounded-full bg-[#1A1A1A] overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                isFreeShipping
+                  ? 'bg-gradient-to-r from-[#D4A5A5] to-emerald-400'
+                  : 'bg-gradient-to-r from-rose-500/80 via-[#D4A5A5] to-emerald-400'
+              }`}
+              style={{ width: `${freeShippingProgress}%` }}
+            />
           </div>
-          {isFreeShipping ? (
-            <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full text-[11px] border border-emerald-500/20">
-              {isAr ? 'شحن مجاني مفعل ✨' : 'FREE Shipping Active ✨'}
-            </span>
-          ) : (
-            <Link href="/shop" className="text-[11px] text-[#D4A5A5] hover:underline shrink-0 font-semibold">
-              {isAr ? 'أضيفي منتجات +' : 'Add Items +'}
-            </Link>
-          )}
         </div>
       </div>
 
@@ -1013,7 +1027,7 @@ export default function CartPage() {
                       <h3 className="text-xs sm:text-sm font-bold text-white line-clamp-2 leading-snug">
                         {isAr ? line.product.nameAr : (line.product.nameEn || line.product.nameAr)}
                       </h3>
-                      {line.variant && (
+                      {line.variant && line.variant.nameAr !== 'الحجم القياسي' && line.variant.nameEn !== 'Standard' && (
                         <p className="text-[11px] text-[#D4A5A5] font-medium mt-0.5">
                           {isAr ? line.variant.nameAr : (line.variant.nameEn || line.variant.nameAr)}
                         </p>
@@ -1354,12 +1368,12 @@ export default function CartPage() {
                     <Truck className="size-5" />
                   </div>
                   <h2 className="text-lg md:text-xl font-bold font-display text-white text-center">
-                    {isAr ? 'بيانات الشحن والتوصيل (مصر)' : 'Shipping & Delivery (Egypt)'}
+                    {isAr ? 'بيانات الشحن والتوصيل' : 'Shipping & Delivery'}
                   </h2>
                   <p className="text-xs text-[#A1A1AA] mt-1 text-center max-w-md mx-auto">
                     {isAr
-                      ? 'توصيل فوري لباب المنزل خلال 24 - 48 ساعة لجميع المحافظات المصرية.'
-                      : 'Fast doorstep delivery across all Egyptian governorates.'}
+                      ? 'توصيل فوري لباب المنزل خلال 24 - 48 ساعة لجميع المحافظات.'
+                      : 'Fast doorstep delivery within 24 - 48 hours across all governorates.'}
                   </p>
                 </div>
 
@@ -1471,8 +1485,8 @@ export default function CartPage() {
                       <MapPin className="size-3.5 shrink-0" />
                       <span>
                         {isAr
-                          ? `المحافظة: ${selectedGov?.nameAr || 'القاهرة'} | المركز / الحي: ${district} (أحرف وأرقام بدون رموز)`
-                          : `Gov: ${selectedGov?.nameEn || 'Cairo'} | District: ${district} (Letters & digits only)`}
+                          ? `المحافظة: ${selectedGov?.nameAr || 'القاهرة'} | المركز / الحي: ${district}`
+                          : `Gov: ${selectedGov?.nameEn || 'Cairo'} | District: ${district}`}
                       </span>
                     </div>
                   </div>
@@ -1682,19 +1696,21 @@ export default function CartPage() {
                 ) : (
                   /* Register Tab Form */
                   <form onSubmit={handleInlineRegister} className="space-y-3.5">
-                    <div>
-                      <label className="text-xs font-semibold text-[#A1A1AA] block mb-1">
-                        {isAr ? 'الاسم بالكامل' : 'Full Name'} *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={authName}
-                        onChange={(e) => setAuthName(e.target.value)}
-                        placeholder={isAr ? 'اسمكِ الكريم...' : 'Your full name...'}
-                        className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
-                      />
-                    </div>
+                    {!name.trim() && (
+                      <div>
+                        <label className="text-xs font-semibold text-[#A1A1AA] block mb-1">
+                          {isAr ? 'الاسم بالكامل' : 'Full Name'} *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={authName}
+                          onChange={(e) => setAuthName(e.target.value)}
+                          placeholder={isAr ? 'اسمكِ الكريم...' : 'Your full name...'}
+                          className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
+                        />
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
@@ -1766,18 +1782,6 @@ export default function CartPage() {
                   </form>
                 )}
 
-                {/* Instant Demo Button for One-Click Testing */}
-                <div className="pt-1 text-center">
-                  <button
-                    type="button"
-                    onClick={handleInlineDemo}
-                    disabled={authLoading}
-                    className="text-xs text-[#A1A1AA] hover:text-[#D4A5A5] transition underline underline-offset-4 cursor-pointer"
-                  >
-                    {isAr ? '⚡ دخول فوري بحساب تجريبي (Instant Demo)' : '⚡ Quick Instant Demo Login'}
-                  </button>
-                </div>
-
                 {/* Back to Shipping Step */}
                 <div className="pt-2 border-t border-white/10 text-center">
                   <button
@@ -1803,7 +1807,7 @@ export default function CartPage() {
                 <div>
                   <h2 className="text-lg md:text-xl font-bold font-display text-white flex items-center gap-2">
                     <CreditCard className="size-5 text-[#D4A5A5]" />
-                    <span>{isAr ? 'تأكيد الدفع وإتمام الطلب (مصر)' : 'Confirm Payment & Order'}</span>
+                    <span>{isAr ? 'تأكيد الدفع وإتمام الطلب' : 'Confirm Payment & Order'}</span>
                   </h2>
                   <p className="text-xs text-[#A1A1AA] mt-1">
                     {isAr

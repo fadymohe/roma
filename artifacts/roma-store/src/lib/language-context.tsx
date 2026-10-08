@@ -102,7 +102,7 @@ const translations: Record<Language, Record<string, string>> = {
     'pdp.safety_guarantee': 'ضمان الجودة والسلامة: تم اختباره سريرياً من قبل أطباء الجلدية ومناسب للبشرة الحساسة.',
 
     // Cart Drawer & Page
-    'cart.title': 'سلة المشتريات الفاخرة',
+    'cart.title': 'سلة المشتريات',
     'cart.empty_title': 'سلتكِ لا تزال بانتظاركِ',
     'cart.empty_subtitle': 'تصفحي مجموعاتنا الراقية واختاري ما يناسب جمالكِ وإشراقتكِ',
     'cart.start_shopping': 'ابدئي التسوق الآن',

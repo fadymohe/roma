@@ -113,13 +113,6 @@ export function AuthModal() {
     }
   };
 
-  const handleQuickDemo = async () => {
-    setLoading(true);
-    setErrorMsg(null);
-    await login('noura@roma-eg.my', 'Password123!');
-    setLoading(false);
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md animate-in fade-in duration-200"
@@ -389,17 +382,6 @@ export function AuthModal() {
               <span>{isAr ? 'إرسال رابط الاستعادة' : 'Send Recovery Link'}</span>
             )}
           </button>
-
-          {/* Demo account quick login */}
-          <div className="pt-2 text-center border-t border-white/10">
-            <button
-              type="button"
-              onClick={handleQuickDemo}
-              className="text-[11px] font-bold text-[#D4A5A5] hover:underline"
-            >
-              {isAr ? 'دخول فوري بحساب تجريبي (Instant Demo)' : 'Instant Demo Account Access'}
-            </button>
-          </div>
         </form>
       </div>
     </div>
