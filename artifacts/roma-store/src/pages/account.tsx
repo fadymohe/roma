@@ -123,9 +123,23 @@ export default function AccountPage() {
   }, [user, setLocation]);
 
   const handleLogout = async () => {
+    setOrders([]);
+    setLookupOrders([]);
+    setSearchResults([]);
+    setIsSearchActive(false);
+    setSearchQueryTerm('');
     await logout();
     setLocation('/auth?tab=login');
   };
+
+  // Reset all order states whenever user changes to prevent cross-account order leak
+  useEffect(() => {
+    setOrders([]);
+    setLookupOrders([]);
+    setSearchResults([]);
+    setIsSearchActive(false);
+    setSearchQueryTerm('');
+  }, [user?.id]);
 
   useEffect(() => {
     if (user) {
@@ -264,7 +278,18 @@ export default function AccountPage() {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
+            const userCleanPhone = (user?.phone || '').replace(/\D+/g, '');
+            const userEmail = (user?.email || '').toLowerCase().trim();
             for (const o of parsed.slice(0, 5)) {
+              if (user) {
+                const oCleanPhone = String(o.phone || o.customer_phone || '').replace(/\D+/g, '');
+                const oEmail = String(o.email || o.customer_email || '').toLowerCase().trim();
+                const belongs =
+                  (o.user_id && o.user_id === user.id) ||
+                  (userCleanPhone && oCleanPhone && (oCleanPhone === userCleanPhone || (userCleanPhone.length >= 8 && oCleanPhone.endsWith(userCleanPhone.slice(-8))))) ||
+                  (userEmail && oEmail && oEmail === userEmail);
+                if (!belongs) continue;
+              }
               const clean = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
               if (clean) targets.add(clean);
             }
@@ -290,7 +315,7 @@ export default function AccountPage() {
     }
 
     refreshActiveOrders();
-  }, [recentOrderId]);
+  }, [recentOrderId, user]);
 
   // Live auto-refresh: Update order status every 4 seconds in realtime
   useEffect(() => {
@@ -330,7 +355,18 @@ export default function AccountPage() {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
+            const userCleanPhone = (user?.phone || '').replace(/\D+/g, '');
+            const userEmail = (user?.email || '').toLowerCase().trim();
             for (const o of parsed.slice(0, 5)) {
+              if (user) {
+                const oCleanPhone = String(o.phone || o.customer_phone || '').replace(/\D+/g, '');
+                const oEmail = String(o.email || o.customer_email || '').toLowerCase().trim();
+                const belongs =
+                  (o.user_id && o.user_id === user.id) ||
+                  (userCleanPhone && oCleanPhone && (oCleanPhone === userCleanPhone || (userCleanPhone.length >= 8 && oCleanPhone.endsWith(userCleanPhone.slice(-8))))) ||
+                  (userEmail && oEmail && oEmail === userEmail);
+                if (!belongs) continue;
+              }
               const clean = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
               if (clean) targets.add(clean);
             }
@@ -493,8 +529,24 @@ export default function AccountPage() {
   };
 
   // Order list resolution: when searching, ONLY return the searched order!
+  // When logged in, strictly respect privacy and ONLY show orders of the logged in user!
   const displayOrders = (() => {
     const map = new Map<string, any>();
+
+    const userCleanPhone = (user?.phone || '').replace(/\D+/g, '');
+    const userEmail = (user?.email || '').toLowerCase().trim();
+
+    const isAuthorizedOrder = (o: any) => {
+      if (!user) return true; // guest mode
+      if (o.user_id && o.user_id === user.id) return true;
+      const oPhone = String(o.phone || o.customer_phone || o.shipping_phone || o.shipping_details?.phone || '').replace(/\D+/g, '');
+      if (userCleanPhone && oPhone && (oPhone === userCleanPhone || (userCleanPhone.length >= 8 && oPhone.endsWith(userCleanPhone.slice(-8))))) {
+        return true;
+      }
+      const oEmail = String(o.email || o.customer_email || '').toLowerCase().trim();
+      if (userEmail && oEmail && oEmail === userEmail) return true;
+      return false;
+    };
 
     const mergeOrder = (o: any) => {
       if (!o) return;
@@ -543,11 +595,13 @@ export default function AccountPage() {
         return false;
       };
 
-      // 1. Specific API server results for this query
-      for (const o of searchResults) mergeOrder(o);
+      // 1. Specific API server results for this query (filtered by user authorization if logged in)
+      for (const o of searchResults) {
+        if (isAuthorizedOrder(o)) mergeOrder(o);
+      }
       // 2. User account orders matching search
       for (const o of orders) {
-        if (matchesSearch(o)) mergeOrder(o);
+        if (matchesSearch(o) && isAuthorizedOrder(o)) mergeOrder(o);
       }
       // 3. Local storage orders matching search
       try {
@@ -556,7 +610,7 @@ export default function AccountPage() {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
             for (const o of parsed) {
-              if (matchesSearch(o)) mergeOrder(o);
+              if (matchesSearch(o) && isAuthorizedOrder(o)) mergeOrder(o);
             }
           }
         }
@@ -565,7 +619,33 @@ export default function AccountPage() {
       return Array.from(map.values());
     }
 
-    // Default: Show all orders
+    // Default: Strict privacy per account
+    if (user) {
+      // 1. Logged-in user's orders from database
+      for (const o of orders) {
+        if (isAuthorizedOrder(o)) mergeOrder(o);
+      }
+      // 2. Current session lookups (only if belonging to this user)
+      for (const o of lookupOrders) {
+        if (isAuthorizedOrder(o)) mergeOrder(o);
+      }
+      // 3. Local recent orders matching this user
+      try {
+        const raw = localStorage.getItem('roma_recent_orders');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            for (const o of parsed) {
+              if (isAuthorizedOrder(o)) mergeOrder(o);
+            }
+          }
+        }
+      } catch (_) {}
+
+      return Array.from(map.values());
+    }
+
+    // Guest Mode (when user is not logged in)
     for (const o of lookupOrders) mergeOrder(o);
     for (const o of orders) mergeOrder(o);
     try {

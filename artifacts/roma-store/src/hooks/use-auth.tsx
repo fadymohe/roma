@@ -32,22 +32,10 @@ export interface User {
 }
 
 export const LUXURY_AVATARS = [
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=250&q=80',
-  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=250&q=80',
+  '/avatars/avatar-1.jpg',
+  '/avatars/avatar-2.jpg',
+  '/avatars/avatar-3.jpg',
+  '/avatars/avatar-4.jpg',
 ];
 
 export function getAccountAvatar(user?: { id?: string; email?: string; phone?: string; avatar?: string } | null): string {
@@ -507,13 +495,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (_) {}
       }
 
-      // Merge any recent orders from local storage
+      // Merge only recent orders from local storage that strictly belong to this logged-in user
       const existingIds = new Set(
         combined.map((o: any) => String(o.order_number || o.id))
       );
+      const userCleanPhone = (user.phone || '').replace(/\D+/g, '');
+      const userEmail = (user.email || '').toLowerCase().trim();
+
       for (const rec of localRecent) {
-        const recKey = String(rec.order_number || rec.id);
-        if (!existingIds.has(recKey)) {
+        const recKey = String((rec as any).order_number || rec.id);
+        const recPhone = String((rec as any).phone || (rec as any).customer_phone || '').replace(/\D+/g, '');
+        const recEmail = String((rec as any).email || (rec as any).customer_email || '').toLowerCase().trim();
+        const recUserId = (rec as any).user_id;
+
+        const isBelonging =
+          (recUserId && recUserId === user.id) ||
+          (userCleanPhone && recPhone && (recPhone === userCleanPhone || (userCleanPhone.length >= 8 && recPhone.endsWith(userCleanPhone.slice(-8))))) ||
+          (userEmail && recEmail && recEmail === userEmail);
+
+        if (isBelonging && !existingIds.has(recKey)) {
           combined.unshift(rec);
           existingIds.add(recKey);
         }
@@ -522,7 +522,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return combined;
     } catch (e) {
       console.warn('Could not fetch user orders:', e);
-      return localRecent;
+      if (!user) return localRecent;
+      const userCleanPhone = (user.phone || '').replace(/\D+/g, '');
+      const userEmail = (user.email || '').toLowerCase().trim();
+      return localRecent.filter((rec: any) => {
+        const recPhone = String(rec.phone || rec.customer_phone || '').replace(/\D+/g, '');
+        const recEmail = String(rec.email || rec.customer_email || '').toLowerCase().trim();
+        const recUserId = rec.user_id;
+        return (
+          (recUserId && recUserId === user.id) ||
+          (userCleanPhone && recPhone && (recPhone === userCleanPhone || (userCleanPhone.length >= 8 && recPhone.endsWith(userCleanPhone.slice(-8))))) ||
+          (userEmail && recEmail && recEmail === userEmail)
+        );
+      });
     }
   };
 

@@ -139,6 +139,19 @@ export default function AuthPage() {
     setOtpTimer(60);
     setCanResendOtp(false);
     setIsVerifyingOtp(true);
+
+    // Automatically send WhatsApp message to customer's phone
+    fetch('/api/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: cleanPhone,
+        otp,
+        name: trimmedName,
+      }),
+    }).catch((err) => {
+      console.warn('WhatsApp OTP dispatch note:', err);
+    });
   };
 
   // Resend OTP
@@ -148,6 +161,19 @@ export default function AuthPage() {
     setOtpTimer(60);
     setCanResendOtp(false);
     setErrorMsg(null);
+
+    const cleanPhone = phone.trim().replace(/\D/g, '');
+    fetch('/api/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: cleanPhone,
+        otp: newOtp,
+        name: name.trim(),
+      }),
+    }).catch((err) => {
+      console.warn('WhatsApp OTP resend note:', err);
+    });
   };
 
   // Confirm OTP and complete registration
@@ -247,6 +273,13 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
+
+  const cleanCustomerPhone = phone.trim().replace(/\D/g, '');
+  const maskedPhone = cleanCustomerPhone.length === 11
+    ? `${cleanCustomerPhone.slice(0, 3)}****${cleanCustomerPhone.slice(7)}`
+    : cleanCustomerPhone.length > 4
+    ? `${cleanCustomerPhone.slice(0, 2)}****${cleanCustomerPhone.slice(-2)}`
+    : '****';
 
   const whatsappMessage = encodeURIComponent(
     isAr
@@ -386,36 +419,42 @@ export default function AuthPage() {
                 <p className="text-xs text-zinc-400 leading-relaxed max-w-sm mx-auto">
                   {isAr ? (
                     <>
-                      يرجى الضغط على الزر أدناه لإرسال كود التأكيد إلى رقمك 
-                      <strong className="text-emerald-400 font-mono mx-1 font-bold">({phone})</strong> 
-                      ثم كتابة الرمز لإتمام إنشاء الحساب.
+                      تم إرسال رمز التحقق الخاص بكِ عبر واتساب إلى الرقم{' '}
+                      <strong className="text-emerald-400 font-mono mx-1 font-bold tracking-wider" dir="ltr">{maskedPhone}</strong>
+                      . أدخلي الرمز لتأكيد الرقم وتفعيل الحساب.
                     </>
                   ) : (
-                    <>A verification code has been prepared for your phone number {phone}.</>
+                    <>
+                      A verification code was sent to your WhatsApp number{' '}
+                      <strong className="text-emerald-400 font-mono mx-1 font-bold" dir="ltr">{maskedPhone}</strong>.
+                    </>
                   )}
                 </p>
               </div>
 
-              {/* Direct WhatsApp Action Button */}
+              {/* Status Badge: Sent to WhatsApp */}
+              <div className="p-3.5 rounded-2xl bg-[#161E19] border border-emerald-500/25 text-center">
+                <div className="flex items-center justify-center gap-2 text-emerald-400 text-xs font-bold mb-1">
+                  <span className="inline-block size-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>{isAr ? 'تم إرسال كود التأكيد إلى واتساب' : 'Code Sent to WhatsApp'}</span>
+                </div>
+                <p className="text-[11px] text-zinc-400">
+                  {isAr
+                    ? 'يرجى مراجعة رسائل واتساب على رقمكِ وإدخال الرمز المكون من 6 أرقام أدناه'
+                    : 'Check your WhatsApp messages and enter the 6-digit code below'}
+                </p>
+              </div>
+
+              {/* Direct WhatsApp Action Button (Backup) */}
               <a
                 href={`https://wa.me/201505566849?text=${whatsappMessage}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2.5 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white py-3.5 px-4 font-bold text-sm shadow-lg shadow-[#25D366]/20 transition-all hover:scale-[1.02] active:scale-95 text-center"
+                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 py-2.5 px-4 text-xs font-medium transition-all text-center"
               >
-                <MessageCircle className="size-5" />
-                <span>{isAr ? 'فتح واتساب لتأكيد رمز التفعيل 💬' : 'Open WhatsApp to Confirm Code 💬'}</span>
+                <MessageCircle className="size-4 text-[#25D366]" />
+                <span>{isAr ? 'لم يصلكِ الرمز بعد؟ فتح محادثة واتساب 💬' : 'Didn’t receive code? Open WhatsApp 💬'}</span>
               </a>
-
-              {/* Highlight Box showing Code for User Convenience */}
-              <div className="p-3 rounded-2xl bg-[#1A1A1A] border border-white/10 text-center">
-                <span className="text-[11px] text-zinc-400 block mb-1">
-                  {isAr ? 'رمز التحقق الخاص بك هو:' : 'Your 6-digit Code:'}
-                </span>
-                <span className="text-2xl font-extrabold font-mono tracking-widest text-[#D4A5A5]">
-                  {generatedOtp}
-                </span>
-              </div>
 
               {/* OTP Input Field */}
               <div className="space-y-1.5">
