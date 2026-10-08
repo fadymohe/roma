@@ -1,8 +1,9 @@
-import { Search, X, SlidersHorizontal, ArrowUpDown, Sparkles, Lightbulb } from 'lucide-react';
+import { Search, X, SlidersHorizontal, ArrowUpDown, Sparkles, Lightbulb, ArrowRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
 import { ProductCard } from '@/components/product-card';
 import { CATEGORIES, useLiveProducts, DEFAULT_PRODUCTS } from '@/lib/catalog-data';
+import { CATEGORIES_DATA } from '@/pages/categories';
 import { useLanguage } from '@/lib/language-context';
 import { smartSearchProducts } from '@/lib/smart-search';
 
@@ -160,6 +161,27 @@ export default function Shop() {
     window.history.pushState({}, '', url.toString());
   };
 
+  const activeCategoryObj = useMemo(() => {
+    if (!category) return null;
+    const qCat = category.toLowerCase().trim();
+    return (
+      CATEGORIES_DATA.find((c) => c.id === qCat || c.slug === qCat) ||
+      (qCat.includes('hair') || qCat.includes('شعر')
+        ? CATEGORIES_DATA.find((c) => c.id === 'hair-accessories')
+        : qCat.includes('look') || qCat.includes('إطلالة') || qCat.includes('اطلالة')
+        ? CATEGORIES_DATA.find((c) => c.id === 'look-accessories')
+        : qCat.includes('jewelry') || qCat.includes('مجوهرات')
+        ? CATEGORIES_DATA.find((c) => c.id === 'jewelry')
+        : qCat.includes('makeup') || qCat.includes('مكياج')
+        ? CATEGORIES_DATA.find((c) => c.id === 'makeup')
+        : qCat.includes('body') || qCat.includes('جسم')
+        ? CATEGORIES_DATA.find((c) => c.id === 'body-care')
+        : qCat.includes('perfume') || qCat.includes('عطر')
+        ? CATEGORIES_DATA.find((c) => c.id === 'perfumes')
+        : null)
+    );
+  }, [category]);
+
   const categoryFilters = [
     { id: '', label: isAr ? 'جميع المنتجات' : 'All Products' },
     { id: 'hair-accessories', label: isAr ? 'إكسسوارات الشعر' : 'Hair Accessories' },
@@ -171,41 +193,65 @@ export default function Shop() {
   ];
 
   return (
-    <div className="roma-container py-8 md:py-12 text-[#F9FAFB]" dir={dir}>
+    <div className="roma-container py-6 sm:py-8 md:py-12 text-[#F9FAFB]" dir={dir}>
       {/* Header & Subtitle */}
-      <div className="mb-8">
-        <h1 className="font-display text-3xl md:text-5xl font-extrabold text-white">
-          {t('nav.shop')}
+      <div className="mb-6 sm:mb-8">
+        {category && (
+          <div className="mb-3">
+            <button
+              type="button"
+              onClick={() => handleCategoryChange('')}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A5A5] hover:underline cursor-pointer transition active:scale-95"
+            >
+              <ArrowRight className={`size-3.5 ${isAr ? '' : 'rotate-180'}`} />
+              <span>{isAr ? 'عرض جميع المنتجات' : 'All Products'}</span>
+            </button>
+          </div>
+        )}
+        <h1 className="font-display text-2xl sm:text-3xl md:text-5xl font-extrabold text-white">
+          {activeCategoryObj
+            ? isAr
+              ? activeCategoryObj.nameAr
+              : activeCategoryObj.nameEn
+            : isAr
+            ? 'المتجر والمنتجات'
+            : 'Shop & Products'}
         </h1>
-        <p className="mt-2 text-xs md:text-sm text-[#A1A1AA] max-w-xl">
-          {isAr
-            ? 'تصفحي جميع مستحضراتنا الطبيعية الفاخرة وإكسسواراتنا الحصرية المعززة بأنقى الخلاصات.'
-            : 'Explore our complete atelier of pure botanical formulations and handcrafted women\'s accessories.'}
+        <p className="mt-2 text-xs md:text-sm text-[#A1A1AA] max-w-xl leading-relaxed">
+          {activeCategoryObj
+            ? isAr
+              ? activeCategoryObj.subtitleAr
+              : activeCategoryObj.subtitleEn
+            : isAr
+            ? 'تشكيلة مختارة بعناية من أفضل المستحضرات الطبيعية والإكسسوارات الفاخرة.'
+            : 'A curated selection of luxury beauty formulations and fine accessories.'}
         </p>
       </div>
 
       {/* Filter and Search Section */}
       <div className="mb-8 space-y-4 border-b border-white/10 pb-6">
-        {/* Category Filter Pills - Full width flex-wrap to ensure every category is completely visible */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          {categoryFilters.map((f) => {
-            const active = category === f.id;
-            return (
-              <button
-                type="button"
-                key={f.id}
-                onClick={() => handleCategoryChange(f.id)}
-                className={`rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95 ${
-                  active
-                    ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md ring-2 ring-[#D4A5A5]/40'
-                    : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white hover:border-white/20'
-                }`}
-              >
-                {f.label}
-              </button>
-            );
-          })}
-        </div>
+        {/* Category Filter Pills - Only show when no specific category is selected */}
+        {!category && (
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            {categoryFilters.map((f) => {
+              const active = category === f.id;
+              return (
+                <button
+                  type="button"
+                  key={f.id}
+                  onClick={() => handleCategoryChange(f.id)}
+                  className={`rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95 ${
+                    active
+                      ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md ring-2 ring-[#D4A5A5]/40'
+                      : 'bg-[#141414] border border-white/10 text-[#A1A1AA] hover:text-white hover:border-white/20'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Active Price Filter Pill if applied */}
         {maxPrice !== null && (

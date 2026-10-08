@@ -30,7 +30,7 @@ import { AuthModal } from '@/components/auth-modal';
 export function StoreShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const isHomePage = location === '/' || location === '' || location === '/index.html';
-  const isProductPage = location.startsWith('/product/');
+  const isProductPage = location.startsWith('/product');
   const { count } = useCart();
   const { t, lang, toggleLang, isAr, dir } = useLanguage();
   const {

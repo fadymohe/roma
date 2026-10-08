@@ -9,13 +9,8 @@ import {
   Check,
   Sparkles,
   Share2,
-  CheckCircle2,
   AlertCircle,
   ShoppingBag,
-  Zap,
-  Award,
-  Leaf,
-  Droplets,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -412,7 +407,7 @@ export default function ProductPage() {
   return (
     <div className="roma-container pt-3 pb-8 md:py-12 text-[#F9FAFB]" dir={dir}>
       {/* Top Breadcrumb & Navigation */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 sm:mb-6 flex items-center justify-between">
         <Link
           href="/shop"
           data-testid="link-back-shop"
@@ -421,12 +416,6 @@ export default function ProductPage() {
         >
           <ArrowRight className={`size-4.5 ${isAr ? '' : 'rotate-180'}`} />
         </Link>
-
-        <div className="text-center">
-          <span className="font-display text-xs md:text-sm font-bold text-[#A1A1AA] uppercase tracking-widest">
-            ROMA ATELIER · {isAr ? 'مستحضرات وإكسسوارات فاخرة' : 'Haute Cosmetics'}
-          </span>
-        </div>
 
         <div className="flex items-center gap-2">
           <button
@@ -449,18 +438,6 @@ export default function ProductPage() {
               strokeWidth={1.5}
             />
           </button>
-          <Link
-            href="/cart"
-            className="relative flex size-10 items-center justify-center rounded-full border border-white/10 bg-[#141414] text-[#A1A1AA] hover:text-white hover:border-[#D4A5A5] transition active:scale-95"
-            aria-label="Cart"
-          >
-            <ShoppingBag className="size-4.5 text-[#D4A5A5]" strokeWidth={1.75} />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#D4A5A5] text-[9px] font-bold text-[#0A0A0A] font-mono">
-                {cartCount}
-              </span>
-            )}
-          </Link>
         </div>
       </div>
 
@@ -492,13 +469,6 @@ export default function ProductPage() {
               }}
               className="relative z-10 w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
             />
-
-            {/* Badge */}
-            {displayBadge && (
-              <span className="absolute top-3.5 right-3.5 z-20 rounded-full bg-[#D4A5A5]/20 text-[#D4A5A5] border border-[#D4A5A5]/30 text-[10px] font-semibold px-2 py-0.5 shadow-md">
-                {displayBadge}
-              </span>
-            )}
 
             {/* Swipe hint dots for mobile */}
             {galleryImages.length > 1 && (
@@ -546,30 +516,6 @@ export default function ProductPage() {
               ))}
             </div>
           )}
-
-          {/* Trust Value Badges under Image (Desktop Only - Mobile version placed beneath CTA) */}
-          <div className="hidden md:grid grid-cols-4 gap-2 pt-2">
-            <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Leaf className="size-4 text-[#D4A5A5] mb-1" />
-              <span className="text-[10px] font-bold text-white">{isAr ? '١٠٠٪ طبيعي' : '100% Organic'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'خالٍ من البارابين' : 'Toxin-Free'}</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Award className="size-4 text-[#D4A5A5] mb-1" />
-              <span className="text-[10px] font-bold text-white">{isAr ? 'مسجل بالصحة' : 'MOH Registered'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'ترخيص جودة مصري' : 'Gov Certified'}</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Droplets className="size-4 text-[#D4A5A5] mb-1" />
-              <span className="text-[10px] font-bold text-white">{isAr ? 'مختبر جلدياً' : 'Derm Tested'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'آمن للبشرة' : 'Sensitive Safe'}</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Truck className="size-4 text-[#D4A5A5] mb-1" />
-              <span className="text-[10px] font-bold text-white">{isAr ? 'شحن ٢٤-٤٨ ساعة' : '24-48h Delivery'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{isAr ? 'دفع إلكتروني آمن' : 'Secure Payment'}</span>
-            </div>
-          </div>
         </div>
 
         {/* Right Column: Title, Pricing & Purchase Block */}
@@ -586,8 +532,9 @@ export default function ProductPage() {
             </h1>
 
             {/* Ratings & Stock Badge */}
+            {/* Ratings */}
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-[#1A1A1A] px-2 py-0.5 rounded-full border border-white/10">
+              <div className="flex items-center gap-1.5 bg-[#1A1A1A] px-2.5 py-1 rounded-full border border-white/10 shadow-2xs">
                 <div className="flex gap-0.5 text-amber-400">
                   {Array.from({ length: 5 }).map((_, index) => (
                     <Star key={index} className="size-3 fill-current" />
@@ -596,12 +543,6 @@ export default function ProductPage() {
                 <span className="text-[11px] font-bold text-white">{productRatingAvg}</span>
                 <span className="text-[10px] text-[#A1A1AA]">({reviews.length} {isAr ? 'تقييم' : 'reviews'})</span>
               </div>
-
-              {/* In Stock Badge */}
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300 bg-emerald-950/40 border border-emerald-800/40 px-2.5 py-0.5 rounded-full">
-                <CheckCircle2 className="size-3" />
-                <span>{isAr ? 'متوفر في المخزون' : 'In Stock'}</span>
-              </span>
             </div>
 
             {/* Price Row (Pure White Price) */}
@@ -666,20 +607,22 @@ export default function ProductPage() {
               </button>
             </div>
 
-            {/* Primary CTA: High-emphasis Fast Cash Buy Now */}
+            {/* Primary CTA: Buy Now with Luxury Animation and No Icon */}
             <button
               type="button"
               data-testid="button-buy-now"
               onClick={buyNowDirect}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F2A7A7] via-[#E99797] to-[#DF8C8C] text-white font-extrabold shadow-md shadow-rose-400/20 hover:brightness-105 h-11 sm:h-12 px-4 text-xs sm:text-sm transition active:scale-[0.99] tracking-wide"
+              className="relative overflow-hidden w-full flex items-center justify-center rounded-xl bg-[#D4A5A5] hover:bg-[#C99696] text-[#0A0A0A] font-extrabold shadow-md shadow-[#D4A5A5]/25 hover:shadow-[#D4A5A5]/40 h-11 sm:h-12 px-4 text-xs sm:text-sm transition-all duration-300 active:scale-[0.99] group animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite]"
             >
-              <Zap className="size-4 text-white fill-white shrink-0" />
-              <span className="text-white drop-shadow-xs font-bold">{isAr ? 'شراء الآن' : t('product.buy_now')}</span>
+              <span className="font-extrabold tracking-wide text-[#0A0A0A]">
+                {isAr ? 'شراء الآن' : t('product.buy_now')}
+              </span>
+              <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
             </button>
           </div>
 
           {/* Reassurance Features */}
-          <div className="rounded-xl border border-white/10 bg-[#141414] p-3 space-y-1.5 text-[11px] sm:text-xs text-[#A1A1AA]">
+          <div className="rounded-xl border border-white/10 bg-[#141414] p-3 space-y-2 text-[11px] sm:text-xs text-[#A1A1AA] shadow-2xs">
             <div className="flex items-center gap-2 text-white font-medium">
               <ShieldCheck className="size-3.5 text-[#D4A5A5] shrink-0" />
               <span>{isAr ? 'ضمان استبدال واسترجاع لمدة ١٤ يوماً' : '14-Day Hassle-Free Returns & Exchange'}</span>
@@ -689,43 +632,19 @@ export default function ProductPage() {
               <span>{isAr ? 'معاينة المنتج قبل الدفع للمندوب متاحة' : 'Inspect Product Upon Courier Delivery'}</span>
             </div>
           </div>
-
-          {/* Trust Value Badges (Mobile-only here under purchase block) */}
-          <div className="grid grid-cols-2 gap-1.5 pt-0.5 md:hidden">
-            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Leaf className="size-3.5 text-[#D4A5A5] mb-0.5" />
-              <span className="text-[10px] font-bold text-white leading-tight">{isAr ? '١٠٠٪ طبيعي' : '100% Organic'}</span>
-              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'خالٍ من البارابين' : 'Toxin-Free'}</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Award className="size-3.5 text-[#D4A5A5] mb-0.5" />
-              <span className="text-[10px] font-bold text-white leading-tight">{isAr ? 'مسجل بالصحة' : 'MOH Registered'}</span>
-              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'ترخيص جودة مصري' : 'Gov Certified'}</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Droplets className="size-3.5 text-[#D4A5A5] mb-0.5" />
-              <span className="text-[10px] font-bold text-white leading-tight">{isAr ? 'مختبر جلدياً' : 'Derm Tested'}</span>
-              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'آمن للبشرة' : 'Sensitive Safe'}</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#141414] border border-white/5 shadow-2xs">
-              <Truck className="size-3.5 text-[#D4A5A5] mb-0.5" />
-              <span className="text-[10px] font-bold text-white leading-tight">{isAr ? 'شحن ٢٤-٤٨ ساعة' : '24-48h Delivery'}</span>
-              <span className="text-[8.5px] text-[#A1A1AA] leading-tight mt-0.5">{isAr ? 'دفع إلكتروني آمن' : 'Secure Payment'}</span>
-            </div>
-          </div>
         </div>
       </div>
 
       {/* Tabs Section: Description, Ingredients, Ritual & Reviews */}
       <div className="mt-6 md:mt-12 border-t border-white/10 pt-5 md:pt-8">
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-3 border-b border-white/10 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 border-b border-white/10 no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('desc')}
-            className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-xs font-bold transition whitespace-nowrap shrink-0 ${
+            className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'desc'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-xs'
-                : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
+                : 'text-[#A1A1AA] hover:text-white bg-[#141414] border border-white/5'
             }`}
           >
             {t('pdp.tab_description')}
@@ -733,10 +652,10 @@ export default function ProductPage() {
           <button
             type="button"
             onClick={() => setActiveTab('ingredients')}
-            className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-bold transition whitespace-nowrap shrink-0 ${
+            className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'ingredients'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-xs'
-                : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
+                : 'text-[#A1A1AA] hover:text-white bg-[#141414] border border-white/5'
             }`}
           >
             {parsedDetails.isAccessory
@@ -752,10 +671,10 @@ export default function ProductPage() {
           <button
             type="button"
             onClick={() => setActiveTab('howTo')}
-            className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-bold transition whitespace-nowrap shrink-0 ${
+            className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'howTo'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-xs'
-                : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
+                : 'text-[#A1A1AA] hover:text-white bg-[#141414] border border-white/5'
             }`}
           >
             {t('pdp.tab_how_to_use')}
@@ -763,10 +682,10 @@ export default function ProductPage() {
           <button
             type="button"
             onClick={() => setActiveTab('reviews')}
-            className={`px-4 py-2.5 rounded-full text-xs md:text-sm font-bold transition whitespace-nowrap shrink-0 ${
+            className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'reviews'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-xs'
-                : 'text-[#A1A1AA] hover:text-white bg-[#141414]'
+                : 'text-[#A1A1AA] hover:text-white bg-[#141414] border border-white/5'
             }`}
           >
             {t('pdp.tab_reviews')}
@@ -774,38 +693,40 @@ export default function ProductPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="pt-6">
+        <div className="pt-5 sm:pt-6">
           {activeTab === 'desc' && (
-            <div className="prose prose-invert prose-sm max-w-none text-[#A1A1AA] leading-relaxed space-y-4">
-              <p className="text-sm md:text-base leading-relaxed text-white/90 whitespace-pre-line">{displayDescription}</p>
+            <div className="rounded-2xl border border-white/10 bg-[#141414] p-4 sm:p-6 shadow-2xs">
+              <p className="text-xs sm:text-sm md:text-base leading-relaxed text-zinc-200 whitespace-pre-line">
+                {displayDescription}
+              </p>
             </div>
           )}
 
           {activeTab === 'ingredients' && (
-            <div className="space-y-4 text-sm text-[#A1A1AA]">
-              <h3 className="font-display font-bold text-base text-white">
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="font-display font-bold text-sm sm:text-base text-white">
                 {parsedDetails.title}
               </h3>
 
               {displayIngredients ? (
-                <div className="leading-relaxed bg-[#141414] p-4 md:p-5 rounded-2xl border border-white/10 text-white/90 whitespace-pre-line">
+                <div className="leading-relaxed bg-[#141414] p-4 sm:p-5 rounded-2xl border border-white/10 text-xs sm:text-sm text-zinc-200 whitespace-pre-line shadow-2xs">
                   {displayIngredients}
                 </div>
               ) : parsedDetails.bullets.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                   {parsedDetails.bullets.map((b, idx) => (
                     <div
                       key={idx}
-                      className="p-3.5 rounded-2xl border border-white/10 bg-[#141414] flex items-start gap-2.5 text-white/90"
+                      className="p-3 sm:p-3.5 rounded-xl border border-white/10 bg-[#141414] flex items-start gap-2.5 text-zinc-200 shadow-2xs"
                     >
                       <Sparkles className="size-4 text-[#D4A5A5] shrink-0 mt-0.5" />
-                      <span className="text-xs md:text-sm leading-relaxed">{b}</span>
+                      <span className="text-xs sm:text-sm leading-relaxed">{b}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="leading-relaxed bg-[#141414] p-4 md:p-5 rounded-2xl border border-white/10 text-zinc-400">
-                  <p className="text-xs md:text-sm leading-relaxed">
+                <div className="leading-relaxed bg-[#141414] p-4 sm:p-5 rounded-2xl border border-white/10 text-zinc-400">
+                  <p className="text-xs sm:text-sm leading-relaxed">
                     {isAr ? 'غير متوفر' : 'Not available'}
                   </p>
                 </div>
@@ -814,11 +735,11 @@ export default function ProductPage() {
           )}
 
           {activeTab === 'howTo' && (
-            <div className="space-y-4 text-sm text-[#A1A1AA]">
-              <h3 className="font-display font-bold text-base text-white">
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="font-display font-bold text-sm sm:text-base text-white">
                 {isAr ? 'طريقة الاستخدام' : 'How to Use'}
               </h3>
-              <div className="leading-relaxed bg-[#141414] p-4 rounded-2xl border border-white/10 text-white/90 whitespace-pre-line">
+              <div className="leading-relaxed bg-[#141414] p-4 sm:p-5 rounded-2xl border border-white/10 text-xs sm:text-sm text-zinc-200 whitespace-pre-line shadow-2xs">
                 {displayHowToUse ? (
                   <p>{displayHowToUse}</p>
                 ) : (
@@ -878,22 +799,14 @@ export default function ProductPage() {
 
       {/* Recommended Products Carousel - Category Specific */}
       {relatedProducts.length > 0 && (
-        <div className="mt-20 border-t border-white/10 pt-14">
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h3 className="font-display text-2xl font-bold text-white md:text-3xl">
-                {isAr ? 'المنتجات المقترحة لك' : 'Suggested Products for You'}
-              </h3>
-            </div>
-            <Link
-              href={`/shop?category=${encodeURIComponent(product.category || product.categoryEn || '')}`}
-              className="text-xs font-bold text-[#D4A5A5] hover:underline"
-            >
-              {isAr ? 'عرض الكل' : 'View All'}
-            </Link>
+        <div className="mt-14 md:mt-20 border-t border-white/10 pt-10 md:pt-14">
+          <div className="mb-6 md:mb-8">
+            <h3 className="font-display text-xl sm:text-2xl font-bold text-white md:text-3xl">
+              {isAr ? 'المنتجات المقترحة لك' : 'Suggested Products for You'}
+            </h3>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 items-stretch">
             {relatedProducts.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} />
             ))}

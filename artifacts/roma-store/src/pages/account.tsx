@@ -63,7 +63,7 @@ export default function AccountPage() {
       if (tabParam === 'orders' || tabParam === 'profile' || tabParam === 'rewards') {
         setActiveTab(tabParam as any);
       }
-    } catch (_) {}
+    } catch (_) { }
   }, []);
 
   // If not authenticated, redirect to login page instead of showing guest account
@@ -138,7 +138,7 @@ export default function AccountPage() {
           }
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // Instantly update React state so the UI step progress bar advances live without page refresh
     setLookupOrders((prev) => {
@@ -150,8 +150,8 @@ export default function AccountPage() {
           up.payment_method && !up.payment_method.includes('الاستلام') && !/cod/i.test(up.payment_method)
             ? up.payment_method
             : existing?.payment_method && !existing.payment_method.includes('الاستلام')
-            ? existing.payment_method
-            : (isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash / E-Wallet');
+              ? existing.payment_method
+              : (isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash / E-Wallet');
         map.set(cleanKey, { ...existing, ...up, payment_method: resolvedMethod });
       }
       return Array.from(map.values());
@@ -191,7 +191,7 @@ export default function AccountPage() {
             }
           }
         }
-      } catch (_) {}
+      } catch (_) { }
 
       for (const target of targets) {
         try {
@@ -206,7 +206,7 @@ export default function AccountPage() {
               });
             }
           }
-        } catch (_) {}
+        } catch (_) { }
       }
     }
 
@@ -241,7 +241,7 @@ export default function AccountPage() {
             }
           }
         }
-      } catch (_) {}
+      } catch (_) { }
 
       for (const num of targets) {
         try {
@@ -252,14 +252,14 @@ export default function AccountPage() {
               syncOrderUpdates(json.orders);
             }
           }
-        } catch (_) {}
+        } catch (_) { }
       }
 
       if (user) {
         try {
           const res = await fetchUserOrders();
           if (Array.isArray(res) && res.length > 0) setOrders(res);
-        } catch (_) {}
+        } catch (_) { }
       }
     }, 4000);
 
@@ -374,7 +374,7 @@ export default function AccountPage() {
           for (const o of parsed) mergeOrder(o);
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     return Array.from(map.values());
   })();
@@ -470,11 +470,10 @@ export default function AccountPage() {
           <button
             type="button"
             onClick={() => setActiveTab('orders')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition ${
-              activeTab === 'orders'
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition ${activeTab === 'orders'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] font-bold shadow-sm'
                 : 'bg-[#141414] text-[#A1A1AA] hover:text-white border border-white/5'
-            }`}
+              }`}
           >
             <Package className="size-4" strokeWidth={1.5} />
             <span>{isAr ? 'متابعة الطلبات (My Orders)' : 'My Orders'}</span>
@@ -488,11 +487,10 @@ export default function AccountPage() {
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition ${
-              activeTab === 'profile'
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition ${activeTab === 'profile'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] font-bold shadow-sm'
                 : 'bg-[#141414] text-[#A1A1AA] hover:text-white border border-white/5'
-            }`}
+              }`}
           >
             <User className="size-4" strokeWidth={1.5} />
             <span>{isAr ? 'إعدادات الحساب والعنوان' : 'Profile Settings'}</span>
@@ -501,11 +499,10 @@ export default function AccountPage() {
           <button
             type="button"
             onClick={() => setActiveTab('rewards')}
-            className={`hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition ${
-              activeTab === 'rewards'
+            className={`hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition ${activeTab === 'rewards'
                 ? 'bg-[#D4A5A5] text-[#0A0A0A] font-bold shadow-sm'
                 : 'bg-[#141414] text-[#A1A1AA] hover:text-white border border-white/5'
-            }`}
+              }`}
           >
             <Sparkles className="size-4" strokeWidth={1.5} />
             <span>{isAr ? 'المكافآت والدفع المحلي' : 'Rewards & Egyptian Wallets'}</span>
@@ -640,25 +637,24 @@ export default function AccountPage() {
                         <div className="flex items-center gap-3">
                           {/* Status Badge */}
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-bold border ${
-                              isCancelled
+                            className={`rounded-full px-3 py-1 text-xs font-bold border ${isCancelled
                                 ? 'bg-red-950/40 text-red-400 border-red-800/40'
                                 : step === 4
-                                ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40'
-                                : step === 3
-                                ? 'bg-blue-950/40 text-blue-400 border-blue-800/40'
-                                : 'bg-[#D4A5A5]/15 text-[#D4A5A5] border-[#D4A5A5]/30'
-                            }`}
+                                  ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40'
+                                  : step === 3
+                                    ? 'bg-blue-950/40 text-blue-400 border-blue-800/40'
+                                    : 'bg-[#D4A5A5]/15 text-[#D4A5A5] border-[#D4A5A5]/30'
+                              }`}
                           >
                             {order.status === 'delivered'
                               ? isAr ? 'تم التسليم بنجاح ✨' : 'Delivered'
                               : order.status === 'shipped'
-                              ? isAr ? 'في الطريق للشحن 🚚' : 'Shipped'
-                              : order.status === 'confirmed' || order.status === 'processing'
-                              ? isAr ? 'تم التأكيد وجاري التجهيز ✅' : 'Confirmed'
-                              : order.status === 'cancelled'
-                              ? isAr ? 'ملغي ❌' : 'Cancelled'
-                              : isAr ? 'قيد الانتظار ⏳' : 'Pending'}
+                                ? isAr ? 'في الطريق للشحن 🚚' : 'Shipped'
+                                : order.status === 'confirmed' || order.status === 'processing'
+                                  ? isAr ? 'تم التأكيد وجاري التجهيز ✅' : 'Confirmed'
+                                  : order.status === 'cancelled'
+                                    ? isAr ? 'ملغي ❌' : 'Cancelled'
+                                    : isAr ? 'قيد الانتظار ⏳' : 'Pending'}
                           </span>
 
                           <span className="text-base font-extrabold text-white font-mono-brand">
@@ -687,11 +683,10 @@ export default function AccountPage() {
                             {/* Step 1: Pending */}
                             <div className="relative z-10 flex flex-col items-center gap-1.5">
                               <div
-                                className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border transition ${
-                                  step >= 1
+                                className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border transition ${step >= 1
                                     ? 'bg-[#D4A5A5] text-[#0A0A0A] border-[#D4A5A5] shadow-md shadow-[#D4A5A5]/30'
                                     : 'bg-[#1A1A1A] text-[#A1A1AA] border-white/10'
-                                }`}
+                                  }`}
                               >
                                 <Clock className="size-4" strokeWidth={2} />
                               </div>
@@ -703,11 +698,10 @@ export default function AccountPage() {
                             {/* Step 2: Confirmed */}
                             <div className="relative z-10 flex flex-col items-center gap-1.5">
                               <div
-                                className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border transition ${
-                                  step >= 2
+                                className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border transition ${step >= 2
                                     ? 'bg-[#D4A5A5] text-[#0A0A0A] border-[#D4A5A5] shadow-md shadow-[#D4A5A5]/30'
                                     : 'bg-[#1A1A1A] text-[#A1A1AA] border-white/10'
-                                }`}
+                                  }`}
                               >
                                 <CheckCircle2 className="size-4" strokeWidth={2} />
                               </div>
@@ -719,11 +713,10 @@ export default function AccountPage() {
                             {/* Step 3: Shipped */}
                             <div className="relative z-10 flex flex-col items-center gap-1.5">
                               <div
-                                className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border transition ${
-                                  step >= 3
+                                className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border transition ${step >= 3
                                     ? 'bg-[#D4A5A5] text-[#0A0A0A] border-[#D4A5A5] shadow-md shadow-[#D4A5A5]/30'
                                     : 'bg-[#1A1A1A] text-[#A1A1AA] border-white/10'
-                                }`}
+                                  }`}
                               >
                                 <Truck className="size-4" strokeWidth={2} />
                               </div>
@@ -735,11 +728,10 @@ export default function AccountPage() {
                             {/* Step 4: Delivered */}
                             <div className="relative z-10 flex flex-col items-center gap-1.5">
                               <div
-                                className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border transition ${
-                                  step >= 4
+                                className={`size-8 rounded-full flex items-center justify-center text-xs font-bold border transition ${step >= 4
                                     ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/30'
                                     : 'bg-[#1A1A1A] text-[#A1A1AA] border-white/10'
-                                }`}
+                                  }`}
                               >
                                 <Sparkles className="size-4" strokeWidth={2} />
                               </div>
@@ -849,151 +841,151 @@ export default function AccountPage() {
               </div>
             </div>
           ) : (
-          <div className="rounded-3xl border border-white/10 bg-[#141414] p-6 md:p-8 space-y-6 shadow-xl">
-            <div>
-              <h2 className="text-lg md:text-xl font-bold font-display text-white">
-                {isAr ? 'تعديل البيانات وعنوان التوصيل الافتراضي' : 'Profile & Default Delivery Address'}
-              </h2>
-              <p className="text-xs text-[#A1A1AA] mt-1">
-                {isAr
-                  ? 'يتم استخدام هذه البيانات تلقائياً عند إتمام الطلب لتسريع تجربة الشراء.'
-                  : 'Used to prefill your checkout information for 1-click seamless ordering.'}
-              </p>
-            </div>
-
-            {profileSuccessMsg && (
-              <div className="rounded-2xl bg-emerald-950/40 border border-emerald-800/40 p-3 text-xs text-emerald-300 flex items-center gap-2">
-                <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
-                <span>{profileSuccessMsg}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                    {isAr ? 'الاسم بالكامل' : 'Full Name'}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder={isAr ? 'مثال: نورهان محمد' : 'e.g. Sarah Connor'}
-                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                    {isAr ? 'رقم الهاتف المحمول (للتوصيل)' : 'Mobile Phone (for delivery)'}
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="010XXXXXXXX"
-                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
-                  />
-                </div>
+            <div className="rounded-3xl border border-white/10 bg-[#141414] p-6 md:p-8 space-y-6 shadow-xl">
+              <div>
+                <h2 className="text-lg md:text-xl font-bold font-display text-white">
+                  {isAr ? 'تعديل البيانات وعنوان التوصيل الافتراضي' : 'Profile & Default Delivery Address'}
+                </h2>
+                <p className="text-xs text-[#A1A1AA] mt-1">
+                  {isAr
+                    ? 'يتم استخدام هذه البيانات تلقائياً عند إتمام الطلب لتسريع تجربة الشراء.'
+                    : 'Used to prefill your checkout information for 1-click seamless ordering.'}
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                    {isAr ? 'المحافظة' : 'Governorate / City'}
-                  </label>
-                  <select
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white outline-none focus:border-[#D4A5A5]"
-                  >
-                    {GOVERNORATES.map((g) => (
-                      <option key={g.id} value={g.id} className="bg-[#141414] text-white">
-                        {isAr ? g.nameAr : g.nameEn}
-                      </option>
-                    ))}
-                  </select>
+              {profileSuccessMsg && (
+                <div className="rounded-2xl bg-emerald-950/40 border border-emerald-800/40 p-3 text-xs text-emerald-300 flex items-center gap-2">
+                  <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
+                  <span>{profileSuccessMsg}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                      {isAr ? 'الاسم بالكامل' : 'Full Name'}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder={isAr ? 'مثال: نورهان محمد' : 'e.g. Sarah Connor'}
+                      className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                      {isAr ? 'رقم الهاتف المحمول (للتوصيل)' : 'Mobile Phone (for delivery)'}
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="010XXXXXXXX"
+                      className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                    {isAr ? 'العنوان التفصيلي (الشارع، العمارة، الشقة)' : 'Detailed Street Address'}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={addressLine}
-                    onChange={(e) => setAddressLine(e.target.value)}
-                    placeholder={isAr ? 'شارع الثورة، مصر الجديدة، عمارة 12...' : 'Street name, building number, apt...'}
-                    className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end">
-                <button
-                  type="submit"
-                  disabled={savingProfile}
-                  className="flex items-center gap-2 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] px-6 py-3 text-xs font-bold text-[#0A0A0A] shadow-md transition disabled:opacity-50"
-                >
-                  <Save className="size-4" />
-                  <span>{savingProfile ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'حفظ التعديلات' : 'Save Changes')}</span>
-                </button>
-              </div>
-            </form>
-
-            {/* List of All Saved Addresses */}
-            {Array.isArray(user?.savedAddresses) && user.savedAddresses.length > 0 && (
-              <div className="pt-6 border-t border-white/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <MapPin className="size-4 text-[#D4A5A5]" />
-                    <span>{isAr ? 'دفتر العناوين المحفوظة في حسابكِ:' : 'Saved Delivery Addresses:'}</span>
-                  </h3>
-                  <span className="text-[11px] text-[#A1A1AA]">
-                    {user.savedAddresses.length} {isAr ? 'عنوان مسجل' : 'addresses'}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {user.savedAddresses.map((addr, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1A1A1A] border border-white/5 text-xs text-white group hover:border-[#D4A5A5]/30 transition"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                      {isAr ? 'المحافظة' : 'Governorate / City'}
+                    </label>
+                    <select
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white outline-none focus:border-[#D4A5A5]"
                     >
-                      <div className="flex items-center gap-2.5 overflow-hidden">
-                        <MapPin className="size-4 text-[#D4A5A5] shrink-0" />
-                        <span className="truncate">{addr}</span>
-                        {idx === 0 && (
-                          <span className="shrink-0 text-[10px] bg-[#D4A5A5]/15 text-[#D4A5A5] border border-[#D4A5A5]/30 px-2 py-0.5 rounded-full font-semibold">
-                            {isAr ? 'العنوان الأخير المعتمد' : 'Latest Default'}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setAddressLine(addr)}
-                          className="text-[11px] text-[#A1A1AA] hover:text-[#D4A5A5] px-2 py-1 rounded-lg bg-white/5 border border-white/10 transition cursor-pointer"
-                        >
-                          {isAr ? 'تعيين كافتراضي' : 'Use Default'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeAddress(idx)}
-                          className="text-red-400 hover:text-red-300 p-1.5 text-xs rounded-lg hover:bg-red-950/30 transition cursor-pointer"
-                          title={isAr ? 'حذف العنوان' : 'Remove address'}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                      {GOVERNORATES.map((g) => (
+                        <option key={g.id} value={g.id} className="bg-[#141414] text-white">
+                          {isAr ? g.nameAr : g.nameEn}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
+                      {isAr ? 'العنوان التفصيلي (الشارع، العمارة، الشقة)' : 'Detailed Street Address'}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={addressLine}
+                      onChange={(e) => setAddressLine(e.target.value)}
+                      placeholder={isAr ? 'شارع الثورة، مصر الجديدة، عمارة 12...' : 'Street name, building number, apt...'}
+                      className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={savingProfile}
+                    className="flex items-center gap-2 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] px-6 py-3 text-xs font-bold text-[#0A0A0A] shadow-md transition disabled:opacity-50"
+                  >
+                    <Save className="size-4" />
+                    <span>{savingProfile ? (isAr ? 'جاري الحفظ...' : 'Saving...') : (isAr ? 'حفظ التعديلات' : 'Save Changes')}</span>
+                  </button>
+                </div>
+              </form>
+
+              {/* List of All Saved Addresses */}
+              {Array.isArray(user?.savedAddresses) && user.savedAddresses.length > 0 && (
+                <div className="pt-6 border-t border-white/10 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <MapPin className="size-4 text-[#D4A5A5]" />
+                      <span>{isAr ? 'دفتر العناوين المحفوظة في حسابكِ:' : 'Saved Delivery Addresses:'}</span>
+                    </h3>
+                    <span className="text-[11px] text-[#A1A1AA]">
+                      {user.savedAddresses.length} {isAr ? 'عنوان مسجل' : 'addresses'}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {user.savedAddresses.map((addr, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1A1A1A] border border-white/5 text-xs text-white group hover:border-[#D4A5A5]/30 transition"
+                      >
+                        <div className="flex items-center gap-2.5 overflow-hidden">
+                          <MapPin className="size-4 text-[#D4A5A5] shrink-0" />
+                          <span className="truncate">{addr}</span>
+                          {idx === 0 && (
+                            <span className="shrink-0 text-[10px] bg-[#D4A5A5]/15 text-[#D4A5A5] border border-[#D4A5A5]/30 px-2 py-0.5 rounded-full font-semibold">
+                              {isAr ? 'العنوان الأخير المعتمد' : 'Latest Default'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setAddressLine(addr)}
+                            className="text-[11px] text-[#A1A1AA] hover:text-[#D4A5A5] px-2 py-1 rounded-lg bg-white/5 border border-white/10 transition cursor-pointer"
+                          >
+                            {isAr ? 'تعيين كافتراضي' : 'Use Default'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeAddress(idx)}
+                            className="text-red-400 hover:text-red-300 p-1.5 text-xs rounded-lg hover:bg-red-950/30 transition cursor-pointer"
+                            title={isAr ? 'حذف العنوان' : 'Remove address'}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )
         )}
 
