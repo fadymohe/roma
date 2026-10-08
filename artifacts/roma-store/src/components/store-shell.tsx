@@ -396,72 +396,78 @@ export function StoreShell({ children }: { children: ReactNode }) {
       {/* ========================================================================= */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-2 shadow-2xl safe-area-pb"
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 shadow-2xl safe-area-pb"
       >
-          <div className="grid grid-cols-4 items-center gap-1 max-w-md mx-auto">
+          <div className="grid grid-cols-4 items-center max-w-md mx-auto">
             {/* Destination 1: Home / Store */}
             <Link
               href="/"
               onClick={handleLogoClick}
               aria-label={isAr ? 'الرئيسية' : 'Home'}
-              className={`flex flex-row items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-1 rounded-xl transition active:scale-95 ${
+              className={`flex flex-col items-center justify-center py-1 transition ${
                 location === '/'
-                  ? 'text-[#D4A5A5] bg-[#D4A5A5]/10'
+                  ? 'text-[#D4A5A5]'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              <HomeIcon className="size-4 shrink-0" strokeWidth={1.75} />
-              <span className="text-[11px] font-bold whitespace-nowrap">{isAr ? 'المتجر' : 'Shop'}</span>
+              <div className={`p-1 rounded-full ${location === '/' ? 'bg-[#D4A5A5]/15' : ''}`}>
+                <HomeIcon className="size-5" strokeWidth={1.75} />
+              </div>
+              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'المتجر' : 'Shop'}</span>
             </Link>
 
             {/* Destination 2: Categories */}
             <Link
               href="/categories"
               aria-label={isAr ? 'الأقسام' : 'Categories'}
-              className={`flex flex-row items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-1 rounded-xl transition active:scale-95 ${
+              className={`flex flex-col items-center justify-center py-1 transition ${
                 location === '/categories'
-                  ? 'text-[#D4A5A5] bg-[#D4A5A5]/10'
+                  ? 'text-[#D4A5A5]'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              <LayoutGrid className="size-4 shrink-0" strokeWidth={1.75} />
-              <span className="text-[11px] font-bold whitespace-nowrap">{isAr ? 'الأقسام' : 'Categories'}</span>
+              <div className={`p-1 rounded-full ${location === '/categories' ? 'bg-[#D4A5A5]/15' : ''}`}>
+                <LayoutGrid className="size-5" strokeWidth={1.75} />
+              </div>
+              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'الأقسام' : 'Categories'}</span>
             </Link>
 
             {/* Destination 3: Cart with Dynamic Counter Badge */}
             <Link
               href="/cart"
               aria-label={isAr ? 'السلة' : 'Cart'}
-              className={`relative flex flex-row items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-1 rounded-xl transition active:scale-95 ${
+              className={`relative flex flex-col items-center justify-center py-1 transition ${
                 location === '/cart'
-                  ? 'text-[#D4A5A5] bg-[#D4A5A5]/10'
+                  ? 'text-[#D4A5A5]'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              <div className="relative shrink-0">
-                <ShoppingBag className="size-4 shrink-0" strokeWidth={1.75} />
+              <div className={`relative p-1 rounded-full ${location === '/cart' ? 'bg-[#D4A5A5]/15' : ''}`}>
+                <ShoppingBag className="size-5" strokeWidth={1.75} />
                 {count > 0 && (
-                  <span className="absolute -top-1.5 -right-2 flex size-3.5 items-center justify-center rounded-full bg-[#D4A5A5] text-[8px] font-bold text-[#0A0A0A] font-mono">
+                  <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#D4A5A5] text-[9px] font-bold text-[#0A0A0A] font-mono">
                     {count}
                   </span>
                 )}
               </div>
-              <span className="text-[11px] font-bold whitespace-nowrap">{isAr ? 'السلة' : 'Cart'}</span>
+              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'السلة' : 'Cart'}</span>
             </Link>
 
             {/* Destination 4: My Account / Sign In */}
             <Link
               href={user ? '/account' : '/auth?tab=login'}
               aria-label={user ? (isAr ? 'حسابي' : 'Account') : (isAr ? 'تسجيل الدخول' : 'Sign In')}
-              className={`flex flex-row items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-1 rounded-xl transition active:scale-95 ${
+              className={`flex flex-col items-center justify-center py-1 transition ${
                 location === '/account' || location === '/auth' || location === '/login'
-                  ? 'text-[#D4A5A5] bg-[#D4A5A5]/10'
+                  ? 'text-[#D4A5A5]'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              <User className="size-4 shrink-0" strokeWidth={1.75} />
-              <span className="text-[11px] font-bold whitespace-nowrap">
-                {user ? (isAr ? 'حسابي' : 'Account') : (isAr ? 'دخول' : 'Login')}
+              <div className={`p-1 rounded-full ${location === '/account' || location === '/auth' || location === '/login' ? 'bg-[#D4A5A5]/15' : ''}`}>
+                <User className="size-5" strokeWidth={1.75} />
+              </div>
+              <span className="text-[10px] font-semibold mt-0.5">
+                {user ? (isAr ? 'حسابي' : 'Account') : (isAr ? 'تسجيل الدخول' : 'Sign In')}
               </span>
             </Link>
           </div>
@@ -476,9 +482,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
       {/* Bespoke Luxury Dark Footer - Visible on Home Page Only */}
       {isHomePage && (
         <footer className="mt-20 border-t border-white/10 bg-[#0E0E0E]">
-        <div className="roma-container grid gap-10 py-16 md:grid-cols-4">
+        <div className="roma-container grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-10 py-12 md:py-16">
           {/* Col 1: Brand & Identity */}
-          <div className="space-y-4 md:col-span-1">
+          <div className="col-span-2 md:col-span-1 space-y-4">
             <Link href="/" onClick={handleLogoClick} className="inline-block py-1">
               <img
                 src="/logo-transparent.png"
@@ -496,55 +502,55 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </div>
 
           {/* Col 2: Categories */}
-          <div>
-            <h4 className="font-display text-sm font-bold text-white tracking-wide mb-4">
+          <div className="col-span-1">
+            <h4 className="font-display text-sm font-bold text-white tracking-wide mb-3 sm:mb-4">
               {t('section.categories_title')}
             </h4>
-            <div className="space-y-2.5 text-xs">
+            <div className="space-y-2 text-xs">
               <Link href="/shop" className="block text-zinc-400 hover:text-zinc-200 transition">{t('nav.shop')}</Link>
               <Link href="/categories" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'كل الأقسام' : 'All Categories'}</Link>
               <Link href="/shop?category=hair-accessories" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'إكسسوارات الشعر' : 'Hair Accessories'}</Link>
               <Link href="/shop?category=look-accessories" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'إكسسوارات الإطلالة' : 'Look Accessories'}</Link>
               <Link href="/shop?category=jewelry" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'مجوهرات اليد والعنق' : 'Hand & Neck Jewelry'}</Link>
               <Link href="/shop?category=makeup" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'المكياج والجمال' : 'Makeup & Beauty'}</Link>
-              <Link href="/shop?category=body-care" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'العناية بالجسم والنعومة' : 'Body Care & Softness'}</Link>
+              <Link href="/shop?category=body-care" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'العناية بالجسم' : 'Body Care'}</Link>
               <Link href="/shop?category=perfumes" className="block text-zinc-400 hover:text-zinc-200 transition">{isAr ? 'العطور الفاخرة' : 'Luxury Perfumes'}</Link>
             </div>
           </div>
 
           {/* Col 3: Legal & Customer Policies */}
-          <div>
-            <h4 className="font-display text-sm font-bold text-white tracking-wide mb-4">
+          <div className="col-span-1">
+            <h4 className="font-display text-sm font-bold text-white tracking-wide mb-3 sm:mb-4">
               {t('nav.policies')}
             </h4>
-            <div className="space-y-2.5 text-xs text-zinc-400">
+            <div className="space-y-2 text-xs text-zinc-400">
               <Link href="/policies" className="block hover:text-zinc-200 transition">
-                {isAr ? 'سياسة الاستبدال والاسترجاع (١٤ يوماً)' : '14-Day Returns & Exchanges'}
+                {isAr ? 'الاستبدال والاسترجاع' : 'Returns & Exchanges'}
               </Link>
               <Link href="/policies" className="block hover:text-zinc-200 transition">
-                {isAr ? 'مواعيد وتغطية الشحن السريع' : 'Shipping & Courier Coverage'}
+                {isAr ? 'مواعيد الشحن والتوصيل' : 'Shipping Info'}
               </Link>
               <Link href="/policies" className="block hover:text-zinc-200 transition">
-                {isAr ? 'سياسة الخصوصية وحماية البيانات' : 'Privacy & Data Protection'}
+                {isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}
               </Link>
               <Link href="/account?tab=orders" className="block hover:text-zinc-200 transition">
-                {isAr ? 'متابعة وتتبع طلباتي' : 'Track My Orders'}
+                {isAr ? 'تتبع طلباتي' : 'Track Orders'}
               </Link>
               <div className="pt-2">
                 <a
                   href="https://wa.me/201505566849"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[#141414] hover:bg-[#1A1A1A] border border-emerald-500/30 hover:border-emerald-500/60 text-zinc-300 hover:text-white transition group shadow-sm"
+                  className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#141414] hover:bg-[#1A1A1A] border border-emerald-500/30 hover:border-emerald-500/60 text-zinc-300 hover:text-white transition group shadow-sm"
                 >
-                  <div className="flex size-7 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition shrink-0">
-                    <MessageCircle className="size-4" />
+                  <div className="flex size-6 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition shrink-0">
+                    <MessageCircle className="size-3.5" />
                   </div>
                   <div className="flex flex-col text-right">
-                    <span className="text-[10px] text-zinc-400 font-medium">
-                      {isAr ? 'تواصل معنا واتساب' : 'WhatsApp Concierge'}
+                    <span className="text-[9px] text-zinc-400 font-medium">
+                      {isAr ? 'واتساب' : 'WhatsApp'}
                     </span>
-                    <span className="text-xs font-bold text-emerald-400 font-mono tracking-wider mt-0.5" dir="ltr">
+                    <span className="text-[11px] font-bold text-emerald-400 font-mono tracking-wider" dir="ltr">
                       01505566849
                     </span>
                   </div>
@@ -554,11 +560,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </div>
 
           {/* Col 4: Newsletter & Egyptian Payment Badges */}
-          <div>
-            <h4 className="font-display text-sm font-bold text-white tracking-wide mb-4">
+          <div className="col-span-2 md:col-span-1">
+            <h4 className="font-display text-sm font-bold text-white tracking-wide mb-3 sm:mb-4">
               {isAr ? 'نادي روما الجمالي الخاص' : 'The ROMA Private Club'}
             </h4>
-            <p className="text-xs leading-relaxed text-zinc-400 mb-4">
+            <p className="text-xs leading-relaxed text-zinc-400 mb-3">
               {isAr
                 ? 'اشتركي لتصلكِ الإصدارات الحصرية والخصومات السرية قبل الجميع.'
                 : 'Join our inner circle for exclusive previews and private atelier offers.'}
@@ -588,7 +594,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
             </form>
 
             {/* Egyptian Payment Badges */}
-            <div className="mt-6">
+            <div className="mt-4 sm:mt-6">
               <p className="text-[11px] text-zinc-400 mb-2 font-medium">
                 {isAr ? 'طرق الدفع المحلية المعتمدة في مصر:' : 'Supported Payment Methods:'}
               </p>
