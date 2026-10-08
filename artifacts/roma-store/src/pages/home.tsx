@@ -528,16 +528,6 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Mobile View More Action Button */}
-        <div className="mt-3.5 flex justify-center sm:hidden relative z-10">
-          <Link
-            href="/categories"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A5A5] hover:text-white px-4 py-2 rounded-xl bg-[#D4A5A5]/10 hover:bg-[#D4A5A5]/20 border border-[#D4A5A5]/30 transition active:scale-95 shadow-xs"
-          >
-            <span>{isAr ? 'عرض المزيد من الأقسام' : 'View More Categories'}</span>
-            <ArrowLeft className="size-3.5 rtl:rotate-0 ltr:rotate-180" />
-          </Link>
-        </div>
       </section>
 
       {/* Bestsellers Section - الأكثر طلباً (Amazon Products) */}
