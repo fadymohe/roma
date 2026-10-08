@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { ArrowLeft, ArrowRight, Sparkles, ChevronRight, Layers } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/lib/language-context';
 
 export const CATEGORIES_DATA = [
@@ -72,19 +72,10 @@ export default function CategoriesPage() {
     <div className="min-h-screen bg-[#0A0A0A] text-[#F9FAFB] pb-24 pt-6" dir={dir}>
       <div className="roma-container max-w-4xl space-y-8">
         {/* Header */}
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4A5A5]/10 border border-[#D4A5A5]/20 text-[#D4A5A5] text-xs font-semibold">
-            <Layers className="size-3.5" />
-            <span>{isAr ? 'أقسام المتجر' : 'Store Catalog'}</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold font-display text-white">
-            {isAr ? 'تصفحي جميع مجموعات روما' : 'Explore All ROMA Collections'}
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
+            {isAr ? 'الأقسام' : 'Categories'}
           </h1>
-          <p className="text-xs md:text-sm text-[#A1A1AA]">
-            {isAr
-              ? 'مستحضرات تجميل راقية وعناية متكاملة مصممة بأعلى معايير الفخامة والجمال.'
-              : 'Atelier formulations and luxury accessories crafted with pristine elegance.'}
-          </p>
         </div>
 
         {/* Categories Grid */}
