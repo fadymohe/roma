@@ -481,13 +481,6 @@ export default function Home() {
               {t('section.categories_title')}
             </h2>
           </div>
-          <Link 
-            href="/categories" 
-            className="group inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A5A5] hover:text-white px-3 py-1.5 rounded-full bg-[#D4A5A5]/10 hover:bg-[#D4A5A5]/20 border border-[#D4A5A5]/25 transition-all duration-300"
-          >
-            <span>{isAr ? 'عرض المزيد' : 'View More'}</span>
-            <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1 rtl:rotate-0 ltr:rotate-180" />
-          </Link>
         </div>
 
         <div className="grid grid-cols-4 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 relative z-10">

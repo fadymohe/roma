@@ -665,6 +665,7 @@ export default function CartPage() {
       } catch (_) {}
 
       // 6. Build customer WhatsApp confirmation message & URL
+      const cleanPhone = (phone.trim() || user?.phone || '').replace(/\D+/g, '');
       const waCustomerPhone = cleanPhone.startsWith('0')
         ? `2${cleanPhone}`
         : cleanPhone.startsWith('2')
