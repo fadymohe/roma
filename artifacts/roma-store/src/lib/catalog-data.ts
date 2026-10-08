@@ -150,7 +150,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "OEM Unisex Black Metal Sports Headband"
   },
   {
     "id": 1790739160125,
@@ -180,7 +181,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Kids Colorful Cute Hair Ties Set - 6 Pieces"
   },
   {
     "id": 1790739153330,
@@ -210,7 +212,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Soft Elastic Cotton Headbands - Non-Slip Hair Bands for Women (Pink)"
   },
   {
     "id": 1790739147519,
@@ -240,7 +243,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Large Rectangular Hair Claw Clip - Strong Hold Clamp for Thick & Long Hair"
   },
   {
     "id": 1790739143088,
@@ -270,7 +274,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Teres Non-Slip Elastic Fabric Headbands for Yoga & Sports"
   },
   {
     "id": 1790739127462,
@@ -300,7 +305,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Girls Multicolor Hair Ties Set - 12 Pieces (Model 339)"
   },
   {
     "id": 1790739123036,
@@ -330,7 +336,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Girls Assorted Hair Clips Set - 10 Pieces, Beige & Brown (DR-A-11)"
   },
   {
     "id": 1790739103075,
@@ -360,7 +367,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Floral Lycra Elastic Hair Ties Set - 6 Pieces, Multicolor"
   },
   {
     "id": 1790739093035,
@@ -390,7 +398,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Tiorio 2-Piece Double-Layer Braided Headband Set with Clips"
   },
   {
     "id": 1790739084616,
@@ -420,7 +429,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Large Matte Non-Slip Hair Claw Clips - Strong Hold Clamps for Women & Girls"
   },
   {
     "id": 1790739080579,
@@ -450,7 +460,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Davan Bow Hair Clips for Girls - Pink"
   },
   {
     "id": 1790739077352,
@@ -480,7 +491,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Kovong Soft Elastic Hair Ties for Kids & Girls - 200 Pieces (Black)"
   },
   {
     "id": 1790739034373,
@@ -510,7 +522,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Double-Braided Synthetic Hair Headband - Natural Look, Lightweight (Model JW221B #4)"
   },
   {
     "id": 1790739005365,
@@ -540,7 +553,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Zozi Spiral Hair Ties - 4 Pieces, Black & Clear"
   },
   {
     "id": 1790738995146,
@@ -570,7 +584,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Tegor Soft Satin Slim Scrunchies Set - 12 Pieces, Multicolor"
   },
   {
     "id": 1790738985392,
@@ -600,7 +615,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Vintage Gothic Rose Metal Hair Sticks - 2 Pieces, Ancient Chinese Style Hairpins"
   },
   {
     "id": 1790738970970,
@@ -630,7 +646,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Daphne Girls Cotton Hair Ties Set - 13 Pieces, Multicolor (1878)"
   },
   {
     "id": 1790738958296,
@@ -660,7 +677,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "WLLHYF Large Silk Satin Bow Hair Clip with Long Tail - French Ribbon Hairpin"
   },
   {
     "id": 1790738951759,
@@ -690,7 +708,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Girls Floral Hair Accessories Set - 6 Pieces (Purple)"
   },
   {
     "id": 1790738934408,
@@ -720,7 +739,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Girls Colorful Bow Hair Ties Set - 6 Pieces"
   },
   {
     "id": 1790738906957,
@@ -750,7 +770,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Long Wavy Claw Clip Ponytail Extension - 60cm Heat-Resistant Synthetic Hairpiece (Model JW260)"
   },
   {
     "id": 1790738903478,
@@ -780,7 +801,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Kids Mini Elastic Hair Bands - Black & White Ponytail Holders"
   },
   {
     "id": 1790738899530,
@@ -810,7 +832,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "LENDORO Fashion Wide Headbands - Soft Fabric Stretchy Hair Bands (Navy)"
   },
   {
     "id": 1790738857194,
@@ -840,7 +863,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Women's Hair Bow Set"
   },
   {
     "id": 1790738841774,
@@ -870,7 +894,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Daphne Girls Assorted Hair Clips Set - 11 Pieces, Multicolor (Pack of 2)"
   },
   {
     "id": 1790738837473,
@@ -899,7 +924,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Blue Alligator Hair Clips - 6 Pieces (Assorted Shades)"
   },
   {
     "id": 1790738814904,
@@ -929,7 +955,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Davan Elastic Hair Ties for Girls - Black & White"
   },
   {
     "id": 1790738787265,
@@ -959,7 +986,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Davan Girls Colorful Hair Clips Set - 4 Pieces"
   },
   {
     "id": 1790738781311,
@@ -989,7 +1017,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Black Bobby Pins & Hair Styling Clips Set - 100 Pieces"
   },
   {
     "id": 1790738742863,
@@ -1019,7 +1048,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Kitgans Kids Hair Donut Bun Maker - Small 5cm Chignon Shaper, 2 Pieces (Black)"
   },
   {
     "id": 1790738737998,
@@ -1049,7 +1079,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Velvet Elastic Hair Scrunchies Set - 12 Pieces, 12 Colors"
   },
   {
     "id": 1790738722228,
@@ -1079,7 +1110,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Kids Mini Elastic Hair Bands - Ponytail Holders with White Case"
   },
   {
     "id": 1790738716613,
@@ -1109,7 +1141,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Lindoro Non-Slip Elastic Satin Scrunchies - Standard Size, 3 Pieces"
   },
   {
     "id": 1790738711905,
@@ -1139,7 +1172,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Zozi Traceless Spiral Hair Tie - Telephone Cord Elastic Band, 1 Piece (Assorted Colors)"
   },
   {
     "id": 1790738668572,
@@ -1169,7 +1203,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Mini Non-Slip Flower Hair Clips Set for Girls & Toddlers - 10 Pieces"
   },
   {
     "id": 1790738664116,
@@ -1199,7 +1234,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Yedtrig 7cm Wide Stretch Fabric Headband in Black - Soft Hairband for Makeup, Yoga, and Sports"
   },
   {
     "id": 1790738647314,
@@ -1229,7 +1265,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Davan Girls' Floral Hair Ties - 12-Piece Multicolor Set"
   },
   {
     "id": 1790738606451,
@@ -1259,7 +1296,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Seamless No-Damage Elastic Hair Ties - 12-Piece Set for Ponytails (Candy)"
   },
   {
     "id": 1790738601298,
@@ -1289,7 +1327,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "GQLV Matte Flower Claw Clips - 4-Piece Non-Slip Hair Jaw Clips Set"
   },
   {
     "id": 1790738539755,
@@ -1319,7 +1358,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Seamless No-Damage Elastic Hair Ties - 12-Piece Set for Ponytails (Brown)"
   },
   {
     "id": 1790738506732,
@@ -1348,7 +1388,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Oversized Satin Scrunchies - Set of 3 Multicolor Hair Ties"
   },
   {
     "id": 1790738483472,
@@ -1378,7 +1419,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Davan Girls' Colorful Pastel Hair Clips - Light Pink & Multicolor Set"
   },
   {
     "id": 1790738448317,
@@ -1408,7 +1450,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Lindoro High-Elasticity Soft Fabric Hair Ties - 10-Piece Set"
   },
   {
     "id": 1790738443043,
@@ -1438,7 +1481,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Multicolor Elastic Hair Bands with Clear Storage Case - 50-Piece Set"
   },
   {
     "id": 1790738419587,
@@ -1466,7 +1510,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Mini No-Damage Elastic Hair Bands - 100-Piece Assorted Set"
   },
   {
     "id": 1790738401720,
@@ -1496,7 +1541,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Chic Mini Hair Claw Clips - 6-Piece Set (Size S)"
   },
   {
     "id": 1790738381651,
@@ -1525,7 +1571,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Classic Bobby Pins - 28-Piece Set"
   },
   {
     "id": 1790738370900,
@@ -1554,7 +1601,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "My Top Trends® Kids' Metal Snap Hair Clips - 12-Piece Set (4cm, Black)"
   },
   {
     "id": 1790738366634,
@@ -1584,7 +1632,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Yashunbi Soft Satin Scrunchies - 6-Piece Ponytail Holder Set (Assorted Colors)"
   },
   {
     "id": 1790738362100,
@@ -1614,7 +1663,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Besring Seamless Black Elastic Hair Ties - 100-Piece Ponytail Holder Set"
   },
   {
     "id": 1790738344787,
@@ -1644,7 +1694,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Vitelli Non-Slip Black Elastic Hair Bands - 10-Piece Set"
   },
   {
     "id": 1790738237057,
@@ -1674,7 +1725,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Omszt Kids' Seamless Cotton Hair Ties - 100-Piece Multicolor Set"
   },
   {
     "id": 1790738227857,
@@ -1704,7 +1756,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Zozi Soft Satin Hair Scrunchie - Gentle Daily Hair Accessory (Single Pack)"
   },
   {
     "id": 1790738222975,
@@ -1734,7 +1787,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Took Women's Elastic Hair Bands - 10-Piece Set (Black)"
   },
   {
     "id": 1790738152733,
@@ -1763,7 +1817,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Yolo Base Shield Protective Nail Coat"
   },
   {
     "id": 1790738138237,
@@ -1793,7 +1848,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Luna Air Breathable Nail Polish - No. 32 (10ml)"
   },
   {
     "id": 1790738132356,
@@ -1821,7 +1877,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Amanda Milano Ciao Gel Effect Nail Polish - No. 47"
   },
   {
     "id": 1790738127536,
@@ -1851,7 +1908,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Burgundy Red UV/LED Gel Nail Polish - Deep Wine Red (15ml, S016)"
   },
   {
     "id": 1790738115340,
@@ -1881,7 +1939,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Essence Gel Nail Colour - No. 86 Brown (8ml)"
   },
   {
     "id": 1790738100689,
@@ -1909,7 +1968,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Amanda Milano Ciao Gel Effect Nail Polish - No. 54"
   },
   {
     "id": 1790738067308,
@@ -1939,7 +1999,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Luna UV Gel Top Coat - Clear (10ml)"
   },
   {
     "id": 1790737920667,
@@ -1969,7 +2030,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Manila Matte Nail Polish - Shade 25 (15ml)"
   },
   {
     "id": 1790737916961,
@@ -1998,7 +2060,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Yolo Nail Polish - 164 Red (10ml)"
   },
   {
     "id": 1790737892414,
@@ -2028,7 +2091,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "The Pack Amazing Egypt Metallic Mirror-Shine Gel Polish - Gold (8g)"
   },
   {
     "id": 1790737878157,
@@ -2058,7 +2122,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Luna Breathable Air-Dry Clear Nail Polish (10ml)"
   },
   {
     "id": 1790737873897,
@@ -2088,7 +2153,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Yolo Quick-Dry Protective Top Coat - Silver (10ml)"
   },
   {
     "id": 1790737869761,
@@ -2117,7 +2183,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Amanda Milano Ciao Gel Effect Nail Polish - No. 71"
   },
   {
     "id": 1790737853917,
@@ -2146,7 +2213,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Flormar Full Color Nail Polish - FC64 Playful Pink"
   },
   {
     "id": 1790737816334,
@@ -2176,7 +2244,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Coco Beauty Nail Polish - French Pink (12ml)"
   },
   {
     "id": 1790737800230,
@@ -2206,7 +2275,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Amanda Milano Nail Polish - 489 Beige (12ml)"
   },
   {
     "id": 1790737788084,
@@ -2236,7 +2306,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Ciao Gel Nail Polish - Shade 5"
   },
   {
     "id": 1790737776876,
@@ -2265,7 +2336,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Yolo Nail Polish - Fluffy 245 (10ml)"
   },
   {
     "id": 1790737765029,
@@ -2294,7 +2366,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Yolo Adela Glitter Nail Polish - Rose 231"
   },
   {
     "id": 1790737759936,
@@ -2324,7 +2397,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Yolo Nail Polish - Mahogany Red 180 (10ml)"
   },
   {
     "id": 1790737694779,
@@ -2354,7 +2428,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Les Karités Curl Defining Shampoo - Sulfate & Paraben-Free (400ml)"
   },
   {
     "id": 1790737688146,
@@ -2384,7 +2459,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Seropepe Hair Shampoo (300ml)"
   },
   {
     "id": 1790737684264,
@@ -2414,7 +2490,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Dove Beautiful Curls Low-Sulfate Shampoo with Aloe Vera & Jojoba Oil (350ml)"
   },
   {
     "id": 1790737673350,
@@ -2444,7 +2521,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Clary Anti-Hair Loss & Anti-Breakage Shampoo & Conditioner (300ml)"
   },
   {
     "id": 1790737668557,
@@ -2474,7 +2552,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Blends Herbal Sensation Black Seed Shampoo for Weak & Falling Hair (600ml)"
   },
   {
     "id": 1790737651136,
@@ -2504,7 +2583,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "L'Oréal Paris Elvive Glycolic Gloss Shampoo with 3% Glycolic Acid (200ml)"
   },
   {
     "id": 1790737646052,
@@ -2534,7 +2614,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Cleopatra Shea Butter Hair Shampoo (500ml)"
   },
   {
     "id": 1790737571487,
@@ -2564,7 +2645,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Sunsilk Coconut Moisture Shampoo (600ml)"
   },
   {
     "id": 1790737559941,
@@ -2594,7 +2676,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Bobana Argan Oil Shampoo (400ml)"
   },
   {
     "id": 1790737556410,
@@ -2624,7 +2707,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "TRESemmé Anti-Frizz Shampoo for Dry & Curly Hair (600ml)"
   },
   {
     "id": 1790737552466,
@@ -2654,7 +2738,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "L'Oréal Paris Elvive Full Resist Strengthening Shampoo (400ml)"
   },
   {
     "id": 1790737505368,
@@ -2684,7 +2769,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Sunsilk Intense Damage Reconstruction Shampoo (350ml)"
   },
   {
     "id": 1790737336724,
@@ -2714,7 +2800,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Blends Herbal Sensation Argan Oil Anti-Frizz & Shine Shampoo (600ml)"
   },
   {
     "id": 1790737320423,
@@ -2744,7 +2831,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "L'Oréal Paris Elvive Extraordinary Oil Jojoba Shampoo (400ml)"
   },
   {
     "id": 1790737269487,
@@ -2774,7 +2862,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Bobana Coconut Oil Shampoo (400ml)"
   },
   {
     "id": 1790737265310,
@@ -2804,7 +2893,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Sunsilk Hair Fall Solution Shampoo for Dry & Damaged Hair (350ml)"
   },
   {
     "id": 1790737257445,
@@ -2834,7 +2924,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Sunsilk Thick & Long Shampoo (350ml)"
   },
   {
     "id": 1790737216674,
@@ -2864,7 +2955,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Sunsilk Stunning Black Shine Shampoo (600ml)"
   },
   {
     "id": 1790737203846,
@@ -2894,7 +2986,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Sunsilk Honey Anti-Breakage Shampoo (350ml)"
   },
   {
     "id": 1790737185950,
@@ -2924,7 +3017,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Elegant Women's Leather Belt with Luxury Gold Metal Buckle"
   },
   {
     "id": 1790737178245,
@@ -2952,7 +3046,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "3-Piece Women's Double-Grommet Slim Waist Belts - One Size"
   },
   {
     "id": 1790737171800,
@@ -2982,7 +3077,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Congo Women's Chunky Gold Chain Belt (115cm)"
   },
   {
     "id": 1790737150088,
@@ -3012,7 +3108,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "EZABILLA Women's Slim Black Belt with Twisted Knot Gold Buckle"
   },
   {
     "id": 1790737118249,
@@ -3042,7 +3139,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "EZABILLA Women's Classic Faux Leather Belt with Square Gold Buckle"
   },
   {
     "id": 1790737111292,
@@ -3072,7 +3170,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Jojo Egypt Women's Stainless Steel Waist Belt (90cm) - RM21"
   },
   {
     "id": 1790737100740,
@@ -3102,7 +3201,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "4-Piece Women's Slim Belt Set with Gold Buckles"
   },
   {
     "id": 1790737090482,
@@ -3132,7 +3232,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "4-Piece Women's Slim Belt Set with Gold Buckle"
   },
   {
     "id": 1790737070843,
@@ -3162,7 +3263,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Fayrouz Jewelry 18K Gold Plated Stainless Steel Four-Leaf Clover Bracelet"
   },
   {
     "id": 1790737011562,
@@ -3192,7 +3294,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Mela 5-Motif Clover Bracelet - Gold-Plated Stainless Steel"
   },
   {
     "id": 1790736907399,
@@ -3221,7 +3324,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Women's Silver Infinity Necklace"
   },
   {
     "id": 1790736861654,
@@ -3251,7 +3355,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "U-Shop Women's Gold Floral Necklace with Pearls & Crystals"
   },
   {
     "id": 1790736858094,
@@ -3281,7 +3386,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "14K Gold-Plated Freshwater Pearl Herringbone Necklace for Women"
   },
   {
     "id": 1790736848446,
@@ -3311,7 +3417,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Elegant Heart Pendant Zircon Necklace in Silver Tone"
   },
   {
     "id": 1790736387750,
@@ -3341,7 +3448,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "EFTOP 14K Gold-Plated Handmade Heart and Bee Adjustable Necklace"
   },
   {
     "id": 1790736384400,
@@ -3371,7 +3479,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Italian Gold-Plated Stainless Steel Heart Pendant Necklace"
   },
   {
     "id": 1790736381313,
@@ -3401,7 +3510,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Women's Gold-Plated Stainless Steel Solitaire and Eternity Ring Set - Size 17"
   },
   {
     "id": 1790736340758,
@@ -3431,7 +3541,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Luxury Emerald Green Rectangular Stone Double Curb Chain Necklace"
   },
   {
     "id": 1790736247737,
@@ -3460,7 +3571,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Masati Women's White Gold Ring - UM-1254"
   },
   {
     "id": 1790736238686,
@@ -3489,7 +3601,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Minimalist Gold-Tone Cubic Zirconia Spinner Chain Ring"
   },
   {
     "id": 1790736228648,
@@ -3519,7 +3632,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Classic Slim Gold-Tone Wedding Band for Women"
   },
   {
     "id": 1790736223887,
@@ -3549,7 +3663,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Fayrouz Jewelry Adjustable Open Heart Cubic Zirconia Ring"
   },
   {
     "id": 1790736219080,
@@ -3579,7 +3694,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Geometric Leaf Knuckle Ring Set - 11 Pieces"
   },
   {
     "id": 1790736206226,
@@ -3608,7 +3724,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "3 DIAMONDS Interlocking Hearts Platinum-Plated Zircon Ring"
   },
   {
     "id": 1790736194325,
@@ -3638,7 +3755,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Adjustable 18K Gold-Plated Tulip Zircon Ring"
   },
   {
     "id": 1790736057409,
@@ -3668,7 +3786,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Yohepros 14K White Gold-Plated Hypoallergenic CZ Stud Earrings - 6 Pairs"
   },
   {
     "id": 1790736048683,
@@ -3698,7 +3817,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Hypoallergenic Stainless Steel Butterfly Earrings with Velvet Gift Bag"
   },
   {
     "id": 1790736041215,
@@ -3728,7 +3848,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Fashion Mania Hypoallergenic Pearl Hoop Earrings in Gold"
   },
   {
     "id": 1790736034888,
@@ -3756,7 +3877,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Hypoallergenic Stainless Steel Earring Set - 12 Pairs, Gold & Silver"
   },
   {
     "id": 1790736031897,
@@ -3786,7 +3908,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Elegant Earring Set for Women - 3 Pairs"
   },
   {
     "id": 1790736028838,
@@ -3816,7 +3939,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Julia Store 18K White Gold-Plated Crystal Hoop Earrings with Swarovski Elements"
   },
   {
     "id": 1790736021145,
@@ -3843,7 +3967,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Caflon Gold-Plated Sterile Rose Stud Earrings for Sensitive Ears"
   },
   {
     "id": 1790736005496,
@@ -3873,7 +3998,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Julia Store 18K Gold-Plated Waterproof Puffy Heart Hoop Earrings"
   },
   {
     "id": 1790735871441,
@@ -3903,7 +4029,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Julia Store 18K Gold-Plated Cubic Zirconia Huggie Drop Earrings"
   },
   {
     "id": 1790735863806,
@@ -3931,7 +4058,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Elegant Gold-Plated Crystal Drop Earring Set - 6 Pieces"
   },
   {
     "id": 1790735844908,
@@ -3961,7 +4089,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "18K Gold-Plated Stainless Steel Butterfly Stud Earrings"
   },
   {
     "id": 1790735837133,
@@ -3990,7 +4119,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "MT 18K Gold-Plated Four-Leaf Clover Drop Earrings"
   },
   {
     "id": 1790735832821,
@@ -4020,7 +4150,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Cute Gold-Tone Cherry Stud Earrings with Red & Green Crystals"
   },
   {
     "id": 1790735826939,
@@ -4050,7 +4181,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Classic Lightweight Chunky Gold Drop Earrings"
   },
   {
     "id": 1790735821661,
@@ -4080,7 +4212,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Lane Woods 14K Gold-Plated Hypoallergenic Huggie Hoop Earrings"
   },
   {
     "id": 1790735815934,
@@ -4110,7 +4243,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Ocean-Inspired Gold-Tone Starfish Earrings for Women"
   },
   {
     "id": 1790735806315,
@@ -4140,7 +4274,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Silver-Tone Round Solitaire Cubic Zirconia Stud Earrings"
   },
   {
     "id": 1790735793602,
@@ -4170,7 +4305,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Julia Store 18K Gold-Plated Small Hoop Earrings with Swarovski Crystals"
   },
   {
     "id": 1790735786828,
@@ -4200,7 +4336,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Mikoko 14K Gold-Plated Small Hoop Earrings for Women"
   },
   {
     "id": 1790735774379,
@@ -4227,7 +4364,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Hypoallergenic Stud Earring Set for Girls - 36 Pairs with Gift Box"
   },
   {
     "id": 1790735758678,
@@ -4256,7 +4394,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Dainty 18K Gold-Plated Cubic Zirconia Earring Set - 3 Pieces"
   },
   {
     "id": 1790735741793,
@@ -4285,7 +4424,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Gold-Tone Stainless Steel Round Hoop Earrings Set - 3 Sizes"
   },
   {
     "id": 1790735706598,
@@ -4315,7 +4455,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Phoenix Gold Wing Statement Earrings for Women"
   },
   {
     "id": 1790735684038,
@@ -4345,7 +4486,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Chance Women's Crossbody Bag - 442"
   },
   {
     "id": 1790735637474,
@@ -4370,7 +4512,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Chic Crossbody Clutch Wallet Handbag"
   },
   {
     "id": 1790735625723,
@@ -4400,7 +4543,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Genuine Leather Camera Crossbody Bag with Wide Strap"
   },
   {
     "id": 1790735605340,
@@ -4430,7 +4574,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Small Crossbody Chest & Shoulder Travel Bag"
   },
   {
     "id": 1790735601303,
@@ -4460,7 +4605,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Elegant Faux Leather Crossbody Bag with Double Zipper"
   },
   {
     "id": 1790735597949,
@@ -4490,7 +4636,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Roulens Small Crossbody Bag & Cell Phone Purse for Women"
   },
   {
     "id": 1790735574475,
@@ -4520,7 +4667,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Casual Modern Crossbody Bag"
   },
   {
     "id": 1790735566103,
@@ -4545,7 +4693,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Chance Waterproof 3-in-1 Handbag, Crossbody & Shoulder Bag - 460"
   },
   {
     "id": 1790735544676,
@@ -4570,7 +4719,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Elegant PU Leather Crossbody Bag with Gold D-Buckle"
   },
   {
     "id": 1790735402176,
@@ -4600,7 +4750,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Elegant White Crossbody Shoulder Bag"
   },
   {
     "id": 1790733572112,
@@ -4630,7 +4781,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "HND001 - Two-Tone Leather Handbag & Crossbody Bag with Bow"
   },
   {
     "id": 1790733566663,
@@ -4660,7 +4812,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "AR Bags Women's Multi-Pocket Shoulder Tote Bag"
   },
   {
     "id": 1790733558772,
@@ -4690,7 +4843,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Large Canvas Tote Bag with Zipper & Pockets"
   },
   {
     "id": 1790733550559,
@@ -4718,7 +4872,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Elegant & Practical Women's Shoulder Bag - H60"
   },
   {
     "id": 1790733547485,
@@ -4748,7 +4903,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Large Handbag with Short Strap (30 x 40 cm)"
   },
   {
     "id": 1790733527968,
@@ -4778,7 +4934,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Top-Handle PU Leather Shoulder Bag with Detachable Strap"
   },
   {
     "id": 1790733510560,
@@ -4808,7 +4965,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Soft Leather Drawstring Crossbody & Shoulder Bag with Charm"
   },
   {
     "id": 1790733502553,
@@ -4838,7 +4996,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Majestic Women's Multi-Pocket Travel Crossbody Bag - MAJ146"
   },
   {
     "id": 1790733498356,
@@ -4868,7 +5027,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Velvara Women's Top-Handle PU Leather Shoulder Bag - Size L"
   },
   {
     "id": 1790733491293,
@@ -4895,7 +5055,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Waterproof Handbag"
   },
   {
     "id": 1790733473043,
@@ -4925,7 +5086,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "AR Bags Waterproof Tote & Shoulder Bag (30 x 30 cm)"
   },
   {
     "id": 1790733459523,
@@ -4953,7 +5115,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Waterproof Casual Shoulder Bag"
   },
   {
     "id": 1790733351005,
@@ -4983,7 +5146,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Lightweight Multi-Pocket Travel Shoulder Bag"
   },
   {
     "id": 1790733345460,
@@ -5013,7 +5177,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Kanaz Remy Lady Shoulder Bag with Bear Charm"
   },
   {
     "id": 1790733333080,
@@ -5043,7 +5208,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "LC Waikiki Women's Faux Leather Shoulder Bag"
   },
   {
     "id": 1790733289080,
@@ -5073,7 +5239,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Luxury Modern Women's Sunglasses - UV400 Protection"
   },
   {
     "id": 1790733282123,
@@ -5103,7 +5270,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "HD Day Night Driving Glasses - Pack of 2 Polarized Wrap-Around Sunglasses"
   },
   {
     "id": 1790733277471,
@@ -5133,7 +5301,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Evilara Women's Polarized Sunglasses - Model SQM33302"
   },
   {
     "id": 1790733272367,
@@ -5163,7 +5332,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Amazing EGP Retro Cat-Eye Sunglasses for Women - Black Frame"
   },
   {
     "id": 1790733267025,
@@ -5193,7 +5363,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Retro Square Double-Bridge Sunglasses with Yellow Lenses"
   },
   {
     "id": 1790733173963,
@@ -5223,7 +5394,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Dollger Classic Semi-Rimless Polarized Sunglasses - UV400"
   },
   {
     "id": 1790733119769,
@@ -5253,7 +5425,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Hexagonal Polarized Metal Sunglasses - UV400 (50mm)"
   },
   {
     "id": 1790733107684,
@@ -5283,7 +5456,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Elegant Luxury Fashion Sunglasses with UV Protection"
   },
   {
     "id": 1790733085265,
@@ -5312,7 +5486,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Contemporary Elegant Women's Sunglasses - UV Protection"
   },
   {
     "id": 1790733029998,
@@ -5342,7 +5517,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "as Women's Elegant Sunglasses"
   },
   {
     "id": 1790733009825,
@@ -5372,7 +5548,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "3-Piece Classic Square Sunglasses Set - Minimalist & Versatile"
   },
   {
     "id": 1790733002988,
@@ -5402,7 +5579,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Fashion Mania Unisex Polarized Sunglasses - UV400 Protection, Black, One Size"
   },
   {
     "id": 1790732993832,
@@ -5432,7 +5610,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Pro Acme Classic Unisex Aviator Sunglasses - 100% Real Glass Lenses"
   },
   {
     "id": 1790732979891,
@@ -5462,7 +5641,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "2-Piece Women's Oval Metal Frame Sunglasses Set"
   },
   {
     "id": 1790732966714,
@@ -5492,7 +5672,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Amazing EGP Oversized Square Rhinestone Sunglasses - Retro 70s Boho Style"
   },
   {
     "id": 1790732955944,
@@ -5522,7 +5703,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Amazing EGP Rimless Oval Sunglasses for Women - UV400, Lightweight Metal Frame with Gold Accents"
   },
   {
     "id": 1790732946133,
@@ -5552,7 +5734,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Amazing EGP Vintage Flat Top Sunglasses - Double Bridge Pink Frame with Brown Lenses, UV400 (Size M)"
   },
   {
     "id": 1790732927104,
@@ -5582,7 +5765,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Show Day Oversized Aviator Sunglasses for Women - Classic Metal Frame, UV400 Protection (63mm)"
   },
   {
     "id": 1790732886854,
@@ -5610,7 +5794,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Elegant Women's Square Gold-Tone Watch with Metallic Case"
   },
   {
     "id": 1790732871353,
@@ -5640,7 +5825,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Luxury Women's Analog Watch - Green Dial with Gold-Tone Strap"
   },
   {
     "id": 1790732858777,
@@ -5665,7 +5851,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Reece Women's Watch - Gold Dial, R2054-TGS"
   },
   {
     "id": 1790732852825,
@@ -5692,7 +5879,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Minimalist Women's Quartz Watch - Model 2615, Black, Lightweight & Water Resistant"
   },
   {
     "id": 1790732825579,
@@ -5717,7 +5905,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Luxury Women's Rose Gold Watch - Crystal-Bezel, Shimmering Dial & Silicone Strap"
   },
   {
     "id": 1790732816391,
@@ -5745,7 +5934,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Classic Round-Dial Women's Watch - Modern Design for Formal & Casual Wear"
   },
   {
     "id": 1790732803066,
@@ -5775,7 +5965,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Elegant Women's Analog Finger Ring Watch - Quartz Movement"
   },
   {
     "id": 1790732794354,
@@ -5804,7 +5995,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Michael Kors Parker Women's Analog Watch - Blush & Rose Gold Stainless Steel"
   },
   {
     "id": 1790732780622,
@@ -5834,7 +6026,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Zekiri Women's Classic Dress Watch - Stainless Steel Strap with Date Display"
   },
   {
     "id": 1790732773763,
@@ -5864,7 +6057,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Quartz Watch - Curved Triangular Gold-Tone Frame & Bracelet"
   },
   {
     "id": 1790732740686,
@@ -5889,7 +6083,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Luxury Women's Crystal-Embellished Watch"
   },
   {
     "id": 1790732733864,
@@ -5919,7 +6114,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Elegant Women's Oval Watch - Black Dial with Slim Leather Strap"
   },
   {
     "id": 1790732716934,
@@ -5949,7 +6145,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Round Quartz Watch with Integrated Bangle Strap"
   },
   {
     "id": 1790732703876,
@@ -5979,7 +6176,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Classic Women's Square Dress Watch - Gold-Tone Stainless Steel"
   },
   {
     "id": 1790732695969,
@@ -6009,7 +6207,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "DGCZYXGL Women's Elegant Snake-Shaped Wrap Bracelet Watch"
   },
   {
     "id": 1790732688817,
@@ -6034,7 +6233,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Luxury Braided Leather Snake-Wrap Watch - Crystal Gold Bezel, Quartz Movement (Black)"
   },
   {
     "id": 1790732678139,
@@ -6063,7 +6263,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Elegant Women's Oval Quartz Watch - Gold-Tone Stainless Steel Open Bangle"
   },
   {
     "id": 1790732669771,
@@ -6093,7 +6294,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Elegant Women's Watch with Adjustable Metal Strap"
   },
   {
     "id": 1790732633183,
@@ -6120,7 +6322,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Luxury Two-Tone Gold & Silver Women's Watch - Black Diamond-Accented Dial with Fluted Bezel"
   },
   {
     "id": 1790732562028,
@@ -6150,7 +6353,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Rose Gold Quartz Watch & 5-Piece Bracelet Set"
   },
   {
     "id": 1790732552014,
@@ -6180,7 +6384,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Rhinestone-Embellished Women's Analog Watch with Integrated Bracelet"
   },
   {
     "id": 1790732544496,
@@ -6210,7 +6415,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Luxury 4-Piece Women's Quartz Watch & Jewelry Gift Set - Roman Numeral Diamond-Accented Dial (Gold)"
   },
   {
     "id": 1790732533030,
@@ -6240,7 +6446,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Elegant Women's Gold Watch - Multi-Layer Metal Bracelet with Shimmering Accents"
   },
   {
     "id": 1790732522806,
@@ -6270,7 +6477,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Trendy Women's Chain Bracelet Watch"
   },
   {
     "id": 1790732479515,
@@ -6300,7 +6508,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Lee Cooper Women's Analog Watch - Silver Dial, LC07863.230"
   },
   {
     "id": 1790732470910,
@@ -6330,7 +6539,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Freelook Lumiere Women's Analog Watch - Stainless Steel Strap, Silver Multi-Color Dial, FL.1.10405-5"
   },
   {
     "id": 1790732461047,
@@ -6355,7 +6565,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Reece Women's Watch with Silver Dial - R2055-TRS"
   },
   {
     "id": 1790732454832,
@@ -6385,7 +6596,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Reece Women's Watch with Green Dial - R2054-LGN"
   },
   {
     "id": 1790732419364,
@@ -6415,7 +6627,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Afnan Supremacy Collector's Edition Eau de Parfum - 100ml"
   },
   {
     "id": 1790732343516,
@@ -6445,7 +6658,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "The Bath Land Warm Vanilla Hair Perfume & Mist - 80ml"
   },
   {
     "id": 1790732322535,
@@ -6475,7 +6689,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Lattafa Ameer Al Oudh Eau de Parfum - 100ml"
   },
   {
     "id": 1790732296893,
@@ -6505,7 +6720,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "BeYu Blue Angel Eau de Toilette for Women - 100ml"
   },
   {
     "id": 1790732264684,
@@ -6535,7 +6751,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Guess by Marciano Eau de Parfum for Women - 100ml"
   },
   {
     "id": 1790732244485,
@@ -6565,7 +6782,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Starky Royal Oud Alcohol-Free Makhmariya Hair & Body Perfume for Women - 50ml"
   },
   {
     "id": 1790732225233,
@@ -6595,7 +6813,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Emper Le Chameau Arabia Haya Eau De Parfum for Women - 100ml"
   },
   {
     "id": 1790732212773,
@@ -6625,7 +6844,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Calvin Klein Euphoria Eau de Parfum for Women - 100ml"
   },
   {
     "id": 1790732201865,
@@ -6655,7 +6875,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Milton Lloyd UTC Hawaii Parfum de Toilette for Women - 55ml"
   },
   {
     "id": 1790732187680,
@@ -6685,7 +6906,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Guess Seductive Eau de Toilette - 75ml"
   },
   {
     "id": 1790732108418,
@@ -6715,7 +6937,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Xavier Laurent Elegance Paris Body Splash for Women - 150ml"
   },
   {
     "id": 1790732097540,
@@ -6745,7 +6968,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Lattafa Asad Eau de Parfum - 100ml"
   },
   {
     "id": 1790732086498,
@@ -6775,7 +6999,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Maa Al Thahab Sweety N188 Eau de Parfum for Women (Inspired by Good Girl) - 30ml"
   },
   {
     "id": 1790732077458,
@@ -6805,7 +7030,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Ajmal Raindrops Eau de Parfum for Women - 50ml"
   },
   {
     "id": 1790732066384,
@@ -6835,7 +7061,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Lattafa Mahra Silky Rose Eau de Parfum - 100ml"
   },
   {
     "id": 1790732057605,
@@ -6865,7 +7092,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Maa Al Thahab Flowery N222 Eau de Parfum for Women (Inspired by YSL Libre) - 50ml"
   },
   {
     "id": 1790732050822,
@@ -6895,7 +7123,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Maa Al Thahab Fruity N190 Eau de Parfum for Women (Inspired by Burberry Her) - 50ml"
   },
   {
     "id": 1790732038785,
@@ -6924,7 +7153,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Tender Women's Gift Set (Perfume, Deodorant Cream & Body Spray) - 600ml"
   },
   {
     "id": 1790732032135,
@@ -6954,7 +7184,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Lattafa Khamrah Eau de Parfum for Unisex - 100ml"
   },
   {
     "id": 1790732023686,
@@ -6984,7 +7215,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Maa Al Thahab Flowery N197 Eau de Parfum for Women (Inspired by Lancôme Idôle) - 50ml"
   },
   {
     "id": 1790732014882,
@@ -7012,7 +7244,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Creation Lamis Deluxe Bold Lady Limited Edition Eau de Parfum for Women - 100ml"
   },
   {
     "id": 1790732005794,
@@ -7042,7 +7275,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Maa Al Thahab Orientalist N195 Eau de Parfum for Women (Inspired by Mancera Roses Vanille) - 50ml"
   },
   {
     "id": 1790731994965,
@@ -7072,7 +7306,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Fogg Essence Long-Lasting No-Gas Body Spray for Women - 120ml"
   },
   {
     "id": 1790731973662,
@@ -7102,7 +7337,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Guess Pink Eau de Parfum for Women - 75ml"
   },
   {
     "id": 1790731935954,
@@ -7132,7 +7368,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Be Eva Dream Eau de Toilette for Women - 100ml"
   },
   {
     "id": 1790731900743,
@@ -7162,7 +7399,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Maa Al Thahab Fruity N213 Eau de Parfum for Women (Inspired by Victoria's Secret Bombshell) - 50ml"
   },
   {
     "id": 1790731842768,
@@ -7192,7 +7430,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "My Way Tender Eau de Toilette for Women - 55ml"
   },
   {
     "id": 1790731836409,
@@ -7222,7 +7461,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Luxury Perfumes"
+    "categoryEn": "Luxury Perfumes",
+    "nameEn": "Maa Al Thahab Sweety N130 Eau de Parfum for Women (Inspired by La Vie Est Belle) - 100ml"
   },
   {
     "id": 1790731613526,
@@ -7252,7 +7492,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Maybelline New York Lifter Gloss - 003 Moon"
   },
   {
     "id": 1790731603753,
@@ -7282,7 +7523,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "SHEGLAM Sun Sculpt Liquid Contour - Vanilla Frost (5.2ml)"
   },
   {
     "id": 1790731586335,
@@ -7312,7 +7554,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Women's Leather Cosmetic Bag"
   },
   {
     "id": 1790731576355,
@@ -7342,7 +7585,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Amanda Milano Lip Balm - 08 Peachy"
   },
   {
     "id": 1790731561479,
@@ -7372,7 +7616,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Cybele Hot Lash Mascara - 01 Deep Black (12ml)"
   },
   {
     "id": 1790731525347,
@@ -7402,7 +7647,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Premium White Cotton Pads - 80 Round Pads, Pack of 3 | 100% Pure Cotton for Skincare & Makeup Removal"
   },
   {
     "id": 1790731518064,
@@ -7432,7 +7678,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Maybelline New York Sunkisser Liquid Blush with Vitamin E - 06 City Sizzle"
   },
   {
     "id": 1790731509332,
@@ -7462,7 +7709,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "L'Oréal Paris True Match Lumi Glotion Natural Glow Enhancer - 901 Fair Glow, 40ml"
   },
   {
     "id": 1790731478161,
@@ -7492,7 +7740,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Cybele Smooth 'N Wear Blush - 04 Bois de Rose, 3.7g"
   },
   {
     "id": 1790731432481,
@@ -7522,7 +7771,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Maybelline New York Fit Me Concealer - 15 Fair"
   },
   {
     "id": 1790731407705,
@@ -7552,7 +7802,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Essence High Shine Liquid Lipstick - Berry"
   },
   {
     "id": 1790731378778,
@@ -7581,7 +7832,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Cybele Matte Lipstick - N.319 Magnetic Mahogany"
   },
   {
     "id": 1790731307416,
@@ -7611,7 +7863,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Amanda Milano Glossy Lipstick - Dark Pink"
   },
   {
     "id": 1790731281652,
@@ -7641,7 +7894,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "SHEGLAM Color Bloom Liquid Blush - Love Cake"
   },
   {
     "id": 1790731212473,
@@ -7671,7 +7925,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Essence Lash Princess Sculpted Volume Mascara - Black"
   },
   {
     "id": 1790731198459,
@@ -7701,7 +7956,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "SHEGLAM Camera On Blur Primer - 30ml"
   },
   {
     "id": 1790731158738,
@@ -7731,7 +7987,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Menow MN Dynamic Long-Lasting Liquid Eyeliner - Black, 0.4g (E4132)"
   },
   {
     "id": 1790731131213,
@@ -7761,7 +8018,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Elizabeth Helen Makeup Setting Spray - Clear, 150ml"
   },
   {
     "id": 1790731117596,
@@ -7791,7 +8049,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Flormar Creamy Lipstick Pencil - Brown"
   },
   {
     "id": 1790730700107,
@@ -7821,7 +8080,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "SHEGLAM Blush Stick - Love Cake, 6g"
   },
   {
     "id": 1790730606076,
@@ -7851,7 +8111,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "SHEGLAM High Shine Lip Gloss - Flamingo Pink"
   },
   {
     "id": 1790730591067,
@@ -7881,7 +8142,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Peptide & Hyaluronic Acid Lip Plumper - Peony Pink, 9ml"
   },
   {
     "id": 1790730558992,
@@ -7911,7 +8173,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Cybele Rich Cream Lipstick - 127 Royal Pink, 5g"
   },
   {
     "id": 1790730507049,
@@ -7941,7 +8204,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Capexy Eyelash Treatment Serum - 10ml"
   },
   {
     "id": 1790730496351,
@@ -7971,7 +8235,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Orglam Natural Aloe Vera Lip & Cheek Tint - Red"
   },
   {
     "id": 1790730471426,
@@ -8001,7 +8266,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Essence Lash & Brow Gel Mascara - Clear"
   },
   {
     "id": 1790730442076,
@@ -8031,7 +8297,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Portable 5-Piece Makeup Brush Set with Mirror & Storage Box - Beige"
   },
   {
     "id": 1790730431004,
@@ -8061,7 +8328,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Beauty Beast 12-Color Matte Liquid Lipstick Set - Waterproof & Long-Lasting Velvet Lip Gloss"
   },
   {
     "id": 1790730421439,
@@ -8091,7 +8359,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Essence I Love Extreme Crazy Volume Mascara"
   },
   {
     "id": 1790730401488,
@@ -8121,7 +8390,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Essence Extreme Shine Volume Lip Gloss - 01 Crystal Clear"
   },
   {
     "id": 1790730275420,
@@ -8151,7 +8421,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Eva Skin Clinic Natural Glow Eye Cream - 15g"
   },
   {
     "id": 1790730265795,
@@ -8181,7 +8452,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Nuvera Cosmetics 20% Urea Deep Nourishing Lotion with Shea Butter & Ceramides - 200ml"
   },
   {
     "id": 1790730245931,
@@ -8211,7 +8483,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Nuvera Cosmetics Glyco-Clear Toner with Glycolic, Lactic & Salicylic Acids and Niacinamide - 200ml"
   },
   {
     "id": 1790730219259,
@@ -8241,7 +8514,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "Temperia 7-Piece Travel Bottle & Container Set with Pouch - Random Colors"
   },
   {
     "id": 1790730197834,
@@ -8271,7 +8545,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Leaves Instant Hydrating Cream Gel for Normal to Dry Skin with Ceramides, Niacinamide & Hyaluronic Acid - 75ml"
   },
   {
     "id": 1790730176213,
@@ -8301,7 +8576,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Eva Skin Clinic Vitamin C Face Wash & Scrub for Cleansing & Even Glow - 150ml"
   },
   {
     "id": 1790730164418,
@@ -8330,7 +8606,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Eva Skin Care Senses Lip Balm - Sweet Cherry, 4g"
   },
   {
     "id": 1790730135578,
@@ -8360,7 +8637,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "360-Degree Rotating Acrylic Makeup Organizer - Adjustable Cosmetic Storage"
   },
   {
     "id": 1790729972227,
@@ -8389,7 +8667,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Nuvera Cosmetics Whitening Roll-On Deodorant - Sweets, 60ml"
   },
   {
     "id": 1790729959130,
@@ -8419,7 +8698,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Nuvera Cosmetics Sebio Control Cream Gel Moisturizer with Zinc PCA & Ceramide Complex - 50ml"
   },
   {
     "id": 1790729932193,
@@ -8449,7 +8729,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Eva Skin Care Senses Summer Twist Moisturizing Shower Cream, 250ml"
   },
   {
     "id": 1790697914024,
@@ -8479,7 +8760,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "14K Gold-Plated Brass Chain Link Bracelet for Women - 21.59 cm"
   },
   {
     "id": 1790697695231,
@@ -8509,7 +8791,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hair Accessories"
+    "categoryEn": "Hair Accessories",
+    "nameEn": "Zuzi Non-Slip Hair Claw Clips (2-Pack) - Strong Hold for Thick & Thin Hair"
   },
   {
     "id": 1790678966862,
@@ -8539,7 +8822,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Eva Cosmetics Optimum Care Recipe Soothing Body Lotion for Sensitive Skin - Vanilla, 370ml"
   },
   {
     "id": 1790678926586,
@@ -8569,7 +8853,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Dermall Advanced Microneedle Skin Booster Serum - Hydrating, Glow-Boosting & Pore Refining"
   },
   {
     "id": 1790678853571,
@@ -8599,7 +8884,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Reusable Soft Triangle Powder Puffs for Wet & Dry Makeup - 2 Pieces, Multicolor"
   },
   {
     "id": 1790678819577,
@@ -8629,7 +8915,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Yolicious Bright & Glow Eye Cream, 15ml"
   },
   {
     "id": 1790675834645,
@@ -8658,7 +8945,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Look Accessories"
+    "categoryEn": "Look Accessories",
+    "nameEn": "11-Piece Leakproof Refillable Travel Bottle Set with Pouch - Nordic Style"
   },
   {
     "id": 1790675755388,
@@ -8683,7 +8971,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Bobana Skin Lightening Milk Mask with Vitamin E, 250g"
   },
   {
     "id": 1790675353063,
@@ -8708,7 +8997,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Eva Skin Care Senses Lip Balm - Fresh Watermelon, 4g"
   },
   {
     "id": 1790675255168,
@@ -8735,7 +9025,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Eva Skin Care Senses Cozy Dream Body Splash for Women, 240ml"
   },
   {
     "id": 1790675180203,
@@ -8760,7 +9051,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Eva Skin Care Senses In The Clouds Shower Cream, 250ml"
   },
   {
     "id": 1790675033368,
@@ -8785,7 +9077,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Essence Long-Lasting Eye Pencil - 01 Black Fever, Matte Black"
   },
   {
     "id": 1790674840849,
@@ -8812,7 +9105,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Eva Cosmetics Cranberry Lip Scrub, 20g"
   },
   {
     "id": 1790674752479,
@@ -8841,7 +9135,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Makeup & Beauty"
+    "categoryEn": "Makeup & Beauty",
+    "nameEn": "Maybelline New York Lash Sensational Sky High Mascara - Black, 7.2ml"
   },
   {
     "id": 1790674622751,
@@ -8866,7 +9161,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Blends Herbal Sensation Black Seed Leave-In Cream for Weak Hair - 180ml"
   },
   {
     "id": 1790674564792,
@@ -8891,7 +9187,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Hepta Panthenol Skin Cream, 50g"
   },
   {
     "id": 1790674525699,
@@ -8916,7 +9213,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Eva Skin Care Senses In The Clouds Body Splash, 240ml"
   },
   {
     "id": 1790674427175,
@@ -8941,7 +9239,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Glysolid Deep Moisturizing Body Lotion for Dry Skin, 500ml"
   },
   {
     "id": 1790674372884,
@@ -8966,7 +9265,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Eva Skin Care Natural Glow Body Scrub, 250g"
   },
   {
     "id": 1790674301053,
@@ -8991,7 +9291,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "Eva Moisturizing Skin Cream with Aloe Vera, Panthenol & Vitamin E, 20g"
   },
   {
     "id": 1790635009787,
@@ -9021,7 +9322,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "MT Cleopatra Spiral Snake Bracelet - Gold-Plated Stainless Steel Jewelry for Women"
   },
   {
     "id": 1790619437667,
@@ -9050,7 +9352,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Hand & Neck Jewelry"
+    "categoryEn": "Hand & Neck Jewelry",
+    "nameEn": "Love & Craft Matching Couple Necklaces - Gold-Tone Brass Jewelry Gift"
   },
   {
     "id": 1790505693985,
@@ -9074,7 +9377,8 @@ export const PRODUCTS: Product[] = [
         "stock": 50
       }
     ],
-    "categoryEn": "Body Care & Softness"
+    "categoryEn": "Body Care & Softness",
+    "nameEn": "L'Oreal Paris Elvive Extraordinary Oil Serum for Dry Hair, 100ml"
   }
 ];
 

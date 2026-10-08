@@ -30,6 +30,7 @@ import { AuthModal } from '@/components/auth-modal';
 export function StoreShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const isHomePage = location === '/' || location === '' || location === '/index.html';
+  const isProductPage = location.startsWith('/product/');
   const { count } = useCart();
   const { t, lang, toggleLang, isAr, dir } = useLanguage();
   const {
@@ -68,7 +69,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-[100dvh] bg-[#0A0A0A] text-[#F9FAFB] flex flex-col" dir={dir}>
       {/* Main Sticky Header */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0A0A0A]/95 backdrop-blur-md transition-all">
+      {!isProductPage && (
+        <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0A0A0A]/95 backdrop-blur-md transition-all">
         {/* ========================================================================= */}
         {/* MOBILE TOP BAR (< md): Clean, Luxury, Never Overflows Screen Width        */}
         {/* ========================================================================= */}
@@ -309,6 +311,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+      )}
 
       {/* Mobile Drawer Menu */}
       {menuOpen && (
@@ -393,78 +396,72 @@ export function StoreShell({ children }: { children: ReactNode }) {
       {/* ========================================================================= */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 shadow-2xl safe-area-pb"
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-2 shadow-2xl safe-area-pb"
       >
-          <div className="grid grid-cols-4 items-center max-w-md mx-auto">
+          <div className="grid grid-cols-4 items-center gap-1 max-w-md mx-auto">
             {/* Destination 1: Home / Store */}
             <Link
               href="/"
               onClick={handleLogoClick}
               aria-label={isAr ? 'الرئيسية' : 'Home'}
-              className={`flex flex-col items-center justify-center py-1 transition ${
+              className={`flex flex-row items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-1 rounded-xl transition active:scale-95 ${
                 location === '/'
-                  ? 'text-[#D4A5A5]'
+                  ? 'text-[#D4A5A5] bg-[#D4A5A5]/10'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              <div className={`p-1 rounded-full ${location === '/' ? 'bg-[#D4A5A5]/15' : ''}`}>
-                <HomeIcon className="size-5" strokeWidth={1.75} />
-              </div>
-              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'المتجر' : 'Shop'}</span>
+              <HomeIcon className="size-4 shrink-0" strokeWidth={1.75} />
+              <span className="text-[11px] font-bold whitespace-nowrap">{isAr ? 'المتجر' : 'Shop'}</span>
             </Link>
 
             {/* Destination 2: Categories */}
             <Link
               href="/categories"
               aria-label={isAr ? 'الأقسام' : 'Categories'}
-              className={`flex flex-col items-center justify-center py-1 transition ${
+              className={`flex flex-row items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-1 rounded-xl transition active:scale-95 ${
                 location === '/categories'
-                  ? 'text-[#D4A5A5]'
+                  ? 'text-[#D4A5A5] bg-[#D4A5A5]/10'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              <div className={`p-1 rounded-full ${location === '/categories' ? 'bg-[#D4A5A5]/15' : ''}`}>
-                <LayoutGrid className="size-5" strokeWidth={1.75} />
-              </div>
-              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'الأقسام' : 'Categories'}</span>
+              <LayoutGrid className="size-4 shrink-0" strokeWidth={1.75} />
+              <span className="text-[11px] font-bold whitespace-nowrap">{isAr ? 'الأقسام' : 'Categories'}</span>
             </Link>
 
             {/* Destination 3: Cart with Dynamic Counter Badge */}
             <Link
               href="/cart"
               aria-label={isAr ? 'السلة' : 'Cart'}
-              className={`relative flex flex-col items-center justify-center py-1 transition ${
+              className={`relative flex flex-row items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-1 rounded-xl transition active:scale-95 ${
                 location === '/cart'
-                  ? 'text-[#D4A5A5]'
+                  ? 'text-[#D4A5A5] bg-[#D4A5A5]/10'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              <div className={`relative p-1 rounded-full ${location === '/cart' ? 'bg-[#D4A5A5]/15' : ''}`}>
-                <ShoppingBag className="size-5" strokeWidth={1.75} />
+              <div className="relative shrink-0">
+                <ShoppingBag className="size-4 shrink-0" strokeWidth={1.75} />
                 {count > 0 && (
-                  <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#D4A5A5] text-[9px] font-bold text-[#0A0A0A] font-mono">
+                  <span className="absolute -top-1.5 -right-2 flex size-3.5 items-center justify-center rounded-full bg-[#D4A5A5] text-[8px] font-bold text-[#0A0A0A] font-mono">
                     {count}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'السلة' : 'Cart'}</span>
+              <span className="text-[11px] font-bold whitespace-nowrap">{isAr ? 'السلة' : 'Cart'}</span>
             </Link>
 
             {/* Destination 4: My Account / Sign In */}
             <Link
               href={user ? '/account' : '/auth?tab=login'}
               aria-label={user ? (isAr ? 'حسابي' : 'Account') : (isAr ? 'تسجيل الدخول' : 'Sign In')}
-              className={`flex flex-col items-center justify-center py-1 transition ${
+              className={`flex flex-row items-center justify-center gap-1 sm:gap-1.5 py-1.5 px-1 rounded-xl transition active:scale-95 ${
                 location === '/account' || location === '/auth' || location === '/login'
-                  ? 'text-[#D4A5A5]'
+                  ? 'text-[#D4A5A5] bg-[#D4A5A5]/10'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              <div className={`p-1 rounded-full ${location === '/account' || location === '/auth' || location === '/login' ? 'bg-[#D4A5A5]/15' : ''}`}>
-                <User className="size-5" strokeWidth={1.75} />
-              </div>
-              <span className="text-[10px] font-semibold mt-0.5">
-                {user ? (isAr ? 'حسابي' : 'Account') : (isAr ? 'تسجيل الدخول' : 'Sign In')}
+              <User className="size-4 shrink-0" strokeWidth={1.75} />
+              <span className="text-[11px] font-bold whitespace-nowrap">
+                {user ? (isAr ? 'حسابي' : 'Account') : (isAr ? 'دخول' : 'Login')}
               </span>
             </Link>
           </div>

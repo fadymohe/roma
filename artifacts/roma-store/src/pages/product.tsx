@@ -312,17 +312,26 @@ export default function ProductPage() {
     setLocation('/cart');
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
+    const cleanUrl = `${window.location.origin}/product/${product.slug}`;
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(cleanUrl);
+      }
+    } catch (_) {}
+
     if (navigator.share) {
-      navigator.share({
-        title: displayName,
-        text: displayDescription,
-        url: window.location.href,
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert(isAr ? 'تم نسخ رابط المنتج للمشاركة!' : 'Product link copied to clipboard!');
+      try {
+        await navigator.share({
+          title: displayName,
+          text: displayName,
+          url: cleanUrl,
+        });
+        return;
+      } catch (_) {}
     }
+
+    alert(isAr ? 'تم نسخ رابط المنتج بنجاح للمشاركة!' : 'Product link copied to clipboard!');
   };
 
   // Touch swipe support for Amazon-style carousel

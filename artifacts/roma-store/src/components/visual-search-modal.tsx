@@ -449,14 +449,46 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
     [allProducts, signatures]
   );
 
+function compressImageForUpload(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 1024;
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(dataUrl);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        setSelectedImage(result);
-        matchImage(result, file);
+      reader.onload = async (event) => {
+        const raw = event.target?.result as string;
+        setSelectedImage(raw);
+        const compressed = await compressImageForUpload(raw);
+        matchImage(compressed, file);
       };
       reader.readAsDataURL(file);
     }
@@ -468,10 +500,11 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        setSelectedImage(result);
-        matchImage(result, file);
+      reader.onload = async (event) => {
+        const raw = event.target?.result as string;
+        setSelectedImage(raw);
+        const compressed = await compressImageForUpload(raw);
+        matchImage(compressed, file);
       };
       reader.readAsDataURL(file);
     }

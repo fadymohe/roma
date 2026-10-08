@@ -473,10 +473,6 @@ export default function Home() {
 
         <div className="mb-4 sm:mb-6 flex items-center justify-between relative z-10">
           <div>
-            <span className="text-xs md:text-sm font-semibold text-[#D4A5A5] flex items-center gap-1.5">
-              <Boxes className="size-3.5 text-[#D4A5A5]" />
-              <span>{isAr ? 'الأقسام والمجموعات' : 'Royal Collections'}</span>
-            </span>
             <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-white mt-1 leading-snug">
               {t('section.categories_title')}
             </h2>
@@ -561,35 +557,8 @@ export default function Home() {
               </div>
             )}
 
-            <Link
-              href="/shop"
-              className="group inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A5A5] hover:text-[#0A0A0A] px-3.5 py-1.5 rounded-full bg-[#D4A5A5]/10 hover:bg-[#D4A5A5] border border-[#D4A5A5]/30 transition-all duration-300"
-            >
-              <span>{isAr ? 'تصفح كل المنتجات' : 'View All'}</span>
-              <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1 rtl:rotate-0 ltr:rotate-180" />
-            </Link>
           </div>
         </div>
-
-        {/* Dedicated Category Filter Pills Bar */}
-        {featuredProducts.length > 0 && (
-          <div className="mb-6 flex items-center gap-2 overflow-x-auto no-scrollbar py-1.5 -mx-4 px-4 md:mx-0 md:px-0">
-            {categoryPills.map((pill) => (
-              <button
-                key={pill.id}
-                type="button"
-                onClick={() => setActiveCategory(pill.id)}
-                className={`rounded-xl px-4 py-2 text-xs font-bold whitespace-nowrap transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 ${
-                  activeCategory === pill.id
-                    ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md ring-2 ring-[#D4A5A5]/40 font-extrabold'
-                    : 'bg-[#141414] hover:bg-[#1A1A1A] border border-white/10 text-zinc-300 hover:text-white'
-                }`}
-              >
-                {pill.label}
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Product Cards Smooth Slider with Floating Side Arrows */}
         {displayedProducts.length > 0 ? (
@@ -681,23 +650,6 @@ export default function Home() {
         <section id="under-10-section" className="roma-container scroll-mt-24">
           <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-xs md:text-sm font-semibold text-amber-400 flex items-center gap-1.5">
-                  <Flame className="size-3.5 text-amber-400 animate-pulse" />
-                  <span>{isAr ? 'عروض التوفير الخارقة' : 'Super Saver Deals'}</span>
-                </span>
-
-                {/* Live Countdown Badge */}
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-mono font-bold shadow-xs">
-                  <Timer className="size-3 text-amber-400 animate-pulse" />
-                  <span>{isAr ? 'ينتهي العرض خلال:' : 'Ends in:'}</span>
-                  <span className="text-amber-200 bg-black/70 px-1 py-0.2 rounded border border-amber-500/30">{timeLeft.days}d</span>:
-                  <span className="text-amber-200 bg-black/70 px-1 py-0.2 rounded border border-amber-500/30">{timeLeft.hours}h</span>:
-                  <span className="text-amber-200 bg-black/70 px-1 py-0.2 rounded border border-amber-500/30">{timeLeft.minutes}m</span>:
-                  <span className="text-amber-200 bg-black/70 px-1 py-0.2 rounded border border-amber-500/30">{timeLeft.seconds}s</span>
-                </div>
-              </div>
-
               <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
                 {t('section.under_10_title')}
               </h2>

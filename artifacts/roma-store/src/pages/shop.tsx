@@ -125,7 +125,11 @@ export default function Shop() {
     } else if (sortBy === 'rating') {
       list.sort((a, b) => b.rating - a.rating);
     } else if (sortBy === 'name-asc') {
-      list.sort((a, b) => (a.nameAr || '').localeCompare(b.nameAr || '', 'ar'));
+      list.sort((a, b) => {
+        const nameA = isAr ? (a.nameAr || '') : (a.nameEn || a.nameAr || '');
+        const nameB = isAr ? (b.nameAr || '') : (b.nameEn || b.nameAr || '');
+        return nameA.localeCompare(nameB, isAr ? 'ar' : 'en');
+      });
     }
 
     return list;

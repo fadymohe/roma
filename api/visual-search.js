@@ -66,6 +66,14 @@ function loadCatalog() {
 
 const BUILTIN_KEY = Buffer.from('QVEuQWI4Uk42TGFpa2I5ZVVlbVN5QjBaMmdvSkJ3eERidGZNaUhGQmpCb2RIeGl0ZTNxZGc=', 'base64').toString('utf8');
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -128,8 +136,8 @@ export default async function handler(req, res) {
 قائمة المنتجات (${compactCatalog.length} منتج):
 ${JSON.stringify(compactCatalog)}`;
 
-      // Verified active models: gemini-3.5-flash is ultra-fast & highly accurate
-      const models = ['gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest'];
+      // Verified active models: gemini-3.5-flash & gemini-flash-lite-latest are ultra-fast & highly accurate
+      const models = ['gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-3.8-flash'];
       let candidateText = null;
 
       for (const model of models) {
