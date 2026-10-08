@@ -16,7 +16,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { useAuth, type UserOrder } from '@/hooks/use-auth';
+import { useAuth, getAccountAvatar, type UserOrder } from '@/hooks/use-auth';
 import { Link } from 'wouter';
 
 export function UserDrawer() {
@@ -97,8 +97,12 @@ export function UserDrawer() {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex size-11 items-center justify-center rounded-2xl bg-[#E8EFEA] text-[#4E7A5A] shadow-xs">
-                <User className="size-6" />
+              <div className="size-11 overflow-hidden rounded-2xl border border-[#D4A5A5]/40 bg-[#1A1A1A] p-0.5 shadow-xs shrink-0">
+                <img
+                  src={getAccountAvatar(user)}
+                  alt={user.name}
+                  className="size-full rounded-2xl object-cover"
+                />
               </div>
               <div>
                 <h3 className="font-bold text-foreground text-base">{user.name}</h3>

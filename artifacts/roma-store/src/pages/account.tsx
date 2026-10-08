@@ -22,14 +22,14 @@ import {
   PackageCheck,
 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
-import { useAuth, type UserOrder } from '@/hooks/use-auth';
+import { useAuth, getAccountAvatar, type UserOrder } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
 import { supabase } from '@/lib/supabase';
 import { GOVERNORATES } from '@/lib/shipping';
 
 export default function AccountPage() {
   const [, setLocation] = useLocation();
-  const { user, isAuthenticated, setAuthModalOpen, logout, fetchUserOrders, removeAddress } = useAuth();
+  const { user, isAuthenticated, setAuthModalOpen, logout, fetchUserOrders, removeAddress, updateUserProfile } = useAuth();
   const { t, isAr, formatPrice, dir } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'rewards'>('orders');
@@ -47,15 +47,38 @@ export default function AccountPage() {
   // Profile Form State
   const [fullName, setFullName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [city, setCity] = useState('cairo');
+  const [city, setCity] = useState<string>(() => {
+    try {
+      const savedGov = localStorage.getItem('roma_selected_governorate');
+      if (savedGov && GOVERNORATES.some((g) => g.id === savedGov)) {
+        return savedGov;
+      }
+      const userCity = (user as any)?.city;
+      if (userCity && GOVERNORATES.some((g) => g.id === userCity)) {
+        return userCity;
+      }
+      const draftRaw = localStorage.getItem('roma_shipping_draft');
+      if (draftRaw) {
+        const draft = JSON.parse(draftRaw);
+        if (draft.governorate && GOVERNORATES.some((g) => g.id === draft.governorate)) {
+          return draft.governorate;
+        }
+      }
+    } catch (_) {}
+    return 'cairo';
+  });
   const [addressLine, setAddressLine] = useState(user?.savedAddresses?.[0] || '');
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
+  const [profileErrorMsg, setProfileErrorMsg] = useState('');
 
-  // Guest order lookup state
+  // Guest order lookup & isolated search state
   const [lookupPhone, setLookupPhone] = useState('');
   const [lookupOrders, setLookupOrders] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLookingUp, setIsLookingUp] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [searchQueryTerm, setSearchQueryTerm] = useState('');
 
   // Set of order keys that have their product items list expanded
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
@@ -109,6 +132,15 @@ export default function AccountPage() {
       setFullName(user.name);
       if (user.phone) setPhone(user.phone);
       if (user.savedAddresses?.[0]) setAddressLine(user.savedAddresses[0]);
+      const userCity = (user as any)?.city;
+      if (userCity && GOVERNORATES.some((g) => g.id === userCity)) {
+        setCity(userCity);
+      } else {
+        const savedGov = localStorage.getItem('roma_selected_governorate');
+        if (savedGov && GOVERNORATES.some((g) => g.id === savedGov)) {
+          setCity(savedGov);
+        }
+      }
     }
   }, [user]);
 
@@ -265,6 +297,22 @@ export default function AccountPage() {
     const timer = setInterval(async () => {
       if (activeTab !== 'orders') return;
 
+      if (isSearchActive) {
+        if (searchQueryTerm) {
+          try {
+            const clean = searchQueryTerm.replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+            const res = await fetch(`/api/track-order?orderNumber=${encodeURIComponent(clean)}`);
+            if (res.ok) {
+              const json = await res.json();
+              if (json.success && Array.isArray(json.orders) && json.orders.length > 0) {
+                setSearchResults(json.orders);
+              }
+            }
+          } catch (_) {}
+        }
+        return;
+      }
+
       const targets = new Set<string>();
       if (recentOrderId) {
         targets.add(String(recentOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim());
@@ -311,24 +359,73 @@ export default function AccountPage() {
     }, 4000);
 
     return () => clearInterval(timer);
-  }, [activeTab, lookupOrders, orders, recentOrderId, user]);
+  }, [activeTab, isSearchActive, searchQueryTerm, lookupOrders, orders, recentOrderId, user]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setSavingProfile(true);
     setProfileSuccessMsg('');
+    setProfileErrorMsg('');
+
+    // 1. Validate Two-Part Name (No symbols, no numbers)
+    const trimmedName = fullName.trim();
+    const nameWords = trimmedName.split(/\s+/).filter(Boolean);
+    if (nameWords.length < 2) {
+      setProfileErrorMsg(
+        isAr
+          ? 'يرجى إدخال الاسم بالكامل (الاسم الثنائي على الأقل مثل: سارة أحمد)'
+          : 'Please enter your full name (at least two names)'
+      );
+      setSavingProfile(false);
+      return;
+    }
+    const validNameRegex = /^[\u0600-\u06FFa-zA-Z\s]+$/;
+    if (!validNameRegex.test(trimmedName)) {
+      setProfileErrorMsg(
+        isAr
+          ? 'الاسم يجب أن يتكون من أحرف فقط وبدون أي أرقام أو رموز.'
+          : 'Name must contain letters only, without numbers or symbols.'
+      );
+      setSavingProfile(false);
+      return;
+    }
+
+    // 2. Validate Egyptian Mobile Phone: exactly 11 digits, starts with 010, 011, 012, or 015
+    const cleanPhone = phone.replace(/\D/g, '');
+    const validEgyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
+    if (!validEgyptianPhoneRegex.test(cleanPhone) || cleanPhone.length !== 11) {
+      setProfileErrorMsg(
+        isAr
+          ? 'رقم الهاتف غير صحيح. يجب أن يتكون من 11 رقماً ويبدأ بـ (010 أو 011 أو 012 أو 015).'
+          : 'Invalid mobile phone. Must be 11 digits starting with 010, 011, 012, or 015.'
+      );
+      setSavingProfile(false);
+      return;
+    }
 
     try {
       // 1. Update Supabase Auth user metadata
       const { data, error } = await supabase.auth.updateUser({
         data: {
-          name: fullName.trim(),
-          full_name: fullName.trim(),
-          phone: phone.trim(),
+          name: trimmedName,
+          full_name: trimmedName,
+          phone: cleanPhone,
           city,
           savedAddresses: [addressLine.trim()],
         },
+      });
+
+      // Always save selected governorate in localStorage for future orders & sessions
+      try {
+        localStorage.setItem('roma_selected_governorate', city);
+      } catch (_) {}
+
+      updateUserProfile({
+        name: trimmedName,
+        phone: cleanPhone,
+        city,
+        savedAddresses: [addressLine.trim()],
       });
 
       if (!error) {
@@ -349,8 +446,16 @@ export default function AccountPage() {
   const handleLookupOrders = async (e: React.FormEvent) => {
     e.preventDefault();
     const query = lookupPhone.trim();
-    if (!query) return;
+    if (!query) {
+      setIsSearchActive(false);
+      setSearchQueryTerm('');
+      setSearchResults([]);
+      return;
+    }
     setIsLookingUp(true);
+    setIsSearchActive(true);
+    setSearchQueryTerm(query);
+    setSearchResults([]);
 
     try {
       const cleanDigits = query.replace(/\D+/g, '');
@@ -363,16 +468,16 @@ export default function AccountPage() {
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.orders)) {
-          setLookupOrders(json.orders);
+          setSearchResults(json.orders);
         } else {
-          setLookupOrders([]);
+          setSearchResults([]);
         }
       } else {
-        setLookupOrders([]);
+        setSearchResults([]);
       }
     } catch (e) {
-      console.warn('Guest lookup error:', e);
-      setLookupOrders([]);
+      console.warn('Order lookup error:', e);
+      setSearchResults([]);
     } finally {
       setIsLookingUp(false);
     }
@@ -387,7 +492,7 @@ export default function AccountPage() {
     return 1; // pending
   };
 
-  // Comprehensive order list merging: Lookup search + User history + Recent local orders
+  // Order list resolution: when searching, ONLY return the searched order!
   const displayOrders = (() => {
     const map = new Map<string, any>();
 
@@ -407,7 +512,6 @@ export default function AccountPage() {
         const existingStep = getStepIndex(existing.status);
         const newStep = getStepIndex(o.status);
         const mergedTracking = currentTrack || extractTracking(existing) || null;
-        // Whichever has more advanced status or is non-pending wins
         if (newStep > existingStep || (existing.status === 'pending' && o.status && o.status !== 'pending')) {
           map.set(cleanKey, { ...existing, ...normalized, tracking_url: mergedTracking, status: o.status });
         } else {
@@ -416,11 +520,54 @@ export default function AccountPage() {
       }
     };
 
-    // 1. Lookups from API server
+    if (isSearchActive) {
+      // ISOLATED SEARCH: ONLY show matching orders!
+      const cleanQuery = searchQueryTerm.trim();
+      const queryDigits = cleanQuery.replace(/\D+/g, '');
+      const cleanOrderNum = cleanQuery.replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim().toLowerCase();
+
+      const matchesSearch = (o: any) => {
+        if (!o || !cleanQuery) return false;
+        const oNum = String(o.order_number || o.id || o.orderId || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim().toLowerCase();
+        if (cleanOrderNum && oNum) {
+          if (oNum === cleanOrderNum) return true;
+          if (cleanOrderNum.length >= 4 && oNum.includes(cleanOrderNum)) return true;
+          if (oNum.length >= 4 && cleanOrderNum.includes(oNum)) return true;
+        }
+        const oPhone = String(o.customer_phone || o.phone || o.shipping_phone || '').replace(/\D+/g, '');
+        if (queryDigits && queryDigits.length >= 8 && oPhone) {
+          if (oPhone === queryDigits || oPhone.includes(queryDigits) || queryDigits.includes(oPhone)) {
+            return true;
+          }
+        }
+        return false;
+      };
+
+      // 1. Specific API server results for this query
+      for (const o of searchResults) mergeOrder(o);
+      // 2. User account orders matching search
+      for (const o of orders) {
+        if (matchesSearch(o)) mergeOrder(o);
+      }
+      // 3. Local storage orders matching search
+      try {
+        const raw = localStorage.getItem('roma_recent_orders');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            for (const o of parsed) {
+              if (matchesSearch(o)) mergeOrder(o);
+            }
+          }
+        }
+      } catch (_) {}
+
+      return Array.from(map.values());
+    }
+
+    // Default: Show all orders
     for (const o of lookupOrders) mergeOrder(o);
-    // 2. User account orders from DB
     for (const o of orders) mergeOrder(o);
-    // 3. Browser local storage recent orders
     try {
       const raw = localStorage.getItem('roma_recent_orders');
       if (raw) {
@@ -429,7 +576,7 @@ export default function AccountPage() {
           for (const o of parsed) mergeOrder(o);
         }
       }
-    } catch (_) { }
+    } catch (_) {}
 
     return Array.from(map.values());
   })();
@@ -445,7 +592,7 @@ export default function AccountPage() {
             <div className="flex items-center gap-4">
               <div className="size-16 md:size-20 rounded-2xl border-2 border-[#D4A5A5] bg-[#1E1E1E] flex items-center justify-center p-0.5 shadow-lg shadow-[#D4A5A5]/10">
                 <img
-                  src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"}
+                  src={getAccountAvatar(user)}
                   alt={user?.name || "Profile"}
                   className="h-full w-full rounded-2xl object-cover"
                 />
@@ -604,16 +751,19 @@ export default function AccountPage() {
                   <Phone className="size-4 text-[#D4A5A5]" />
                   <span>{isAr ? 'البحث عن طلب ومتابعة الشحن مباشرة:' : 'Search & Track Order Live:'}</span>
                 </div>
-                {lookupOrders.length > 0 && (
+                {(isSearchActive || searchResults.length > 0 || lookupPhone) && (
                   <button
                     type="button"
                     onClick={() => {
+                      setIsSearchActive(false);
+                      setSearchQueryTerm('');
+                      setSearchResults([]);
                       setLookupOrders([]);
                       setLookupPhone('');
                     }}
-                    className="text-[11px] text-[#A1A1AA] hover:text-white underline cursor-pointer"
+                    className="text-[11px] text-[#D4A5A5] hover:text-white underline cursor-pointer font-bold"
                   >
-                    {isAr ? 'إعادة التعيين' : 'Clear search'}
+                    {isAr ? 'عرض جميع الطلبات (إلغاء البحث)' : 'Show all orders (Clear)'}
                   </button>
                 )}
               </div>
@@ -634,10 +784,37 @@ export default function AccountPage() {
                   disabled={isLookingUp}
                   className="rounded-xl bg-[#D4A5A5] px-6 py-3 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition shrink-0 shadow-md cursor-pointer disabled:opacity-50"
                 >
-                  {isLookingUp ? (isAr ? 'جاري البحث...' : 'Searching...') : (isAr ? 'تتبع الطلب الآن 🔍' : 'Track Order 🔍')}
+                  {isLookingUp ? (isAr ? 'جاري البحث...' : 'Searching...') : (isAr ? 'بحث عن الطلب 🔍' : 'Track Order 🔍')}
                 </button>
               </form>
             </div>
+
+            {/* Isolated Search Result Notification Banner */}
+            {isSearchActive && (
+              <div className="rounded-2xl bg-[#D4A5A5]/10 border border-[#D4A5A5]/30 p-3.5 flex items-center justify-between gap-3 text-xs shadow-md animate-in fade-in duration-200">
+                <div className="flex items-center gap-2 text-white">
+                  <span className="size-2 rounded-full bg-[#D4A5A5] animate-ping" />
+                  <span className="font-semibold">
+                    {isAr
+                      ? `تم تحديد البحث للطلب: "${searchQueryTerm}" (تم العثور على ${displayOrders.length} طلب)`
+                      : `Search filtered for: "${searchQueryTerm}" (${displayOrders.length} order(s) found)`}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSearchActive(false);
+                    setSearchQueryTerm('');
+                    setSearchResults([]);
+                    setLookupOrders([]);
+                    setLookupPhone('');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#D4A5A5] hover:text-white font-bold transition text-xs cursor-pointer shrink-0"
+                >
+                  {isAr ? 'عرض جميع الطلبات' : 'Show All Orders'}
+                </button>
+              </div>
+            )}
 
             {loadingOrders ? (
               <div className="py-12 text-center text-[#A1A1AA] text-sm flex items-center justify-center gap-2">
@@ -649,20 +826,50 @@ export default function AccountPage() {
                 <div className="size-16 rounded-2xl bg-[#1A1A1A] border border-white/5 flex items-center justify-center mx-auto text-[#A1A1AA]">
                   <Package className="size-8" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-base font-bold text-white">
-                  {isAr ? 'لا توجد طلبات مسجلة حالياً' : 'No orders found'}
-                </h3>
-                <p className="text-xs text-[#A1A1AA] max-w-sm mx-auto">
-                  {isAr
-                    ? 'لم تقومي بأي عملية شراء بعد، تصفحي تشكيلتنا الراقية من مستحضرات التجميل والإكسسوارات الفاخرة.'
-                    : 'Discover our luxury cosmetic collection and make your first atelier order.'}
-                </p>
-                <Link
-                  href="/shop"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#D4A5A5] px-6 py-2.5 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition"
-                >
-                  <span>{isAr ? 'تصفح المتجر الآن' : 'Shop Collection'}</span>
-                </Link>
+                {isSearchActive ? (
+                  <>
+                    <h3 className="text-base font-bold text-white">
+                      {isAr
+                        ? `لم يتم العثور على أي طلب يطابق "${searchQueryTerm}"`
+                        : `No orders found matching "${searchQueryTerm}"`}
+                    </h3>
+                    <p className="text-xs text-[#A1A1AA] max-w-sm mx-auto">
+                      {isAr
+                        ? 'يرجى التأكد من رقم الطلب أو رقم الهاتف المدخل والمحاولة مجدداً.'
+                        : 'Please check your order number or phone number and try again.'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSearchActive(false);
+                        setSearchQueryTerm('');
+                        setSearchResults([]);
+                        setLookupOrders([]);
+                        setLookupPhone('');
+                      }}
+                      className="inline-flex items-center gap-2 rounded-xl bg-[#D4A5A5] px-6 py-2.5 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition cursor-pointer"
+                    >
+                      <span>{isAr ? 'عرض جميع الطلبات' : 'Show All Orders'}</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-base font-bold text-white">
+                      {isAr ? 'لا توجد طلبات مسجلة حالياً' : 'No orders found'}
+                    </h3>
+                    <p className="text-xs text-[#A1A1AA] max-w-sm mx-auto">
+                      {isAr
+                        ? 'لم تقومي بأي عملية شراء بعد، تصفحي تشكيلتنا الراقية من مستحضرات التجميل والإكسسوارات الفاخرة.'
+                        : 'Discover our luxury cosmetic collection and make your first atelier order.'}
+                    </p>
+                    <Link
+                      href="/shop"
+                      className="inline-flex items-center gap-2 rounded-xl bg-[#D4A5A5] px-6 py-2.5 text-xs font-bold text-[#0A0A0A] hover:bg-[#C89595] transition"
+                    >
+                      <span>{isAr ? 'تصفح المتجر الآن' : 'Shop Collection'}</span>
+                    </Link>
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-5">
@@ -980,6 +1187,13 @@ export default function AccountPage() {
                 </p>
               </div>
 
+              {profileErrorMsg && (
+                <div className="rounded-2xl bg-red-950/50 border border-red-800/50 p-3 text-xs text-red-300 flex items-center gap-2 animate-in fade-in duration-200">
+                  <AlertCircle className="size-4 text-red-400 shrink-0" />
+                  <span>{profileErrorMsg}</span>
+                </div>
+              )}
+
               {profileSuccessMsg && (
                 <div className="rounded-2xl bg-emerald-950/40 border border-emerald-800/40 p-3 text-xs text-emerald-300 flex items-center gap-2">
                   <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
@@ -991,41 +1205,54 @@ export default function AccountPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                      {isAr ? 'الاسم بالكامل' : 'Full Name'}
+                      {isAr ? 'الاسم بالكامل' : 'Full Name'} *
                     </label>
                     <input
                       type="text"
                       required
                       value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      onChange={(e) => setFullName(e.target.value.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, ''))}
                       placeholder={isAr ? 'مثال: نورهان محمد' : 'e.g. Sarah Connor'}
                       className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
                     />
+                    <span className="text-[10px] text-[#A1A1AA] mt-1 block">
+                      {isAr ? 'الاسم ثنائي على الأقل وبدون رموز أو أرقام' : 'At least two names, letters only'}
+                    </span>
                   </div>
 
                   <div>
                     <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                      {isAr ? 'رقم الهاتف المحمول (للتوصيل)' : 'Mobile Phone (for delivery)'}
+                      {isAr ? 'رقم الهاتف المحمول (للتوصيل)' : 'Mobile Phone (for delivery)'} *
                     </label>
                     <input
                       type="tel"
                       required
+                      inputMode="numeric"
+                      maxLength={11}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
                       placeholder="010XXXXXXXX"
-                      className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                      className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono tracking-wider"
                     />
+                    <span className="text-[10px] text-[#A1A1AA] mt-1 block">
+                      {isAr ? '11 رقماً تبدأ بـ (010 أو 011 أو 012 أو 015)' : '11 digits starting with 010, 011, 012, or 015'}
+                    </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                      {isAr ? 'المحافظة' : 'Governorate / City'}
+                      {isAr ? 'المحافظة' : 'Governorate / City'} *
                     </label>
                     <select
                       value={city}
-                      onChange={(e) => setCity(e.target.value)}
+                      onChange={(e) => {
+                        setCity(e.target.value);
+                        try {
+                          localStorage.setItem('roma_selected_governorate', e.target.value);
+                        } catch (_) {}
+                      }}
                       className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white outline-none focus:border-[#D4A5A5]"
                     >
                       {GOVERNORATES.map((g) => (

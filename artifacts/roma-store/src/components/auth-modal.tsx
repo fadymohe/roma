@@ -71,7 +71,29 @@ export function AuthModal() {
           setErrorMsg(res.error || (isAr ? 'فشل تسجيل الدخول، يرجى التأكد من البيانات' : 'Login failed, please verify credentials'));
         }
       } else {
-        if (!name.trim() || !email.trim() || !password) {
+        const trimmedName = name.trim();
+        const nameParts = trimmedName.split(/\s+/).filter(Boolean);
+        if (nameParts.length < 2) {
+          setErrorMsg(isAr ? 'الاسم يجب أن يتكون من اسمين على الأقل (مثال: ندى الأحمد)' : 'Name must consist of at least two names (First and Last name)');
+          setLoading(false);
+          return;
+        }
+        const validNameRegex = /^[\u0600-\u06FFa-zA-Z\s]+$/;
+        if (!validNameRegex.test(trimmedName)) {
+          setErrorMsg(isAr ? 'الاسم يجب أن يتكون من أحرف فقط وبدون أي أرقام أو رموز' : 'Name must contain letters only, without numbers or symbols');
+          setLoading(false);
+          return;
+        }
+
+        const cleanPhone = phone.trim().replace(/\D/g, '');
+        const validEgyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
+        if (!validEgyptianPhoneRegex.test(cleanPhone) || cleanPhone.length !== 11) {
+          setErrorMsg(isAr ? 'رقم الهاتف يجب أن يتكون من 11 رقماً ويبدأ بـ (010 أو 011 أو 012 أو 015)' : 'Phone must be 11 digits starting with 010, 011, 012, or 015');
+          setLoading(false);
+          return;
+        }
+
+        if (!email.trim() || !password) {
           setErrorMsg(isAr ? 'يرجى ملء كافة الحقول الإلزامية' : 'Please fill all required fields');
           setLoading(false);
           return;
@@ -81,7 +103,7 @@ export function AuthModal() {
           setLoading(false);
           return;
         }
-        const res = await register(name, email, phone, password);
+        const res = await register(trimmedName, email, cleanPhone, password);
         if (!res.success) {
           setErrorMsg(res.error || (isAr ? 'فشل إنشاء الحساب، يرجى المحاولة مرة أخرى' : 'Registration failed, please try again'));
         }
@@ -254,12 +276,15 @@ export function AuthModal() {
                   required
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => setName(e.target.value.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, ''))}
                   placeholder={isAr ? 'مثال: ندى الأحمد' : 'e.g. Nada Ahmed'}
                   className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
                 />
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#A1A1AA]" />
               </div>
+              <span className="text-[10px] text-[#A1A1AA] mt-1 block">
+                {isAr ? 'الاسم ثنائي على الأقل وبدون أرقام أو رموز' : 'At least two names, letters only'}
+              </span>
             </div>
           )}
 
@@ -283,18 +308,24 @@ export function AuthModal() {
           {mode === 'register' && (
             <div>
               <label className="text-xs font-bold text-white block mb-1">
-                {isAr ? 'رقم الهاتف (للتوصيل)' : 'Phone Number'}
+                {isAr ? 'رقم الهاتف (للتوصيل)' : 'Phone Number'} <span className="text-[#D4A5A5]">*</span>
               </label>
               <div className="relative">
                 <input
                   type="tel"
+                  required
+                  inputMode="numeric"
+                  maxLength={11}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
                   placeholder="010XXXXXXXX"
-                  className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                  className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-3.5 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono tracking-wider"
                 />
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#A1A1AA]" />
               </div>
+              <span className="text-[10px] text-[#A1A1AA] mt-1 block">
+                {isAr ? '11 رقماً تبدأ بـ (010 أو 011 أو 012 أو 015)' : '11 digits starting with 010, 011, 012, or 015'}
+              </span>
             </div>
           )}
 

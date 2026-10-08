@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useCart } from '@/hooks/use-cart';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, getAccountAvatar } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
 
 export interface HeaderProps {
@@ -173,7 +173,15 @@ export function Header({
               aria-label={isAr ? 'حسابي' : 'My Account'}
               className="hidden sm:flex min-w-[48px] min-h-[48px] items-center justify-center rounded-full text-[#1F1618] hover:bg-[#F5EBEB] active:scale-95 transition-transform duration-150"
             >
-              <User className="size-5 text-[#5A1827]" strokeWidth={1.75} />
+              {user ? (
+                <img
+                  src={getAccountAvatar(user)}
+                  alt={user.name}
+                  className="size-8 rounded-full object-cover border-2 border-[#5A1827]/30 shadow-xs"
+                />
+              ) : (
+                <User className="size-5 text-[#5A1827]" strokeWidth={1.75} />
+              )}
             </button>
 
             {/* Cart Button with Dynamic Badge - 48x48px hit area */}

@@ -85,8 +85,24 @@ export default function CartPage() {
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [altPhone, setAltPhone] = useState('');
-  const [governorate, setGovernorate] = useState('cairo');
-  const [district, setDistrict] = useState(getDistricts('cairo')[0] || '');
+  const [governorate, setGovernorate] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('roma_selected_governorate');
+      if (saved && GOVERNORATES.some((g) => g.id === saved)) return saved;
+      const userCity = (user as any)?.city;
+      if (userCity && GOVERNORATES.some((g) => g.id === userCity)) return userCity;
+    } catch (_) {}
+    return 'cairo';
+  });
+  const [district, setDistrict] = useState(() => {
+    try {
+      const saved = localStorage.getItem('roma_selected_governorate');
+      const govId = (saved && GOVERNORATES.some((g) => g.id === saved)) ? saved : ((user as any)?.city || 'cairo');
+      return getDistricts(govId)[0] || '';
+    } catch (_) {
+      return getDistricts('cairo')[0] || '';
+    }
+  });
   const [address, setAddress] = useState(user?.savedAddresses?.[0] || '');
   const [notes, setNotes] = useState('');
 
@@ -178,6 +194,14 @@ export default function CartPage() {
       if (!email && user.email) setEmail(user.email);
       if (!phone && user.phone) setPhone(user.phone);
       if (!address && user.savedAddresses?.[0]) setAddress(user.savedAddresses[0]);
+      if ((user as any)?.city && !localStorage.getItem('roma_selected_governorate')) {
+        const uCity = (user as any).city;
+        if (GOVERNORATES.some((g) => g.id === uCity)) {
+          setGovernorate(uCity);
+          const dists = getDistricts(uCity);
+          setDistrict(dists[0] || '');
+        }
+      }
     }
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -227,6 +251,9 @@ export default function CartPage() {
 
   const handleGovernorateChange = (newGovId: string) => {
     setGovernorate(newGovId);
+    try {
+      localStorage.setItem('roma_selected_governorate', newGovId);
+    } catch (_) {}
     const dists = getDistricts(newGovId);
     setDistrict(dists[0] || '');
   };
@@ -413,8 +440,34 @@ export default function CartPage() {
 
   const handleInlineRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const regName = authName.trim() || name.trim() || (isAr ? 'عميلة روما' : 'Roma Customer');
-    const regPhone = authPhone.trim() || phone.trim();
+    const rawRegName = (authName.trim() || name.trim());
+    if (rawRegName) {
+      const nameParts = rawRegName.split(/\s+/).filter(Boolean);
+      if (nameParts.length < 2) {
+        setAuthError(isAr ? 'الاسم يجب أن يتكون من اسمين على الأقل' : 'Please enter at least two names');
+        return;
+      }
+      if (!/^[\u0600-\u06FFa-zA-Z\s]+$/.test(rawRegName)) {
+        setAuthError(isAr ? 'الاسم يجب أن يحتوي على أحرف فقط بدون أرقام أو رموز' : 'Name must contain letters only, no numbers or symbols');
+        return;
+      }
+    }
+    const regName = rawRegName || (isAr ? 'عميلة روما' : 'Roma Customer');
+
+    const cleanRegPhone = (authPhone || phone).replace(/\D/g, '');
+    if (cleanRegPhone) {
+      const validEgyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
+      if (!validEgyptianPhoneRegex.test(cleanRegPhone) || cleanRegPhone.length !== 11) {
+        setAuthError(
+          isAr
+            ? 'رقم الهاتف يجب أن يتكون من 11 رقماً ويبدأ بـ (010 أو 011 أو 012 أو 015).'
+            : 'Phone must be 11 digits starting with 010, 011, 012, or 015.'
+        );
+        return;
+      }
+    }
+    const regPhone = cleanRegPhone;
+
     if (!authEmail.trim() || !authPassword) {
       setAuthError(isAr ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور' : 'Please enter email and password');
       return;
@@ -1407,7 +1460,7 @@ export default function CartPage() {
                         type="text"
                         required
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => setName(e.target.value.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, ''))}
                         placeholder={isAr ? 'اسم المستلم (الاسم الثنائي على الأقل)...' : 'Full recipient name...'}
                         className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
                       />
@@ -1724,7 +1777,7 @@ export default function CartPage() {
                           type="text"
                           required
                           value={authName}
-                          onChange={(e) => setAuthName(e.target.value)}
+                          onChange={(e) => setAuthName(e.target.value.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, ''))}
                           placeholder={isAr ? 'اسمكِ الكريم...' : 'Your full name...'}
                           className="w-full rounded-xl border border-white/10 bg-[#1A1A1A] px-4 py-3 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5]"
                         />

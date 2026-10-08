@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { useCart } from '@/hooks/use-cart';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, getAccountAvatar } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
 import { IntegratedSearch } from '@/components/integrated-search';
 import { UserDrawer } from '@/components/user-drawer';
@@ -280,7 +280,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 className="group flex size-10 items-center justify-center overflow-hidden rounded-full border-2 border-[#D4A5A5] p-0.5 transition hover:scale-105 shadow-md shadow-[#D4A5A5]/10"
               >
                 <img
-                  src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"}
+                  src={getAccountAvatar(user)}
                   alt={user.name}
                   className="h-full w-full rounded-full object-cover"
                 />

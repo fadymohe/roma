@@ -24,10 +24,63 @@ export interface User {
   email: string;
   phone?: string;
   avatar?: string;
+  city?: string;
   points: number;
   ordersCount: number;
   savedAddresses: string[];
   savedPaymentMethods: PaymentMethodItem[];
+}
+
+export const LUXURY_AVATARS = [
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=250&q=80',
+  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=250&q=80',
+];
+
+export function getAccountAvatar(user?: { id?: string; email?: string; phone?: string; avatar?: string } | null): string {
+  // If user signed in with Google or avatar is a Google profile photo
+  if (user?.avatar) {
+    const av = user.avatar.trim();
+    if (av.includes('googleusercontent.com') || av.includes('google.com') || av.includes('ggpht.com')) {
+      return av;
+    }
+  }
+
+  // Consistent deterministic pseudo-random index per account/user
+  // Using user.id, email, or phone so each account gets its own distinct avatar
+  const seedString = (user?.id && user.id.trim()) || (user?.email && user.email.trim().toLowerCase()) || (user?.phone && user.phone.trim()) || (() => {
+    try {
+      let s = localStorage.getItem('roma_avatar_seed');
+      if (!s) {
+        s = 'guest_' + Math.floor(Math.random() * 1000000);
+        localStorage.setItem('roma_avatar_seed', s);
+      }
+      return s;
+    } catch {
+      return 'roma_guest_default';
+    }
+  })();
+
+  let hash = 0;
+  for (let i = 0; i < seedString.length; i++) {
+    hash = (hash << 5) - hash + seedString.charCodeAt(i);
+    hash |= 0;
+  }
+  const index = Math.abs(hash) % LUXURY_AVATARS.length;
+  return LUXURY_AVATARS[index];
 }
 
 interface AuthContextType {
@@ -38,6 +91,7 @@ interface AuthContextType {
   register: (name: string, email: string, phone?: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; message: string }>;
+  updateUserProfile: (profile: Partial<User>) => Promise<void>;
   addAddress: (address: string) => Promise<void>;
   removeAddress: (index: number) => Promise<void>;
   addPaymentMethod: (method: Omit<PaymentMethodItem, 'id'>) => Promise<void>;
@@ -115,14 +169,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       meta.name ||
       meta.user_name ||
       (nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1));
-    const avatar = meta.avatar_url || meta.picture || '';
+    const isGoogle = sbUser.app_metadata?.provider === 'google' || sbUser.identities?.some((id: any) => id.provider === 'google');
+    const rawAvatar = meta.avatar_url || meta.picture || sbUser.identities?.[0]?.identity_data?.avatar_url || sbUser.identities?.[0]?.identity_data?.picture || '';
+    const resolvedAvatar = (isGoogle && rawAvatar) ? rawAvatar : getAccountAvatar({ id: sbUser.id, email: sbUser.email, phone: meta.phone, avatar: rawAvatar });
 
     const updatedUser: User = {
       id: sbUser.id,
       name: formattedName,
       email: sbUser.email || '',
       phone: meta.phone || sbUser.phone || '',
-      avatar: avatar,
+      avatar: resolvedAvatar,
+      city: meta.city || '',
       points: Number(meta.points ?? 50),
       ordersCount: Number(meta.ordersCount ?? 0),
       savedAddresses: Array.isArray(meta.savedAddresses) ? meta.savedAddresses : [],
@@ -297,6 +354,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err: any) {
       return { success: false, message: err?.message || 'فشل إرسال الرابط' };
     }
+  };
+
+  const updateUserProfile = async (profile: Partial<User>) => {
+    if (!user) return;
+    const updated = { ...user, ...profile };
+    setUser(updated);
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+    } catch (_) {}
   };
 
   // Add saved address
@@ -479,6 +545,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         resetPassword,
+        updateUserProfile,
         addAddress,
         removeAddress,
         addPaymentMethod,

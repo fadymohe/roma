@@ -97,10 +97,16 @@ export default function AuthPage() {
 
   // Start WhatsApp Verification Step
   const initiateWhatsAppVerification = () => {
-    // 1. Validate Two-part Name
-    const nameParts = name.trim().split(/\s+/).filter(Boolean);
+    // 1. Validate Two-part Name (letters only, no symbols/digits, at least 2 words)
+    const trimmedName = name.trim();
+    const nameParts = trimmedName.split(/\s+/).filter(Boolean);
     if (nameParts.length < 2) {
       setErrorMsg(isAr ? 'الاسم يجب أن يكون ثنائياً على الأقل (مثال: نورا أحمد)' : 'Full name must consist of at least two words (First and Last name)');
+      return;
+    }
+    const validNameRegex = /^[\u0600-\u06FFa-zA-Z\s]+$/;
+    if (!validNameRegex.test(trimmedName)) {
+      setErrorMsg(isAr ? 'الاسم يجب أن يتكون من أحرف فقط وبدون أي أرقام أو رموز' : 'Name must contain letters only, without numbers or symbols');
       return;
     }
 
@@ -110,10 +116,11 @@ export default function AuthPage() {
       return;
     }
 
-    // 3. Validate Phone Number (Egyptian format)
-    const cleanPhone = phone.trim().replace(/\s+/g, '');
-    if (!cleanPhone || cleanPhone.length < 10) {
-      setErrorMsg(isAr ? 'يرجى إدخال رقم هاتف صحيح للتأكيد عبر واتساب' : 'Please provide a valid phone number for WhatsApp verification');
+    // 3. Validate Phone Number (Egyptian format: 010, 011, 012, 015 - exactly 11 digits)
+    const cleanPhone = phone.trim().replace(/\D/g, '');
+    const validEgyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
+    if (!validEgyptianPhoneRegex.test(cleanPhone) || cleanPhone.length !== 11) {
+      setErrorMsg(isAr ? 'رقم الهاتف يجب أن يتكون من 11 رقماً ويبدأ بـ (010 أو 011 أو 012 أو 015)' : 'Phone must be 11 digits starting with 010, 011, 012, or 015');
       return;
     }
 
@@ -519,7 +526,7 @@ export default function AuthPage() {
                       type="text"
                       required
                       value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      onChange={(e) => setName(e.target.value.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, ''))}
                       placeholder={isAr ? 'مثال: نورا أحمد' : 'e.g. Noura Ahmed'}
                       className="w-full rounded-2xl border border-white/10 bg-[#181818] p-3 ps-10 text-xs sm:text-sm text-white placeholder:text-zinc-500 outline-none focus:border-[#D4A5A5] transition shadow-inner"
                     />
@@ -559,10 +566,12 @@ export default function AuthPage() {
                     <input
                       type="tel"
                       required
+                      inputMode="numeric"
+                      maxLength={11}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="01012345678"
-                      className="w-full rounded-2xl border border-white/10 bg-[#181818] p-3 ps-10 text-xs sm:text-sm text-white placeholder:text-zinc-500 outline-none focus:border-[#D4A5A5] transition font-mono shadow-inner"
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                      placeholder="010XXXXXXXX"
+                      className="w-full rounded-2xl border border-white/10 bg-[#181818] p-3 ps-10 text-xs sm:text-sm text-white placeholder:text-zinc-500 outline-none focus:border-[#D4A5A5] transition font-mono tracking-wider shadow-inner"
                     />
                     <Phone className="absolute top-3.5 start-3 size-4 text-zinc-400" />
                   </div>
