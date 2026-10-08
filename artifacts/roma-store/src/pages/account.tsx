@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   CreditCard,
   ChevronRight,
+  ChevronDown,
   ExternalLink,
   MessageCircle,
   RotateCcw,
@@ -18,6 +19,7 @@ import {
   AlertCircle,
   LogOut,
   Lock,
+  PackageCheck,
 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useAuth, type UserOrder } from '@/hooks/use-auth';
@@ -54,6 +56,21 @@ export default function AccountPage() {
   const [lookupPhone, setLookupPhone] = useState('');
   const [lookupOrders, setLookupOrders] = useState<any[]>([]);
   const [isLookingUp, setIsLookingUp] = useState(false);
+
+  // Set of order keys that have their product items list expanded
+  const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
+
+  const toggleOrderExpanded = (orderKey: string) => {
+    setExpandedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderKey)) {
+        next.delete(orderKey);
+      } else {
+        next.add(orderKey);
+      }
+      return next;
+    });
+  };
 
   // Sync tab with URL query parameters (?tab=orders / ?tab=profile)
   useEffect(() => {
@@ -347,16 +364,23 @@ export default function AccountPage() {
     const mergeOrder = (o: any) => {
       if (!o) return;
       const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-      const normalized = { ...o, order_number: `ROMA-${cleanKey}` };
+      const normalized = {
+        ...o,
+        order_number: `ROMA-${cleanKey}`,
+        tracking_url: o.tracking_url || o.trackingUrl || o.shipping_tracking_url || null,
+      };
       if (!map.has(cleanKey)) {
         map.set(cleanKey, normalized);
       } else {
         const existing = map.get(cleanKey);
         const existingStep = getStepIndex(existing.status);
         const newStep = getStepIndex(o.status);
+        const mergedTracking = normalized.tracking_url || existing.tracking_url || null;
         // Whichever has more advanced status or is non-pending wins
         if (newStep > existingStep || (existing.status === 'pending' && o.status && o.status !== 'pending')) {
-          map.set(cleanKey, { ...existing, ...normalized, status: o.status });
+          map.set(cleanKey, { ...existing, ...normalized, tracking_url: mergedTracking, status: o.status });
+        } else {
+          map.set(cleanKey, { ...existing, tracking_url: mergedTracking });
         }
       }
     };
@@ -733,7 +757,7 @@ export default function AccountPage() {
                                     : 'bg-[#1A1A1A] text-[#A1A1AA] border-white/10'
                                   }`}
                               >
-                                <Sparkles className="size-4" strokeWidth={2} />
+                                <PackageCheck className="size-4" strokeWidth={2} />
                               </div>
                               <span className="text-[10px] md:text-xs font-semibold text-white">
                                 {isAr ? 'تم التسليم' : 'Delivered'}
@@ -743,62 +767,128 @@ export default function AccountPage() {
                         </div>
                       )}
 
-                      {/* Items breakdown */}
-                      <div className="rounded-2xl bg-[#1A1A1A]/80 border border-white/5 p-4 space-y-3">
-                        <span className="text-xs font-bold text-[#A1A1AA] block">
-                          {isAr ? 'تفاصيل المنتجات:' : 'Order Items:'}
-                        </span>
-                        <div className="space-y-2">
-                          {(Array.isArray(order.items) ? order.items : []).map((it: any, i: number) => (
-                            <div key={i} className="flex items-center justify-between text-xs">
+                      {/* Products Accordion / Collapsible (Hidden by default, toggle with arrow) */}
+                      {(() => {
+                        const orderKey = String(order.order_number || order.id || idx);
+                        const isExpanded = expandedOrderIds.has(orderKey);
+                        const items = Array.isArray(order.items) ? order.items : [];
+                        const itemsCount = items.reduce((acc: number, it: any) => acc + (Number(it.quantity) || 1), 0) || items.length || 1;
+
+                        return (
+                          <div className="rounded-2xl border border-white/10 bg-[#1A1A1A]/70 overflow-hidden transition">
+                            {/* Toggle Header Button with Arrow */}
+                            <button
+                              type="button"
+                              onClick={() => toggleOrderExpanded(orderKey)}
+                              className="w-full flex items-center justify-between p-3.5 hover:bg-white/5 transition text-xs font-bold text-white cursor-pointer select-none"
+                            >
                               <div className="flex items-center gap-2">
-                                <span className="size-5 rounded-md bg-[#252525] text-white flex items-center justify-center text-[10px] font-mono">
-                                  {it.quantity}x
+                                <Package className="size-4 text-[#D4A5A5]" />
+                                <span>
+                                  {isAr
+                                    ? `المنتجات في هذا الطلب (${itemsCount} ${itemsCount === 1 ? 'مستحضر' : 'مستحضرات'})`
+                                    : `Order Items (${itemsCount} items)`}
                                 </span>
-                                <span className="text-white font-medium">{it.name || it.product_name}</span>
-                                {it.variant && (
-                                  <span className="text-[#A1A1AA] text-[11px]">({it.variant})</span>
-                                )}
                               </div>
-                              <span className="text-[#D4A5A5] font-mono-brand">
-                                {formatPrice((Number(it.price) || 0) * (Number(it.quantity) || 1))}
+                              <div className="flex items-center gap-1.5 text-xs text-[#D4A5A5] font-semibold">
+                                <span>{isExpanded ? (isAr ? 'إخفاء المنتجات' : 'Hide') : (isAr ? 'عرض المنتجات' : 'Show')}</span>
+                                <ChevronDown className={`size-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                              </div>
+                            </button>
+
+                            {/* Collapsible Content */}
+                            {isExpanded && (
+                              <div className="border-t border-white/5 p-4 space-y-3 bg-[#161616] animate-in fade-in duration-200">
+                                <div className="space-y-2.5">
+                                  {items.map((it: any, i: number) => (
+                                    <div key={i} className="flex items-center justify-between text-xs py-1 border-b border-white/5 last:border-0">
+                                      <div className="flex items-center gap-2">
+                                        <span className="size-5 rounded-md bg-[#252525] text-white flex items-center justify-center text-[10px] font-mono">
+                                          {it.quantity || 1}x
+                                        </span>
+                                        <span className="text-white font-medium">{it.name || it.product_name}</span>
+                                        {it.variant && (
+                                          <span className="text-[#A1A1AA] text-[11px]">({it.variant})</span>
+                                        )}
+                                      </div>
+                                      <span className="text-[#D4A5A5] font-mono-brand font-bold">
+                                        {formatPrice((Number(it.price) || 0) * (Number(it.quantity) || 1))}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Order address & payment footer */}
+                            <div className="px-4 py-2.5 border-t border-white/5 bg-[#141414] flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#A1A1AA]">
+                              <span>
+                                📍 {isAr ? 'العنوان:' : 'Address:'} {order.shipping_address || order.address}
+                              </span>
+                              <span>
+                                💳 {isAr ? 'طريقة الدفع:' : 'Payment:'}{' '}
+                                {(() => {
+                                  const pm = order.payment_method || order.paymentMethod;
+                                  if (!pm || pm.includes('الاستلام') || /cod/i.test(pm)) {
+                                    return isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash / E-Wallet';
+                                  }
+                                  return pm;
+                                })()}
                               </span>
                             </div>
-                          ))}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Actions: Customer Support & Live Tracking Button (Beneath WhatsApp Button) */}
+                      <div className="space-y-2 pt-2 border-t border-white/5">
+                        {/* 1. Direct WhatsApp Concierge Button */}
+                        <div className="flex justify-end">
+                          <a
+                            href={`https://wa.me/201505566847?text=${encodeURIComponent(
+                              isAr
+                                ? `مرحباً، أود الاستفسار عن حالة طلبي رقم #ROMA-${order.order_number || order.id}:`
+                                : `Hello, I'd like to ask about my order #ROMA-${order.order_number || order.id}:`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-xs font-bold text-[#25D366] transition"
+                          >
+                            <MessageCircle className="size-3.5" />
+                            <span>{isAr ? 'تواصل مع خدمة العملاء بالواتساب' : 'WhatsApp Concierge'}</span>
+                          </a>
                         </div>
 
-                        <div className="pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs text-[#A1A1AA]">
-                          <span>
-                            📍 {isAr ? 'العنوان:' : 'Address:'} {order.shipping_address || order.address}
-                          </span>
-                          <span>
-                            💳 {isAr ? 'طريقة الدفع:' : 'Payment:'}{' '}
-                            {(() => {
-                              const pm = order.payment_method || order.paymentMethod;
-                              if (!pm || pm.includes('الاستلام') || /cod/i.test(pm)) {
-                                return isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash / E-Wallet';
-                              }
-                              return pm;
-                            })()}
-                          </span>
+                        {/* 2. Courier Shipment Live Tracking Button (Directly beneath Customer Support) */}
+                        <div className="flex justify-end">
+                          {order.tracking_url || order.shipping_tracking_url ? (
+                            <a
+                              href={order.tracking_url || order.shipping_tracking_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#D4A5A5] to-[#B38888] hover:opacity-95 text-[#0A0A0A] text-xs font-bold shadow-md shadow-[#D4A5A5]/20 transition"
+                            >
+                              <Truck className="size-4" />
+                              <span>{isAr ? 'تتبع الشحنة مع شركة الشحن 🚚' : 'Track Shipment with Courier 🚚'}</span>
+                              <ExternalLink className="size-3.5" />
+                            </a>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                alert(
+                                  isAr
+                                    ? `📦 جاري تجهيز الشحنة للطلب #ROMA-${String(order.order_number || order.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '')} مع شركة الشحن.\nسيتم تفعيل رابط التتبع المباشر هنا فور تسليم الشحنة لمندوب التوصيل ورفع البوليصة!`
+                                    : 'Shipment is being prepared with courier. Live tracking link will be activated here as soon as dispatched!'
+                                );
+                              }}
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-[#D4A5A5] transition cursor-pointer"
+                            >
+                              <Truck className="size-3.5" />
+                              <span>{isAr ? 'تتبع الشحنة (في انتظار بوليصة الشحن)' : 'Track Shipment (Pending Courier)'}</span>
+                            </button>
+                          )}
                         </div>
-                      </div>
-
-                      {/* Direct WhatsApp Concierge Button */}
-                      <div className="flex items-center justify-end gap-2 pt-2">
-                        <a
-                          href={`https://wa.me/201505566847?text=${encodeURIComponent(
-                            isAr
-                              ? `مرحباً، أود الاستفسار عن حالة طلبي رقم #ROMA-${order.order_number || order.id}:`
-                              : `Hello, I'd like to ask about my order #ROMA-${order.order_number || order.id}:`
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-xs font-bold text-[#25D366] transition"
-                        >
-                          <MessageCircle className="size-3.5" />
-                          <span>{isAr ? 'تواصل مع خدمة العملاء بالواتساب' : 'WhatsApp Concierge'}</span>
-                        </a>
                       </div>
                     </div>
                   );

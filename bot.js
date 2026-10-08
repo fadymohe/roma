@@ -826,6 +826,28 @@ async function handleUpdate(update) {
       actionData = `ord_status_cancelled_${data.replace('cancel_', '')}`;
     }
 
+    // Add Carrier Tracking URL Callback
+    if (data.startsWith('add_track_')) {
+      const rawOrderId = data.replace('add_track_', '');
+      const cleanOrderId = String(rawOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+      sessions.set(userId, { step: 'AWAIT_TRACKING_URL', targetOrderId: cleanOrderId });
+      await tg('answerCallbackQuery', { callback_query_id: cb.id });
+      return tg('sendMessage', {
+        chat_id: chatId,
+        text:
+          `🚚 *إضافة رابط تتبع الشحنة للطلب #ROMA-${cleanOrderId}*\n\n` +
+          `أرسل الآن رابط التتبع الخاص بشركة الشحن (مثال: رابط بوسطة Bosta أو مايلرز أو أرامكس):\n` +
+          `*(مثال: \`https://bosta.co/tracking/123456\`)*\n\n` +
+          `بمجرد إرسال الرابط، سيتم تفعيل زر "تتبع الشحنة" فوراً للعميل في حسابه بالمتجر!`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '❌ إلغاء', callback_data: 'nav_orders_all' }],
+          ],
+        },
+      });
+    }
+
     // =========================================================================
     // 6. ONE-TAP INLINE STATUS UPDATES (confirmed, shipped, delivered, cancelled)
     // =========================================================================
@@ -982,6 +1004,9 @@ async function handleUpdate(update) {
             { text: newStatusKey === 'cancelled' ? '❌ ملغي حالياً' : '❌ إلغاء الطلب', callback_data: `ord_status_cancelled_${cleanOrderId}` },
           ],
           [
+            { text: '🔗 إضافة / تعديل رابط التتبع 🚚', callback_data: `add_track_${cleanOrderId}` },
+          ],
+          [
             { text: '📋 عرض كل الطلبات', callback_data: 'nav_orders_all' },
           ],
         ],
@@ -1086,6 +1111,39 @@ async function handleUpdate(update) {
         text: '✅ *تم إجراء فحص السلات المتروكة وإشعار العملاء بالكوبونات بنجاح!*',
         parse_mode: 'Markdown',
       });
+    }
+
+    if (text.startsWith('/track') || text.startsWith('تتبع ')) {
+      const parts = text.split(/\s+/).filter(Boolean);
+      if (parts.length >= 3) {
+        const cleanId = String(parts[1]).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+        const url = parts.slice(2).join(' ').trim();
+        await saveOrderTrackingUrl(cleanId, url);
+        return tg('sendMessage', {
+          chat_id: chatId,
+          text:
+            `✅ *تم تفعيل وحفظ رابط تتبع الشحنة للطلب بنجاح!*\n\n` +
+            `📦 *رقم الطلب:* #ROMA-${cleanId}\n` +
+            `🔗 *رابط الشحنة:* ${url}\n` +
+            `🚚 *الحالة:* قيد الشحن (Shipped)\n\n` +
+            `✨ يستطيع العميل الآن تتبع شحنته مباشرة بالضغط على زر "تتبع الشحنة" في حسابه!`,
+          parse_mode: 'Markdown',
+          reply_markup: getMainKeyboard(),
+        });
+      } else {
+        return tg('sendMessage', {
+          chat_id: chatId,
+          text:
+            `ℹ️ *طريقة إضافة رابط تتبع الشحنة:*\n\n` +
+            `أرسل الأمر بالتنسيق التالي:\n` +
+            `\`/track <رقم_الطلب> <رابط_شركة_الشحن>\`\n\n` +
+            `مثال:\n` +
+            `\`/track 1001 https://bosta.co/tracking/12345\`\n\n` +
+            `أو اضغط مباشرة على زر *🔗 إضافة رابط تتبع الشحنة 🚚* أسفل إشعار الطلب في البوت!`,
+          parse_mode: 'Markdown',
+          reply_markup: getMainKeyboard(),
+        });
+      }
     }
 
     if (text.startsWith('/amazon') || text.startsWith('/amz')) {
@@ -1198,6 +1256,36 @@ async function handleUpdate(update) {
         return tg('sendMessage', {
           chat_id: chatId,
           text: `✅ *تم تحديث كمية المخزون بنجاح!*\n\n📦 *${session.productName}*\n📊 المخزون الحالي: *${newQty} قطعة*`,
+          parse_mode: 'Markdown',
+          reply_markup: getMainKeyboard(),
+        });
+      }
+
+      // Awaiting tracking URL for an order
+      if (session.step === 'AWAIT_TRACKING_URL') {
+        const targetId = session.targetOrderId;
+        const cleanUrl = text.trim();
+        sessions.delete(userId);
+
+        if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+          return tg('sendMessage', {
+            chat_id: chatId,
+            text: '⚠️ الرابط غير صحيح. يرجى إرسال رابط يبدأ بـ `https://` أو `http://` (مثال: رابط بوسطة Bosta أو مايلرز أو أرامكس).',
+            parse_mode: 'Markdown',
+            reply_markup: getMainKeyboard(),
+          });
+        }
+
+        await saveOrderTrackingUrl(targetId, cleanUrl);
+
+        return tg('sendMessage', {
+          chat_id: chatId,
+          text:
+            `✅ *تم حفظ وتفعيل رابط تتبع الشحنة بنجاح!*\n\n` +
+            `📦 *رقم الطلب:* #ROMA-${targetId}\n` +
+            `🔗 *رابط شركة الشحن:* ${cleanUrl}\n` +
+            `🚚 *الحالة الجديدة:* قيد الشحن (Shipped)\n\n` +
+            `✨ يستطيع العميل الآن تتبع الشحنة مباشرة عبر زر "تتبع الشحنة" في حسابه!`,
           parse_mode: 'Markdown',
           reply_markup: getMainKeyboard(),
         });
@@ -1474,6 +1562,59 @@ async function sendProductsList(chatId, page = 0, query = '') {
     parse_mode: 'Markdown',
     reply_markup: { inline_keyboard: buttons },
   });
+}
+
+async function saveOrderTrackingUrl(cleanOrderId, trackingUrl) {
+  let orders = getOrders();
+  let found = orders.find(
+    (o) => {
+      const locClean = String(o.orderId || o.orderNumber || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+      return locClean === cleanOrderId || locClean.includes(cleanOrderId) || cleanOrderId.includes(locClean);
+    }
+  );
+  if (found) {
+    found.tracking_url = trackingUrl;
+    found.status = 'shipped';
+    found.updatedAt = new Date().toISOString();
+  } else {
+    found = {
+      orderId: cleanOrderId,
+      orderNumber: `ROMA-${cleanOrderId}`,
+      status: 'shipped',
+      tracking_url: trackingUrl,
+      updatedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      customerName: 'عميلة المتجر',
+    };
+    orders.unshift(found);
+  }
+  saveOrders(orders);
+
+  try {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanOrderId);
+    const sbClient = await getAuthenticatedSupabase();
+    const filterOr = isUuid
+      ? `id.eq.${cleanOrderId},order_number.ilike.%${cleanOrderId}%,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`
+      : `order_number.ilike.%${cleanOrderId}%,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`;
+
+    await sbClient
+      .from('orders')
+      .update({ tracking_url: trackingUrl, status: 'shipped', updated_at: new Date().toISOString() })
+      .or(filterOr);
+    console.log(`[BOT] Saved tracking_url for order ${cleanOrderId}: ${trackingUrl}`);
+  } catch (err) {
+    console.warn('[BOT] Supabase tracking update error:', err?.message);
+  }
+
+  // Also auto-notify customer via WhatsApp if possible
+  try {
+    const targetPhone = found.customerPhone || found.phone;
+    if (targetPhone && targetPhone !== 'غير مسجل') {
+      await sendShippingUpdateWhatsApp(found, 'shipped');
+    }
+  } catch (_) {}
+
+  return true;
 }
 
 async function sendOrdersList(chatId, filter = 'all') {

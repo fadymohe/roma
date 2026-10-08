@@ -32,6 +32,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
   const isHomePage = location === '/' || location === '' || location === '/index.html';
   const isProductPage = location.startsWith('/product');
   const isCartPage = location.startsWith('/cart') || location.startsWith('/checkout');
+  const isAccountPage = location.startsWith('/account');
   const { count } = useCart();
   const { t, lang, toggleLang, isAr, dir } = useLanguage();
   const {
@@ -70,7 +71,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-[100dvh] bg-[#0A0A0A] text-[#F9FAFB] flex flex-col" dir={dir}>
       {/* Main Sticky Header */}
-      {!isProductPage && !isCartPage && (
+      {!isProductPage && !isCartPage && !isAccountPage && (
         <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0A0A0A]/95 backdrop-blur-md transition-all">
         {/* ========================================================================= */}
         {/* MOBILE TOP BAR (< md): Clean, Luxury, Never Overflows Screen Width        */}

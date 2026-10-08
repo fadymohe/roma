@@ -94,6 +94,34 @@ export default async function handler(req, res) {
       } else if (data.startsWith('cancel_')) {
         action = 'cancelled';
         orderId = data.replace('cancel_', '');
+      } else if (data.startsWith('add_track_')) {
+        const trkId = data.replace('add_track_', '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+        if (BOT_TOKEN) {
+          if (cq.id) {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ callback_query_id: cq.id, text: `أرسل: /track ${trkId} <رابط شركة الشحن>` }),
+            }).catch(() => {});
+          }
+          if (chatId) {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text:
+                  `🔗 <b>إضافة رابط تتبع الشحنة للطلب #ROMA-${trkId}</b>\n\n` +
+                  `أرسل الأمر التالي مع رابط التتبع من شركة الشحن:\n` +
+                  `<code>/track ${trkId} https://...</code>\n\n` +
+                  `<i>مثال:</i>\n` +
+                  `<code>/track ${trkId} https://bosta.co/tracking/123456</code>`,
+                parse_mode: 'HTML',
+              }),
+            }).catch(() => {});
+          }
+        }
+        return res.status(200).json({ ok: true, trackingOrderId: trkId });
       }
 
       if (!action || !orderId) {
@@ -312,6 +340,68 @@ export default async function handler(req, res) {
       const text = String(msg.text || '').trim();
 
       if (chatId) {
+        if (text.startsWith('/track') || text.startsWith('تتبع ')) {
+          const parts = text.split(/\s+/).filter(Boolean);
+          if (parts.length >= 3) {
+            const cleanId = String(parts[1]).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+            const trackingUrl = parts.slice(2).join(' ').trim();
+
+            saveLocalOrder({
+              orderId: cleanId,
+              orderNumber: `ROMA-${cleanId}`,
+              status: 'shipped',
+              tracking_url: trackingUrl,
+            });
+
+            try {
+              const sbClient = await getAuthenticatedSupabase();
+              const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
+              let q = sbClient.from('orders').update({ status: 'shipped', tracking_url: trackingUrl });
+              if (isUuid) {
+                q = q.or(`id.eq.${cleanId},order_number.ilike.%${cleanId}%,order_number.eq.ROMA-${cleanId},order_number.eq.${cleanId}`);
+              } else {
+                q = q.or(`order_number.ilike.%${cleanId}%,order_number.eq.ROMA-${cleanId},order_number.eq.${cleanId}`);
+              }
+              await q;
+            } catch (sbErr) {
+              console.error('Supabase track url update error:', sbErr);
+            }
+
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text:
+                  `✅ <b>تم تفعيل وحفظ رابط تتبع الشحنة للطلب بنجاح!</b>\n\n` +
+                  `📦 <b>رقم الطلب:</b> #ROMA-${cleanId}\n` +
+                  `🔗 <b>رابط التتبع:</b> ${trackingUrl}\n` +
+                  `🚚 <b>الحالة:</b> قيد الشحن (Shipped)\n\n` +
+                  `✨ يستطيع العميل الآن تتبع شحنته مباشرة بالضغط على زر "تتبع الشحنة" في حسابه!`,
+                parse_mode: 'HTML',
+              }),
+            }).catch(() => {});
+
+            return res.status(200).json({ ok: true, orderId: cleanId, tracking_url: trackingUrl });
+          } else {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text:
+                  `ℹ️ <b>طريقة إضافة رابط تتبع الشحنة:</b>\n\n` +
+                  `أرسل الأمر بالتنسيق التالي:\n` +
+                  `<code>/track &lt;رقم_الطلب&gt; &lt;رابط_شركة_الشحن&gt;</code>\n\n` +
+                  `<i>مثال:</i>\n` +
+                  `<code>/track 1001 https://bosta.co/tracking/12345</code>`,
+                parse_mode: 'HTML',
+              }),
+            }).catch(() => {});
+            return res.status(200).json({ ok: true });
+          }
+        }
+
         const welcomeText =
           `🌿 <b>لوحة تحكم إدارة متجر Roma المتكامل</b>\n\n` +
           `مرحباً بك! يمكنك إدارة متجرك بالكامل ومتابعة وتحديث الطلبات مباشرة:\n\n` +

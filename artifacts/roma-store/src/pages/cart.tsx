@@ -466,13 +466,38 @@ export default function CartPage() {
     }
 
     // Payment validation
-    if (paymentMethod === 'vodafone_cash' && !vodafoneSenderNumber.trim()) {
-      setValidationError(isAr ? 'يرجى إدخال رقم المحفظة التي تم التحويل منها' : 'Please enter the sender wallet phone number');
-      return;
+    if (paymentMethod === 'vodafone_cash') {
+      if (!vodafoneSenderNumber.trim()) {
+        setValidationError(isAr ? 'يرجى إدخال رقم المحفظة التي تم التحويل منها' : 'Please enter the sender wallet phone number');
+        return;
+      }
+      if (!receiptImage) {
+        setValidationError(
+          isAr
+            ? 'يجب رفع صورة إيصال التحويل لتأكيد الطلب والمتابعة لتتبع الطلب'
+            : 'Please upload transfer receipt screenshot to confirm your order and track shipment'
+        );
+        return;
+      }
     }
-    if (paymentMethod === 'instapay' && !instapayReference.trim()) {
-      setValidationError(isAr ? 'يرجى إدخال الرقم المرجعي للتحويل عبر إنستاباي' : 'Please enter InstaPay reference transaction code');
-      return;
+    if (paymentMethod === 'instapay') {
+      const cleanRef = instapayReference.replace(/\D/g, '');
+      if (!cleanRef || cleanRef.length !== 12) {
+        setValidationError(
+          isAr
+            ? 'الرقم المرجعي لعملية إنستاباي لا يقبل إلا الأرقام ويجب أن يتكون من 12 رقماً فقط لا يقل ولا يزيد'
+            : 'InstaPay reference number must be digits only and exactly 12 digits'
+        );
+        return;
+      }
+      if (!receiptImage) {
+        setValidationError(
+          isAr
+            ? 'يجب رفع صورة إيصال التحويل لتأكيد الطلب والمتابعة لتتبع الطلب'
+            : 'Please upload transfer receipt screenshot to confirm your order and track shipment'
+        );
+        return;
+      }
     }
 
     setValidationError('');
@@ -2015,32 +2040,63 @@ export default function CartPage() {
                       </div>
 
                       <div>
-                        <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                          {isAr ? 'الرقم المرجعي للتحويل (Reference / Transaction ID):' : 'Transaction Reference Code:'} *
-                        </label>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-xs font-semibold text-[#A1A1AA] block">
+                            {isAr ? 'الرقم المرجعي للتحويل (12 رقماً فقط):' : 'Transaction Reference (12 digits only):'} *
+                          </label>
+                          <span className="text-[11px] font-mono text-[#D4A5A5] font-bold">
+                            {instapayReference.length}/12
+                          </span>
+                        </div>
                         <input
-                          type="text"
+                          type="tel"
+                          inputMode="numeric"
                           required
+                          maxLength={12}
                           value={instapayReference}
-                          onChange={(e) => setInstapayReference(e.target.value)}
-                          placeholder={isAr ? 'مثال: IPN123456789' : 'e.g. IPN123456789'}
-                          className="w-full rounded-xl border border-white/10 bg-[#141414] px-4 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono"
+                          onChange={(e) => setInstapayReference(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                          placeholder={isAr ? 'أدخلي الـ 12 رقماً من إشعار إنستاباي...' : '12 digits from InstaPay confirmation...'}
+                          className="w-full rounded-xl border border-white/10 bg-[#141414] px-4 py-2.5 text-xs text-white placeholder:text-[#A1A1AA] outline-none focus:border-[#D4A5A5] font-mono tracking-wider"
                         />
+                        {instapayReference.length > 0 && instapayReference.length !== 12 && (
+                          <p className="text-[11px] text-amber-400 mt-1.5 flex items-center gap-1 font-medium">
+                            <span>⚠</span>
+                            <span>
+                              {isAr
+                                ? `متبقي ${12 - instapayReference.length} أرقام ليكتمل الرقم المرجعي (12 رقماً بالتمام)`
+                                : `Must be exactly 12 digits (${12 - instapayReference.length} remaining)`}
+                            </span>
+                          </p>
+                        )}
+                        {instapayReference.length === 12 && (
+                          <p className="text-[11px] text-emerald-400 mt-1.5 flex items-center gap-1 font-medium">
+                            <Check className="size-3" />
+                            <span>{isAr ? '✓ الرقم المرجعي مكتمل (12 رقماً)' : '✓ Valid 12-digit reference'}</span>
+                          </p>
+                        )}
                       </div>
 
                       <div>
                         <label className="text-xs font-semibold text-[#A1A1AA] block mb-1.5">
-                          {isAr ? 'إرفاق لقطة شاشة العملية (يتم إرسالها لبوت التلجرام مع الطلب):' : 'Upload Receipt Screenshot (sent to Telegram with order):'}
+                          {isAr ? 'رفع صورة إيصال التحويل (إجباري لتأكيد الطلب والتتبع):' : 'Upload Receipt Screenshot (Required to track order):'} *
                         </label>
-                        <div className="flex items-center gap-3">
-                          <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-[#141414] hover:bg-white/5 text-xs text-white cursor-pointer transition">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                          <label className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer transition ${
+                            receiptImage
+                              ? 'border-emerald-500/40 bg-emerald-500/10 text-white'
+                              : 'border-white/10 bg-[#141414] hover:bg-white/5 text-white'
+                          }`}>
                             <Upload className="size-3.5 text-[#D4A5A5]" />
-                            <span>{receiptFileName ? receiptFileName : (isAr ? 'اختيار صورة الإيصال' : 'Choose Receipt Image')}</span>
+                            <span>{receiptFileName ? receiptFileName : (isAr ? 'اختيار صورة الإيصال 📷' : 'Choose Receipt Image')}</span>
                             <input type="file" accept="image/*" onChange={handleReceiptUpload} className="hidden" />
                           </label>
-                          {receiptImage && (
+                          {receiptImage ? (
                             <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                              <Check className="size-3.5" /> {isAr ? 'تمت إضافة الإيصال' : 'Attached'}
+                              <Check className="size-3.5" /> {isAr ? 'تم إرفاق الإيصال بنجاح ✨' : 'Receipt attached ✨'}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-amber-400/90 font-medium">
+                              {isAr ? '* مطلوب لربط الطلب بالإشعار والتحويل الفوري للتتبع' : '* Required to confirm order'}
                             </span>
                           )}
                         </div>

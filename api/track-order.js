@@ -72,6 +72,7 @@ export default async function handler(req, res) {
           items: Array.isArray(ord.items) && ord.items.length > 0 ? ord.items : (Array.isArray(localMatch?.items) ? localMatch.items : []),
           created_at: ord.created_at || ord.createdAt || localMatch?.createdAt || new Date().toISOString(),
           updated_at: ord.updated_at || ord.updatedAt || localMatch?.updatedAt || null,
+          tracking_url: ord.tracking_url || ord.trackingUrl || ord.shipping_tracking_url || localMatch?.tracking_url || localMatch?.trackingUrl || null,
         });
       }
     };

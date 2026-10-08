@@ -299,6 +299,9 @@ export default async function handler(req, res) {
         { text: '❌ إلغاء الطلب', callback_data: `ord_status_cancelled_${cleanId}` },
       ],
       [
+        { text: '🔗 إضافة رابط تتبع الشحنة 🚚', callback_data: `add_track_${cleanId}` },
+      ],
+      [
         { text: 'محادثة العميلة عبر واتساب 💬', url: waUrl },
       ],
     ];
