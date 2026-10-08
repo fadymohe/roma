@@ -471,13 +471,13 @@ export default function Home() {
         {/* Subtle Ambient Radial Glow */}
         <div className="absolute inset-0 -top-8 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(212,165,165,0.08),transparent)] pointer-events-none" />
 
-        <div className="mb-6 flex items-center justify-between relative z-10">
+        <div className="mb-4 sm:mb-6 flex items-center justify-between relative z-10">
           <div>
             <span className="text-xs md:text-sm font-semibold text-[#D4A5A5] flex items-center gap-1.5">
               <Boxes className="size-3.5 text-[#D4A5A5]" />
               <span>{isAr ? 'الأقسام والمجموعات' : 'Royal Collections'}</span>
             </span>
-            <h2 className="font-display text-2xl md:text-3xl font-extrabold text-white mt-1.5 leading-snug">
+            <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-white mt-1 leading-snug">
               {t('section.categories_title')}
             </h2>
           </div>
@@ -485,45 +485,58 @@ export default function Home() {
             href="/categories" 
             className="group inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A5A5] hover:text-white px-3 py-1.5 rounded-full bg-[#D4A5A5]/10 hover:bg-[#D4A5A5]/20 border border-[#D4A5A5]/25 transition-all duration-300"
           >
-            <span>{isAr ? 'تصفح كل الأقسام' : 'View All'}</span>
+            <span>{isAr ? 'عرض المزيد' : 'View More'}</span>
             <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1 rtl:rotate-0 ltr:rotate-180" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 md:gap-4 relative z-10">
+        <div className="grid grid-cols-4 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 relative z-10">
           {CATEGORIES.map((cat, idx) => (
             <Link
               key={cat.id}
               href={`/shop?category=${cat.slug}`}
-              className="group relative overflow-hidden rounded-2xl md:rounded-3xl border border-white/10 bg-gradient-to-b from-[#181818] via-[#141414] to-[#0E0E0E] p-3 md:p-3.5 shadow-md hover:border-[#D4A5A5]/60 hover:shadow-[0_16px_36px_-8px_rgba(212,165,165,0.25)] hover:-translate-y-2.5 transition-all duration-500 ease-out text-center flex flex-col justify-between active:scale-95 cursor-pointer"
+              className={`group relative overflow-hidden rounded-xl sm:rounded-2xl md:rounded-3xl border border-white/10 bg-gradient-to-b from-[#181818] via-[#141414] to-[#0E0E0E] p-1.5 sm:p-3.5 shadow-md hover:border-[#D4A5A5]/60 hover:shadow-[0_16px_36px_-8px_rgba(212,165,165,0.25)] hover:-translate-y-2.5 transition-all duration-500 ease-out text-center flex flex-col justify-between active:scale-95 cursor-pointer ${
+                idx >= 4 ? 'hidden sm:flex' : 'flex'
+              }`}
               style={{ animationDelay: `${idx * 80}ms` }}
             >
               {/* Shimmer Light Reflection on Hover */}
               <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none z-20" />
 
               {/* Image Container with seamless light background matching user photos */}
-              <div className="aspect-square w-full rounded-xl md:rounded-2xl overflow-hidden mb-2.5 bg-[#EBEBEB] relative shadow-inner border border-black/5">
+              <div className="aspect-square w-full rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden mb-1.5 sm:mb-2.5 bg-[#EBEBEB] relative shadow-inner border border-black/5">
                 <img
                   src={cat.imageUrl}
                   alt={isAr ? cat.nameAr : cat.nameEn}
                   loading="lazy"
-                  className="h-full w-full object-contain p-1.5 transition-transform duration-700 ease-out group-hover:scale-110"
+                  className="h-full w-full object-contain p-1 sm:p-1.5 transition-transform duration-700 ease-out group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               </div>
 
               {/* Title & Micro-indicator */}
               <div className="pt-0.5">
-                <h3 className="text-[12px] sm:text-[13px] font-bold text-zinc-100 group-hover:text-[#D4A5A5] transition-colors duration-300 line-clamp-1 leading-snug">
+                <h3 className="text-[10px] sm:text-[13px] font-bold text-zinc-100 group-hover:text-[#D4A5A5] transition-colors duration-300 line-clamp-1 leading-tight sm:leading-snug">
                   {isAr ? cat.nameAr : cat.nameEn}
                 </h3>
-                <div className="flex items-center justify-center gap-1 mt-1 text-[10px] font-semibold text-[#D4A5A5] opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0 transition-all duration-300">
+                <div className="hidden sm:flex items-center justify-center gap-1 mt-1 text-[10px] font-semibold text-[#D4A5A5] opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0 transition-all duration-300">
                   <span>{isAr ? 'استكشفي' : 'Explore'}</span>
                   <ArrowLeft className="size-2.5 rtl:rotate-0 ltr:rotate-180" />
                 </div>
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Mobile View More Action Button */}
+        <div className="mt-3.5 flex justify-center sm:hidden relative z-10">
+          <Link
+            href="/categories"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D4A5A5] hover:text-white px-4 py-2 rounded-xl bg-[#D4A5A5]/10 hover:bg-[#D4A5A5]/20 border border-[#D4A5A5]/30 transition active:scale-95 shadow-xs"
+          >
+            <span>{isAr ? 'عرض المزيد من الأقسام' : 'View More Categories'}</span>
+            <ArrowLeft className="size-3.5 rtl:rotate-0 ltr:rotate-180" />
+          </Link>
         </div>
       </section>
 

@@ -71,8 +71,7 @@ export default function CartPage() {
       const isPaymentPath =
         window.location.pathname.includes('/payment') ||
         window.location.pathname.startsWith('/checkout');
-      const pendingStep = localStorage.getItem('roma_pending_checkout_step');
-      if (isPaymentParam || isPaymentPath || pendingStep === 'payment') {
+      if (isPaymentParam || isPaymentPath) {
         return 'payment';
       }
     } catch (_) {}
@@ -185,11 +184,9 @@ export default function CartPage() {
       const isPaymentPath =
         window.location.pathname.includes('/payment') ||
         window.location.pathname.startsWith('/checkout');
-      const pendingStep = localStorage.getItem('roma_pending_checkout_step');
-
-      // If user is authenticated and checkout was pending or in auth step or url requests payment:
+      // If user is authenticated and checkout was in auth step or url requests payment:
       if (isAuthenticated) {
-        if (checkoutStep === 'auth' || pendingStep === 'payment' || isPaymentParam || isPaymentPath) {
+        if (checkoutStep === 'auth' || isPaymentParam || isPaymentPath) {
           setCheckoutStep('payment');
         }
       }

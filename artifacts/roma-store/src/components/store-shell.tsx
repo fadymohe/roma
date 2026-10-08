@@ -45,6 +45,13 @@ export function StoreShell({ children }: { children: ReactNode }) {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSent, setNewsletterSent] = useState(false);
 
+  const handleLogoClick = () => {
+    try {
+      localStorage.removeItem('roma_pending_checkout_step');
+      localStorage.removeItem('roma_auth_redirect');
+    } catch (_) {}
+  };
+
   const nav = [
     { href: '/', label: t('nav.home') },
     { href: '/shop', label: t('nav.shop') },
@@ -69,6 +76,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
           {/* Brand Logo with Official Transparent Image */}
           <Link
             href="/"
+            onClick={handleLogoClick}
             data-testid="link-logo-mobile"
             className="flex items-center gap-1.5 py-0.5 active:scale-95 transition"
           >
@@ -139,6 +147,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
           {/* Centered Brand Logo on Desktop */}
           <Link
             href="/"
+            onClick={handleLogoClick}
             data-testid="link-logo"
             className="flex items-center gap-2 transition transform hover:scale-105 active:scale-95 py-1"
           >
@@ -387,17 +396,18 @@ export function StoreShell({ children }: { children: ReactNode }) {
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#121212]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 shadow-2xl safe-area-pb"
       >
           <div className="grid grid-cols-4 items-center max-w-md mx-auto">
-            {/* Destination 1: Store / Shop */}
+            {/* Destination 1: Home / Store */}
             <Link
-              href="/shop"
-              aria-label={isAr ? 'المتجر' : 'Shop'}
+              href="/"
+              onClick={handleLogoClick}
+              aria-label={isAr ? 'الرئيسية' : 'Home'}
               className={`flex flex-col items-center justify-center py-1 transition ${
-                location === '/shop' || location === '/'
+                location === '/'
                   ? 'text-[#D4A5A5]'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              <div className={`p-1 rounded-full ${location === '/shop' || location === '/' ? 'bg-[#D4A5A5]/15' : ''}`}>
+              <div className={`p-1 rounded-full ${location === '/' ? 'bg-[#D4A5A5]/15' : ''}`}>
                 <HomeIcon className="size-5" strokeWidth={1.75} />
               </div>
               <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'المتجر' : 'Shop'}</span>
@@ -440,10 +450,10 @@ export function StoreShell({ children }: { children: ReactNode }) {
               <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'السلة' : 'Cart'}</span>
             </Link>
 
-            {/* Destination 4: My Account */}
+            {/* Destination 4: My Account / Sign In */}
             <Link
-              href={user ? '/account' : '/auth'}
-              aria-label={isAr ? 'حسابي' : 'Account'}
+              href={user ? '/account' : '/auth?tab=login'}
+              aria-label={user ? (isAr ? 'حسابي' : 'Account') : (isAr ? 'تسجيل الدخول' : 'Sign In')}
               className={`flex flex-col items-center justify-center py-1 transition ${
                 location === '/account' || location === '/auth' || location === '/login'
                   ? 'text-[#D4A5A5]'
@@ -453,7 +463,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
               <div className={`p-1 rounded-full ${location === '/account' || location === '/auth' || location === '/login' ? 'bg-[#D4A5A5]/15' : ''}`}>
                 <User className="size-5" strokeWidth={1.75} />
               </div>
-              <span className="text-[10px] font-semibold mt-0.5">{isAr ? 'حسابي' : 'Account'}</span>
+              <span className="text-[10px] font-semibold mt-0.5">
+                {user ? (isAr ? 'حسابي' : 'Account') : (isAr ? 'تسجيل الدخول' : 'Sign In')}
+              </span>
             </Link>
           </div>
         </nav>
@@ -470,7 +482,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
         <div className="roma-container grid gap-10 py-16 md:grid-cols-4">
           {/* Col 1: Brand & Identity */}
           <div className="space-y-4 md:col-span-1">
-            <Link href="/" className="inline-block py-1">
+            <Link href="/" onClick={handleLogoClick} className="inline-block py-1">
               <img
                 src="/logo-transparent.png"
                 alt="ROMA Cosmetics & Jewelry"

@@ -54,23 +54,16 @@ function AuthRedirectHandler() {
 
   useEffect(() => {
     try {
-      const pendingStep = localStorage.getItem('roma_pending_checkout_step');
-      const authRedirect = localStorage.getItem('roma_auth_redirect');
+      // Only process OAuth redirect if returning from an actual OAuth flow callback
+      const isOAuthCallback =
+        window.location.hash.includes('access_token') ||
+        window.location.search.includes('code=');
 
-      // Intercept returns to homepage when checkout/payment step or specific redirect was pending
-      if (location === '/' || location === '') {
-        if (
-          pendingStep === 'payment' ||
-          authRedirect?.includes('cart') ||
-          authRedirect?.includes('checkout') ||
-          authRedirect?.includes('payment')
-        ) {
-          setLocation('/cart?step=payment', { replace: true });
-          return;
-        }
-
-        if (authRedirect && authRedirect !== '/') {
+      if (isOAuthCallback) {
+        const authRedirect = localStorage.getItem('roma_auth_redirect');
+        if (authRedirect && authRedirect !== '/' && authRedirect !== location) {
           localStorage.removeItem('roma_auth_redirect');
+          localStorage.removeItem('roma_pending_checkout_step');
           setLocation(authRedirect, { replace: true });
           return;
         }

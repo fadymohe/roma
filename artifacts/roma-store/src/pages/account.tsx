@@ -66,6 +66,27 @@ export default function AccountPage() {
     } catch (_) {}
   }, []);
 
+  // If not authenticated, redirect to login page instead of showing guest account
+  useEffect(() => {
+    if (!user) {
+      const hasStoredSession = (() => {
+        try {
+          return !!localStorage.getItem('roma_user_session');
+        } catch {
+          return false;
+        }
+      })();
+      if (!hasStoredSession) {
+        setLocation('/auth?tab=login');
+      }
+    }
+  }, [user, setLocation]);
+
+  const handleLogout = async () => {
+    await logout();
+    setLocation('/auth?tab=login');
+  };
+
   useEffect(() => {
     if (user) {
       setFullName(user.name);
@@ -394,8 +415,8 @@ export default function AccountPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={logout}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-[#1A1A1A] hover:bg-white/5 text-xs text-[#A1A1AA] hover:text-white transition"
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-[#1A1A1A] hover:bg-white/5 text-xs text-[#A1A1AA] hover:text-white transition cursor-pointer"
                 >
                   <LogOut className="size-3.5" />
                   <span>{isAr ? 'تسجيل الخروج' : 'Log Out'}</span>
@@ -403,11 +424,11 @@ export default function AccountPage() {
               </div>
             ) : (
               <Link
-                href="/auth"
+                href="/auth?tab=login"
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D4A5A5] hover:bg-[#C89595] text-xs font-bold text-[#0A0A0A] shadow-md transition"
               >
                 <User className="size-4" />
-                <span>{isAr ? 'تسجيل الدخول / إنشاء حساب' : 'Sign In / Register'}</span>
+                <span>{isAr ? 'تسجيل الدخول' : 'Sign In'}</span>
               </Link>
             )}
           </div>
