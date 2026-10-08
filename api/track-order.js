@@ -60,19 +60,44 @@ export default async function handler(req, res) {
           method = 'فودافون كاش / المحافظ الإلكترونية';
         }
 
+        let extractedTracking =
+          ord.tracking_url ||
+          ord.trackingUrl ||
+          ord.shipping_tracking_url ||
+          localMatch?.tracking_url ||
+          localMatch?.trackingUrl ||
+          null;
+
+        if (!extractedTracking && Array.isArray(ord.items)) {
+          for (const it of ord.items) {
+            if (it && (it.tracking_url || it.trackingUrl)) {
+              extractedTracking = it.tracking_url || it.trackingUrl;
+              break;
+            }
+          }
+        }
+
+        const rawAddr = String(ord.shipping_address || ord.shippingAddress || localMatch?.shippingAddress || '');
+        const trackMatch = rawAddr.match(/\[TRACK:([^\]]+)\]/i);
+        if (!extractedTracking && trackMatch && trackMatch[1]) {
+          extractedTracking = trackMatch[1].trim();
+        }
+
+        const cleanShippingAddress = rawAddr.replace(/\s*\[TRACK:.*?\]/gi, '').trim();
+
         results.push({
           id: ord.id || ord.orderId || cleanKey,
           order_number: ord.order_number || ord.orderNumber || rawKey,
           status: ord.status || 'pending',
           customer_name: ord.customer_name || ord.customerName || localMatch?.customerName || 'عميل المتجر',
           phone: ord.phone || ord.customerPhone || localMatch?.customerPhone || '',
-          shipping_address: ord.shipping_address || ord.shippingAddress || localMatch?.shippingAddress || '',
+          shipping_address: cleanShippingAddress,
           total_amount: Number(ord.total_amount || ord.totalAmount || localMatch?.totalAmount || 0),
           payment_method: method,
           items: Array.isArray(ord.items) && ord.items.length > 0 ? ord.items : (Array.isArray(localMatch?.items) ? localMatch.items : []),
           created_at: ord.created_at || ord.createdAt || localMatch?.createdAt || new Date().toISOString(),
           updated_at: ord.updated_at || ord.updatedAt || localMatch?.updatedAt || null,
-          tracking_url: ord.tracking_url || ord.trackingUrl || ord.shipping_tracking_url || localMatch?.tracking_url || localMatch?.trackingUrl || null,
+          tracking_url: extractedTracking,
         });
       }
     };

@@ -714,13 +714,7 @@ export default function CartPage() {
           `━━━━━━━━━━━━━━━━━━\n` +
           `Thank you for shopping with ROMA Cosmetics & Jewelry!`;
 
-      const customerWaUrl = `https://wa.me/${waCustomerPhone}?text=${encodeURIComponent(customerWhatsAppMsg)}`;
-
-      try {
-        window.open(customerWaUrl, '_blank');
-      } catch (_) {}
-
-      // 7. Clear cart immediately and clean all storage keys (Cart becomes completely empty)
+      // 7. Automated WhatsApp message is sent from business number 01150583501 in the background without client redirect
       clear();
       try {
         localStorage.removeItem(DRAFT_CACHE_KEY);

@@ -418,6 +418,25 @@ async function sendNewOrderNotification(order) {
       });
     }
   }
+
+  // 📱 Send automated WhatsApp order confirmation from business number (+201150583501) to customer
+  if (customerPhone && customerPhone !== 'غير مسجل') {
+    try {
+      console.log(`[WHATSAPP] Auto-sending order confirmation from business (+201150583501) to ${customerPhone}...`);
+      await sendOrderConfirmationWhatsApp({
+        id: orderId,
+        orderNumber: order.order_number || orderId,
+        customerName,
+        customerPhone,
+        shippingAddress: address,
+        totalAmount: total,
+        status: order.status || 'pending',
+        items: Array.isArray(order.items) ? order.items : [],
+      });
+    } catch (waErr) {
+      console.warn('[WHATSAPP] Auto-send WhatsApp error on new order:', waErr?.message);
+    }
+  }
 }
 
 // Supabase Realtime Listener Setup
@@ -1597,11 +1616,40 @@ async function saveOrderTrackingUrl(cleanOrderId, trackingUrl) {
       ? `id.eq.${cleanOrderId},order_number.ilike.%${cleanOrderId}%,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`
       : `order_number.ilike.%${cleanOrderId}%,order_number.eq.ROMA-${cleanOrderId},order_number.eq.${cleanOrderId}`;
 
-    await sbClient
-      .from('orders')
-      .update({ tracking_url: trackingUrl, status: 'shipped', updated_at: new Date().toISOString() })
-      .or(filterOr);
-    console.log(`[BOT] Saved tracking_url for order ${cleanOrderId}: ${trackingUrl}`);
+    const { data: matchedRows } = await sbClient.from('orders').select('*').or(filterOr).limit(5);
+    let targetRows = matchedRows || [];
+
+    if (targetRows.length === 0) {
+      const { data: recentOrders } = await sbClient.from('orders').select('*').order('created_at', { ascending: false }).limit(30);
+      const row = (recentOrders || []).find((r) => {
+        const rClean = String(r.order_number || r.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+        return rClean.includes(cleanOrderId) || cleanOrderId.includes(rClean);
+      });
+      if (row) targetRows = [row];
+    }
+
+    for (const row of targetRows) {
+      let items = Array.isArray(row.items) ? [...row.items] : [];
+      if (items.length > 0 && typeof items[0] === 'object') {
+        items[0].tracking_url = trackingUrl;
+      } else {
+        items.push({ name: 'الشحنة', tracking_url: trackingUrl });
+      }
+
+      let cleanAddr = String(row.shipping_address || '').replace(/\s*\[TRACK:.*?\]/gi, '').trim();
+      const addressWithTrack = cleanAddr ? `${cleanAddr} [TRACK:${trackingUrl}]` : `[TRACK:${trackingUrl}]`;
+
+      await sbClient
+        .from('orders')
+        .update({
+          status: 'shipped',
+          items: items,
+          shipping_address: addressWithTrack,
+        })
+        .eq('id', row.id);
+
+      console.log(`[BOT] Successfully updated Supabase order #${row.order_number || row.id} with tracking_url: ${trackingUrl}`);
+    }
   } catch (err) {
     console.warn('[BOT] Supabase tracking update error:', err?.message);
   }

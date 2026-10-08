@@ -356,13 +356,43 @@ export default async function handler(req, res) {
             try {
               const sbClient = await getAuthenticatedSupabase();
               const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
-              let q = sbClient.from('orders').update({ status: 'shipped', tracking_url: trackingUrl });
+              let q = sbClient.from('orders').select('*');
               if (isUuid) {
                 q = q.or(`id.eq.${cleanId},order_number.ilike.%${cleanId}%,order_number.eq.ROMA-${cleanId},order_number.eq.${cleanId}`);
               } else {
                 q = q.or(`order_number.ilike.%${cleanId}%,order_number.eq.ROMA-${cleanId},order_number.eq.${cleanId}`);
               }
-              await q;
+              const { data: matchedRows } = await q.limit(5);
+              let targetRows = matchedRows || [];
+              if (targetRows.length === 0) {
+                const { data: recentOrders } = await sbClient.from('orders').select('*').order('created_at', { ascending: false }).limit(30);
+                const row = (recentOrders || []).find((r) => {
+                  const rClean = String(r.order_number || r.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+                  return rClean.includes(cleanId) || cleanId.includes(rClean);
+                });
+                if (row) targetRows = [row];
+              }
+
+              for (const row of targetRows) {
+                let items = Array.isArray(row.items) ? [...row.items] : [];
+                if (items.length > 0 && typeof items[0] === 'object') {
+                  items[0].tracking_url = trackingUrl;
+                } else {
+                  items.push({ name: 'الشحنة', tracking_url: trackingUrl });
+                }
+
+                let cleanAddr = String(row.shipping_address || '').replace(/\s*\[TRACK:.*?\]/gi, '').trim();
+                const addressWithTrack = cleanAddr ? `${cleanAddr} [TRACK:${trackingUrl}]` : `[TRACK:${trackingUrl}]`;
+
+                await sbClient
+                  .from('orders')
+                  .update({
+                    status: 'shipped',
+                    items: items,
+                    shipping_address: addressWithTrack,
+                  })
+                  .eq('id', row.id);
+              }
             } catch (sbErr) {
               console.error('Supabase track url update error:', sbErr);
             }

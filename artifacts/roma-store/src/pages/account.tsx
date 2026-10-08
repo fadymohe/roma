@@ -128,6 +128,24 @@ export default function AccountPage() {
     loadOrders();
   }, [user]);
 
+  // Helper to extract carrier tracking URL from any possible order format
+  const extractTracking = (o: any): string | null => {
+    if (!o) return null;
+    if (o.tracking_url && typeof o.tracking_url === 'string' && o.tracking_url.startsWith('http')) return o.tracking_url;
+    if (o.trackingUrl && typeof o.trackingUrl === 'string' && o.trackingUrl.startsWith('http')) return o.trackingUrl;
+    if (o.shipping_tracking_url && typeof o.shipping_tracking_url === 'string' && o.shipping_tracking_url.startsWith('http')) return o.shipping_tracking_url;
+    if (Array.isArray(o.items)) {
+      for (const it of o.items) {
+        if (it?.tracking_url && typeof it.tracking_url === 'string' && it.tracking_url.startsWith('http')) return it.tracking_url;
+        if (it?.trackingUrl && typeof it.trackingUrl === 'string' && it.trackingUrl.startsWith('http')) return it.trackingUrl;
+      }
+    }
+    const rawAddr = String(o.shipping_address || o.address || '');
+    const m = rawAddr.match(/\[TRACK:([^\]]+)\]/i);
+    if (m && m[1] && m[1].trim().startsWith('http')) return m[1].trim();
+    return null;
+  };
+
   // Helper to sync updated orders into localStorage and React state
   const syncOrderUpdates = (updatedList: any[]) => {
     if (!Array.isArray(updatedList) || updatedList.length === 0) return;
@@ -139,12 +157,17 @@ export default function AccountPage() {
           let changed = false;
           for (const up of updatedList) {
             const upClean = String(up.order_number || up.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+            const upTracking = extractTracking(up);
             for (const loc of localList) {
               const locClean = String(loc.order_number || loc.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
               if (locClean === upClean || (upClean.length >= 4 && (locClean.includes(upClean) || upClean.includes(locClean)))) {
                 if (loc.status !== up.status) {
                   loc.status = up.status;
                   loc.updated_at = up.updated_at || new Date().toISOString();
+                  changed = true;
+                }
+                if (upTracking && loc.tracking_url !== upTracking) {
+                  loc.tracking_url = upTracking;
                   changed = true;
                 }
               }
@@ -163,13 +186,14 @@ export default function AccountPage() {
       for (const up of updatedList) {
         const cleanKey = String(up.order_number || up.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
         const existing = map.get(cleanKey);
+        const resolvedTracking = extractTracking(up) || extractTracking(existing);
         const resolvedMethod =
           up.payment_method && !up.payment_method.includes('الاستلام') && !/cod/i.test(up.payment_method)
             ? up.payment_method
             : existing?.payment_method && !existing.payment_method.includes('الاستلام')
               ? existing.payment_method
               : (isAr ? 'فودافون كاش / المحافظ الإلكترونية' : 'Vodafone Cash / E-Wallet');
-        map.set(cleanKey, { ...existing, ...up, payment_method: resolvedMethod });
+        map.set(cleanKey, { ...existing, ...up, tracking_url: resolvedTracking, payment_method: resolvedMethod });
       }
       return Array.from(map.values());
     });
@@ -181,8 +205,14 @@ export default function AccountPage() {
           const upClean = String(up.order_number || up.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
           return ordClean === upClean || (upClean.length >= 4 && (ordClean.includes(upClean) || upClean.includes(ordClean)));
         });
-        if (match && match.status !== ord.status) {
-          return { ...ord, status: match.status, updated_at: match.updated_at || new Date().toISOString() };
+        if (match) {
+          const resolvedTracking = extractTracking(match) || extractTracking(ord);
+          return {
+            ...ord,
+            status: match.status || ord.status,
+            tracking_url: resolvedTracking,
+            updated_at: match.updated_at || ord.updated_at || new Date().toISOString(),
+          };
         }
         return ord;
       });
@@ -364,10 +394,11 @@ export default function AccountPage() {
     const mergeOrder = (o: any) => {
       if (!o) return;
       const cleanKey = String(o.order_number || o.id || o.orderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+      const currentTrack = extractTracking(o);
       const normalized = {
         ...o,
         order_number: `ROMA-${cleanKey}`,
-        tracking_url: o.tracking_url || o.trackingUrl || o.shipping_tracking_url || null,
+        tracking_url: currentTrack,
       };
       if (!map.has(cleanKey)) {
         map.set(cleanKey, normalized);
@@ -375,7 +406,7 @@ export default function AccountPage() {
         const existing = map.get(cleanKey);
         const existingStep = getStepIndex(existing.status);
         const newStep = getStepIndex(o.status);
-        const mergedTracking = normalized.tracking_url || existing.tracking_url || null;
+        const mergedTracking = currentTrack || extractTracking(existing) || null;
         // Whichever has more advanced status or is non-pending wins
         if (newStep > existingStep || (existing.status === 'pending' && o.status && o.status !== 'pending')) {
           map.set(cleanKey, { ...existing, ...normalized, tracking_url: mergedTracking, status: o.status });
@@ -823,7 +854,7 @@ export default function AccountPage() {
                             {/* Order address & payment footer */}
                             <div className="px-4 py-2.5 border-t border-white/5 bg-[#141414] flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#A1A1AA]">
                               <span>
-                                📍 {isAr ? 'العنوان:' : 'Address:'} {order.shipping_address || order.address}
+                                📍 {isAr ? 'العنوان:' : 'Address:'} {String(order.shipping_address || order.address || '').replace(/\s*\[TRACK:.*?\]/gi, '').trim()}
                               </span>
                               <span>
                                 💳 {isAr ? 'طريقة الدفع:' : 'Payment:'}{' '}
@@ -845,7 +876,7 @@ export default function AccountPage() {
                         {/* 1. Direct WhatsApp Concierge Button */}
                         <div className="flex justify-end">
                           <a
-                            href={`https://wa.me/201505566847?text=${encodeURIComponent(
+                            href={`https://wa.me/201150583501?text=${encodeURIComponent(
                               isAr
                                 ? `مرحباً، أود الاستفسار عن حالة طلبي رقم #ROMA-${order.order_number || order.id}:`
                                 : `Hello, I'd like to ask about my order #ROMA-${order.order_number || order.id}:`
@@ -861,33 +892,39 @@ export default function AccountPage() {
 
                         {/* 2. Courier Shipment Live Tracking Button (Directly beneath Customer Support) */}
                         <div className="flex justify-end">
-                          {order.tracking_url || order.shipping_tracking_url ? (
-                            <a
-                              href={order.tracking_url || order.shipping_tracking_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#D4A5A5] to-[#B38888] hover:opacity-95 text-[#0A0A0A] text-xs font-bold shadow-md shadow-[#D4A5A5]/20 transition"
-                            >
-                              <Truck className="size-4" />
-                              <span>{isAr ? 'تتبع الشحنة مع شركة الشحن 🚚' : 'Track Shipment with Courier 🚚'}</span>
-                              <ExternalLink className="size-3.5" />
-                            </a>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                alert(
-                                  isAr
-                                    ? `📦 جاري تجهيز الشحنة للطلب #ROMA-${String(order.order_number || order.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '')} مع شركة الشحن.\nسيتم تفعيل رابط التتبع المباشر هنا فور تسليم الشحنة لمندوب التوصيل ورفع البوليصة!`
-                                    : 'Shipment is being prepared with courier. Live tracking link will be activated here as soon as dispatched!'
-                                );
-                              }}
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-[#D4A5A5] transition cursor-pointer"
-                            >
-                              <Truck className="size-3.5" />
-                              <span>{isAr ? 'تتبع الشحنة (في انتظار بوليصة الشحن)' : 'Track Shipment (Pending Courier)'}</span>
-                            </button>
-                          )}
+                          {(() => {
+                            const liveTracking = extractTracking(order) || order.tracking_url || order.shipping_tracking_url;
+                            if (liveTracking) {
+                              return (
+                                <a
+                                  href={liveTracking}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#D4A5A5] to-[#B38888] hover:opacity-95 text-[#0A0A0A] text-xs font-bold shadow-md shadow-[#D4A5A5]/20 transition"
+                                >
+                                  <Truck className="size-4" />
+                                  <span>{isAr ? 'تتبع الشحنة مع شركة الشحن 🚚' : 'Track Shipment with Courier 🚚'}</span>
+                                  <ExternalLink className="size-3.5" />
+                                </a>
+                              );
+                            }
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  alert(
+                                    isAr
+                                      ? `📦 جاري تجهيز الشحنة للطلب #ROMA-${String(order.order_number || order.id).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '')} مع شركة الشحن.\nسيتم تفعيل رابط التتبع المباشر هنا فور تسليم الشحنة لمندوب التوصيل ورفع البوليصة!`
+                                      : 'Shipment is being prepared with courier. Live tracking link will be activated here as soon as dispatched!'
+                                  );
+                                }}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-[#D4A5A5] transition cursor-pointer"
+                              >
+                                <Truck className="size-3.5" />
+                                <span>{isAr ? 'تتبع الشحنة (في انتظار بوليصة الشحن)' : 'Track Shipment (Pending Courier)'}</span>
+                              </button>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
