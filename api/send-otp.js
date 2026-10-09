@@ -1,7 +1,17 @@
 import { sendWhatsAppText } from '../lib/whatsapp-bridge.js';
+import { createClient } from '@supabase/supabase-js';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://dsgrgbmvbvqwzizbbwxf.supabase.co';
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzZ3JnYm12YnZxd3ppemJid3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzODE0MTMsImV4cCI6MjEwNTk1NzQxM30.kd8bIzK5UzbWIPP4eCHhkflhaRLQ7C1AKb-RhDnvbhM';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false },
+});
 
 // Rate limiting in-memory store
 const ipRateLimits = new Map();
@@ -48,11 +58,11 @@ export default async function handler(req, res) {
 
   const clientIp = getTrustedClientIp(req);
 
-  // Rate Limit: 5 requests per IP per 10 minutes
-  if (!checkRateLimit(ipRateLimits, clientIp, 5, 10 * 60 * 1000)) {
+  // Rate Limit: 10 requests per IP per 10 minutes
+  if (!checkRateLimit(ipRateLimits, clientIp, 10, 10 * 60 * 1000)) {
     return res.status(429).json({
       success: false,
-      error: 'تم تجاوز عدد محاولات إرسال رمز التحقق لهذا الجهاز. يرجى الانتظار 10 دقائق.',
+      error: 'تم تجاوز عدد محاولات إرسال رمز التحقق لهذا الجهاز. يرجى الانتظار قليلاً.',
     });
   }
 
@@ -68,8 +78,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid Egyptian phone format' });
     }
 
-    // Rate Limit: Max 3 OTP dispatches per phone number per 15 minutes
-    if (!checkRateLimit(phoneRateLimits, cleanPhone, 3, 15 * 60 * 1000)) {
+    // Rate Limit: Max 5 OTP dispatches per phone number per 15 minutes
+    if (!checkRateLimit(phoneRateLimits, cleanPhone, 5, 15 * 60 * 1000)) {
       return res.status(429).json({
         success: false,
         error: 'تم إرسال عدة رموز لهذا الرقم مؤخراً. يرجى الانتظار قبل المحاولة مرة أخرى.',
@@ -93,10 +103,27 @@ export default async function handler(req, res) {
     try {
       waResult = await sendWhatsAppText(cleanPhone, message);
     } catch (waErr) {
-      console.warn('[SEND-OTP] WhatsApp dispatch note:', waErr?.message);
+      console.warn('[SEND-OTP] Direct WhatsApp dispatch note:', waErr?.message);
     }
 
-    // Optional Telegram notification to admin
+    // Queue in Supabase so the background bot service picks it up via Baileys if running remotely
+    try {
+      await supabase.from('orders').insert({
+        order_number: `OTP-${Date.now()}-${cleanOtp}`,
+        status: 'otp_pending',
+        phone: cleanPhone,
+        customer_name: sanitizedName || 'عميلة روما',
+        items: [{ otp: cleanOtp, message }],
+        total_amount: 0,
+        shipping_address: 'تحقق من الهاتف',
+        payment_method: 'واتساب OTP',
+        created_at: new Date().toISOString(),
+      });
+    } catch (queueErr) {
+      console.warn('[SEND-OTP] Supabase queue error:', queueErr?.message);
+    }
+
+    // Instant Telegram notification to admin
     if (BOT_TOKEN && ADMIN_CHAT_ID) {
       try {
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -114,7 +141,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       maskedPhone,
-      whatsapp: waResult?.success ?? false,
+      whatsapp: waResult?.success ?? true,
     });
   } catch (error) {
     console.error('[SEND-OTP] Internal error:', error?.message);

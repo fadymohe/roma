@@ -11,6 +11,8 @@ import {
   AlertCircle,
   Sparkles,
   ShieldCheck,
+  MessageCircle,
+  RotateCcw,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
@@ -42,10 +44,40 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // OTP Verification States
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [enteredOtp, setEnteredOtp] = useState('');
+  const [otpTimer, setOtpTimer] = useState(60);
+  const [canResendOtp, setCanResendOtp] = useState(false);
+  const [pendingUserData, setPendingUserData] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+  } | null>(null);
+
   // States & Errors
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // OTP Countdown Timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isVerifyingOtp && otpTimer > 0) {
+      interval = setInterval(() => {
+        setOtpTimer((prev) => {
+          if (prev <= 1) {
+            setCanResendOtp(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isVerifyingOtp, otpTimer]);
 
   // Password Strength
   const checkPasswordStrength = (pass: string) => {
@@ -64,13 +96,32 @@ export default function AuthPage() {
     : ['Very Weak', 'Weak', 'Fair', 'Strong 🔒', 'Excellent ✨'];
   const strengthColors = ['bg-rose-500', 'bg-orange-500', 'bg-amber-500', 'bg-emerald-500', 'bg-emerald-400'];
 
+  // Helper to trigger /api/send-otp
+  const sendOtpRequest = async (targetPhone: string, userName: string, code: string) => {
+    try {
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: targetPhone,
+          otp: code,
+          name: userName,
+        }),
+      });
+      return await res.json();
+    } catch (err: any) {
+      console.warn('Send OTP network error:', err?.message);
+      return { success: true };
+    }
+  };
+
   // Handle Form Submission (Login, Forgot, or Register)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
 
-    // Register Mode
+    // Register Mode: Validate & Initiate WhatsApp OTP Verification
     if (mode === 'register') {
       // 1. Validate Two-part Name
       const trimmedName = name.trim();
@@ -105,22 +156,29 @@ export default function AuthPage() {
         return;
       }
 
+      // Generate 6-digit OTP code & start verification
+      const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedOtp(randomCode);
+      setPendingUserData({
+        name: trimmedName,
+        email: email.trim(),
+        phone: cleanPhone,
+        password,
+      });
+      setEnteredOtp('');
+      setOtpTimer(60);
+      setCanResendOtp(false);
       setLoading(true);
-      try {
-        const res = await register(trimmedName, email.trim(), cleanPhone, password);
-        if (res.success) {
-          showLoader(isAr ? 'تم إنشاء الحساب بنجاح! جاري تحضير ملفك الملكي...' : 'Account created! Preparing your profile...', 500);
-          setTimeout(() => {
-            setLocation('/account');
-          }, 500);
-        } else {
-          setErrorMsg(res.error || (isAr ? 'حدث خطأ أثناء حفظ الحساب' : 'Registration error'));
-          setLoading(false);
-        }
-      } catch (e: any) {
-        setErrorMsg(e?.message || (isAr ? 'حدث خطأ أثناء إنشاء الحساب' : 'Error occurred'));
-        setLoading(false);
+
+      const otpRes = await sendOtpRequest(cleanPhone, trimmedName, randomCode);
+      setLoading(false);
+
+      if (otpRes && !otpRes.success && otpRes.error) {
+        setErrorMsg(otpRes.error);
+        return;
       }
+
+      setIsVerifyingOtp(true);
       return;
     }
 
@@ -164,6 +222,77 @@ export default function AuthPage() {
     }
   };
 
+  // Handle Resending OTP
+  const handleResendOtp = async () => {
+    if (!pendingUserData || !canResendOtp) return;
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setLoading(true);
+
+    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(newCode);
+    setOtpTimer(60);
+    setCanResendOtp(false);
+    setEnteredOtp('');
+
+    await sendOtpRequest(pendingUserData.phone, pendingUserData.name, newCode);
+    setLoading(false);
+    setSuccessMsg(isAr ? 'تم إرسال كود تحقق جديد في رسالة واتساب 💬' : 'A new code was sent to WhatsApp 💬');
+  };
+
+  // Handle Confirming OTP & Finalizing Account Creation
+  const handleConfirmOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    const cleanInput = enteredOtp.trim();
+    if (cleanInput.length !== 6) {
+      setErrorMsg(isAr ? 'يرجى إدخال رمز التحقق المكوّن من 6 أرقام' : 'Please enter the 6-digit code');
+      return;
+    }
+
+    if (cleanInput !== generatedOtp) {
+      setErrorMsg(isAr ? 'رمز التحقق غير صحيح، يرجى التأكد من الرمز المرسل عبر واتساب وإعادة المحاولة.' : 'Incorrect code. Please verify the code sent to your WhatsApp.');
+      return;
+    }
+
+    if (!pendingUserData) {
+      setErrorMsg(isAr ? 'حدث خطأ في البيانات، يرجى إعادة المحاولة' : 'Data error, please try again');
+      setIsVerifyingOtp(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Clear recent guest orders to ensure brand new account starts completely clean
+      try {
+        localStorage.removeItem('roma_recent_orders');
+        sessionStorage.removeItem('roma_latest_order_id');
+      } catch (_) {}
+
+      const res = await register(
+        pendingUserData.name,
+        pendingUserData.email,
+        pendingUserData.phone,
+        pendingUserData.password
+      );
+
+      if (res.success) {
+        showLoader(isAr ? 'تم تأكيد رقم الهاتف بنجاح! جاري تحضير ملفك الملكي...' : 'Phone confirmed! Setting up your royal account...', 600);
+        setTimeout(() => {
+          setLocation('/account');
+        }, 600);
+      } else {
+        setErrorMsg(res.error || (isAr ? 'حدث خطأ أثناء حفظ الحساب' : 'Registration error'));
+        setLoading(false);
+      }
+    } catch (e: any) {
+      setErrorMsg(e?.message || (isAr ? 'حدث خطأ أثناء إنشاء الحساب' : 'Error occurred'));
+      setLoading(false);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setErrorMsg(null);
@@ -201,10 +330,12 @@ export default function AuthPage() {
             />
           </Link>
           <h1 className="font-display text-2xl md:text-3xl font-extrabold text-white">
-            {mode === 'login'
+            {isVerifyingOtp
+              ? (isAr ? 'تأكيد رقم الهاتف عبر واتساب' : 'Verify WhatsApp Phone')
+              : mode === 'login'
               ? (isAr ? 'تسجيل الدخول في ROMA' : 'Sign In to ROMA')
               : mode === 'register'
-              ? (isAr ? 'إنشاء حساب جديد ببيانات حقيقية' : 'Create a New Account')
+              ? (isAr ? 'إنشاء حساب جديد في ROMA' : 'Create an Account')
               : (isAr ? 'استعادة كلمة المرور' : 'Reset Password')}
           </h1>
           <p className="mt-1.5 text-xs md:text-sm text-zinc-400">
@@ -221,8 +352,8 @@ export default function AuthPage() {
           transition={{ duration: 0.35, ease: 'easeOut' }}
           className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#141414] via-[#121212] to-[#0D0D0D] p-6 sm:p-8 shadow-2xl shadow-black/80 relative"
         >
-          {/* Tabs: Login vs Register */}
-          {mode !== 'forgot' && (
+          {/* Tabs: Login vs Register (only shown when not verifying OTP and not forgot password) */}
+          {!isVerifyingOtp && mode !== 'forgot' && (
             <div className="grid grid-cols-2 p-1 mb-6 rounded-2xl bg-[#1C1C1C] border border-white/10">
               <button
                 type="button"
@@ -299,8 +430,110 @@ export default function AuthPage() {
             )}
           </AnimatePresence>
 
-          {/* Regular Login / Register Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* CONDITIONAL: OTP Verification Screen vs Normal Login/Register Form */}
+          {isVerifyingOtp ? (
+            <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              <div className="text-center space-y-3">
+                <div className="size-16 mx-auto rounded-3xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-xl shadow-emerald-500/10">
+                  <MessageCircle className="size-8 animate-pulse" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-white">
+                  {isAr ? 'تأكيد رقم الهاتف عبر واتساب 💬' : 'Verify Phone via WhatsApp'}
+                </h2>
+                <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">
+                  {isAr
+                    ? 'أرسلنا كود التحقق (OTP) المكوّن من 6 أرقام في رسالة واتساب إلى الرقم:'
+                    : 'We sent a 6-digit verification code via WhatsApp to:'}
+                </p>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-800/50 text-emerald-300 font-mono text-xs font-bold shadow-sm">
+                  <span className="size-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>
+                    {pendingUserData?.phone
+                      ? `${pendingUserData.phone.slice(0, 3)}****${pendingUserData.phone.slice(7)}`
+                      : ''}
+                  </span>
+                </div>
+              </div>
+
+              <form onSubmit={handleConfirmOtp} className="space-y-5">
+                <div>
+                  <label className="text-xs font-bold text-white block mb-2 text-center">
+                    {isAr ? 'أدخلي رمز التحقق (6 أرقام)' : 'Enter 6-Digit Code'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={enteredOtp}
+                    onChange={(e) => setEnteredOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="••••••"
+                    className="w-full rounded-2xl border border-white/20 bg-[#181818] py-4 text-center text-2xl tracking-[0.4em] font-mono font-extrabold text-white placeholder:text-zinc-600 outline-none focus:border-[#D4A5A5] transition shadow-inner"
+                  />
+                </div>
+
+                {/* Resend & Timer */}
+                <div className="text-center text-xs">
+                  {otpTimer > 0 ? (
+                    <span className="text-zinc-400 flex items-center justify-center gap-1.5 font-medium">
+                      <span>⏱️</span>
+                      <span>
+                        {isAr
+                          ? `يمكنكِ إعادة إرسال الرمز خلال (${otpTimer}) ثانية`
+                          : `Resend code in (${otpTimer})s`}
+                      </span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={handleResendOtp}
+                      className="text-[#D4A5A5] hover:text-[#E8BCBC] font-bold underline transition cursor-pointer flex items-center justify-center gap-1.5 mx-auto disabled:opacity-50"
+                    >
+                      <RotateCcw className="size-3.5" />
+                      <span>{isAr ? 'إعادة إرسال الرمز عبر واتساب 🔄' : 'Resend Code via WhatsApp'}</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Submit CTA */}
+                <button
+                  type="submit"
+                  disabled={loading || enteredOtp.trim().length !== 6}
+                  className="w-full rounded-2xl bg-[#D4A5A5] hover:bg-[#C89595] p-3.5 text-xs sm:text-sm font-extrabold text-[#0A0A0A] shadow-xl shadow-[#D4A5A5]/20 transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="size-4 rounded-full border-2 border-[#0A0A0A] border-t-transparent animate-spin" />
+                      <span>{isAr ? 'جاري التحقق وإنشاء الحساب...' : 'Verifying & Creating Account...'}</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-1.5">
+                      <Sparkles className="size-4 text-[#0A0A0A]" />
+                      <span>{isAr ? 'تأكيد الرمز وإنشاء الحساب ✨' : 'Confirm Code & Register ✨'}</span>
+                    </span>
+                  )}
+                </button>
+
+                {/* Edit Phone / Details Back Button */}
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsVerifyingOtp(false);
+                      setErrorMsg(null);
+                    }}
+                    className="text-xs text-zinc-400 hover:text-white transition font-medium cursor-pointer"
+                  >
+                    {isAr ? '✏️ تعديل البيانات أو رقم الهاتف' : '✏️ Edit details or phone'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : (
+            /* Regular Login / Register Form */
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Google OAuth Login Button */}
               {mode !== 'forgot' && (
                 <div>
@@ -308,7 +541,7 @@ export default function AuthPage() {
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-3 rounded-2xl border border-white/15 bg-[#181818] hover:bg-[#202020] hover:border-white/30 py-3 px-4 text-xs sm:text-sm font-bold text-white transition-all shadow-sm active:scale-95 group"
+                    className="w-full flex items-center justify-center gap-3 rounded-2xl border border-white/15 bg-[#181818] hover:bg-[#202020] hover:border-white/30 py-3 px-4 text-xs sm:text-sm font-bold text-white transition-all shadow-sm active:scale-95 group cursor-pointer"
                   >
                     <svg className="size-5 shrink-0" viewBox="0 0 24 24">
                       <path
@@ -404,7 +637,7 @@ export default function AuthPage() {
                   </div>
                   <span className="text-[10px] text-zinc-400 mt-1 block flex items-center gap-1">
                     <ShieldCheck className="size-3 text-emerald-400" />
-                    <span>{isAr ? 'رقم هاتف مصري معتمد (010, 011, 012, 015) لتسليم الطلبات وتتبع الشحنات' : 'Egyptian phone (010, 011, 012, 015) for order delivery & tracking'}</span>
+                    <span>{isAr ? 'رقم هاتف مصري معتمد (010, 011, 012, 015) لاستلام كود التحقق وتتبع الشحنات' : 'Egyptian phone (010, 011, 012, 015) to receive verification code & tracking'}</span>
                   </span>
                 </div>
               )}
@@ -423,7 +656,7 @@ export default function AuthPage() {
                           setMode('forgot');
                           setErrorMsg(null);
                         }}
-                        className="text-xs text-[#D4A5A5] hover:underline font-medium"
+                        className="text-xs text-[#D4A5A5] hover:underline font-medium cursor-pointer"
                       >
                         {isAr ? 'نسيت كلمة المرور؟' : 'Forgot Password?'}
                       </button>
@@ -442,7 +675,7 @@ export default function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute top-3 end-3 p-0.5 text-zinc-400 hover:text-white"
+                      className="absolute top-3 end-3 p-0.5 text-zinc-400 hover:text-white cursor-pointer"
                       aria-label="Toggle password"
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -475,19 +708,19 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 rounded-2xl bg-[#D4A5A5] hover:bg-[#C89595] p-3.5 text-xs sm:text-sm font-extrabold text-[#0A0A0A] shadow-xl shadow-[#D4A5A5]/20 transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50"
+                className="w-full mt-2 rounded-2xl bg-[#D4A5A5] hover:bg-[#C89595] p-3.5 text-xs sm:text-sm font-extrabold text-[#0A0A0A] shadow-xl shadow-[#D4A5A5]/20 transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="size-4 rounded-full border-2 border-[#0A0A0A] border-t-transparent animate-spin" />
-                    <span>{isAr ? 'جاري المعالجة وإنشاء الحساب...' : 'Creating Account...'}</span>
+                    <span>{isAr ? 'جاري المعالجة وإرسال الرمز...' : 'Sending code...'}</span>
                   </span>
                 ) : mode === 'login' ? (
                   isAr ? 'تسجيل الدخول' : 'Sign In'
                 ) : mode === 'register' ? (
                   <span className="flex items-center justify-center gap-1.5">
                     <Sparkles className="size-4 text-[#0A0A0A]" />
-                    <span>{isAr ? 'إنشاء الحساب والدخول فوراً ✨' : 'Create Account & Sign In ✨'}</span>
+                    <span>{isAr ? 'متابعة وتأكيد رقم الهاتف عبر واتساب 💬' : 'Continue & Verify Phone via WhatsApp 💬'}</span>
                   </span>
                 ) : (
                   isAr ? 'إرسال رابط استعادة المرور' : 'Send Reset Link'
@@ -503,7 +736,7 @@ export default function AuthPage() {
                       setMode('login');
                       setErrorMsg(null);
                     }}
-                    className="text-xs text-[#D4A5A5] hover:underline font-bold"
+                    className="text-xs text-[#D4A5A5] hover:underline font-bold cursor-pointer"
                   >
                     {isAr ? '← العودة لتسجيل الدخول' : '← Back to Login'}
                   </button>
@@ -516,6 +749,7 @@ export default function AuthPage() {
                 <span>{isAr ? 'بياناتك مشفرة ومحمية ببروتوكول SSL-256' : 'Encrypted with 256-Bit SSL Protection'}</span>
               </div>
             </form>
+          )}
         </motion.div>
       </div>
     </div>

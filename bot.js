@@ -14,6 +14,7 @@ import {
   sendOrderConfirmationWhatsApp,
   sendShippingUpdateWhatsApp,
   sendAbandonedCartWhatsApp,
+  sendWhatsAppText,
   MERCHANT_PHONE,
 } from './lib/whatsapp-bridge.js';
 import { getAuthenticatedSupabase } from './lib/supabase-server.js';
@@ -448,10 +449,37 @@ function initSupabaseRealtime() {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'orders' },
       async (payload) => {
-        console.log('⚡ Realtime Order INSERT detected:', payload.new?.id, payload.new?.order_number);
+        const row = payload.new;
+        if (!row) return;
+
+        // Check if this is an OTP verification request
+        if (row.status === 'otp_pending' || row.order_number?.startsWith('OTP-')) {
+          console.log('⚡ Realtime OTP request detected for phone:', row.phone);
+          const cleanPhone = String(row.phone || '').replace(/\D+/g, '');
+          const msg =
+            row.items?.[0]?.message ||
+            `🌸 *متجر روما | ROMA Beauty*\n\nكود التحقق الخاص بك هو:\n\n🔑 *${row.items?.[0]?.otp}*`;
+          if (cleanPhone) {
+            try {
+              const res = await sendWhatsAppText(cleanPhone, msg);
+              console.log(`[WHATSAPP-OTP] Realtime sent OTP to ${cleanPhone}:`, res);
+              await supabase.from('orders').update({ status: 'otp_sent' }).eq('id', row.id);
+            } catch (waErr) {
+              console.error('[WHATSAPP-OTP] Realtime send error:', waErr?.message);
+            }
+          }
+          return;
+        }
+
+        console.log('⚡ Realtime Order INSERT detected:', row.id, row.order_number);
         try {
-          if (payload.new?.status !== 'cart_draft' && !payload.new?.order_number?.startsWith('CART-')) {
-            await sendNewOrderNotification(payload.new);
+          if (
+            row.status !== 'cart_draft' &&
+            row.status !== 'otp_sent' &&
+            !row.order_number?.startsWith('CART-') &&
+            !row.order_number?.startsWith('OTP-')
+          ) {
+            await sendNewOrderNotification(row);
           }
         } catch (err) {
           console.error('Realtime notification error:', err);
@@ -2118,10 +2146,40 @@ async function poll() {
 
 console.log('🤖 Telegram Bot @romaupbot is RUNNING with Realtime Order Tracking & Stock Management!');
 
+// Fast fallback poller to dispatch pending OTPs in case Realtime connection fluctuates
+async function checkPendingOtpsRoutine() {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('status', 'otp_pending')
+      .limit(5);
+
+    if (!error && Array.isArray(data) && data.length > 0) {
+      for (const row of data) {
+        const cleanPhone = String(row.phone || '').replace(/\D+/g, '');
+        const msg =
+          row.items?.[0]?.message ||
+          `🌸 *متجر روما | ROMA Beauty*\n\nكود التحقق الخاص بك هو:\n\n🔑 *${row.items?.[0]?.otp}*`;
+        if (cleanPhone) {
+          try {
+            const res = await sendWhatsAppText(cleanPhone, msg);
+            console.log(`[WHATSAPP-OTP] Poller sent OTP to ${cleanPhone}:`, res);
+            await supabase.from('orders').update({ status: 'otp_sent' }).eq('id', row.id);
+          } catch (waErr) {
+            console.error('[WHATSAPP-OTP] Poller send error:', waErr?.message);
+          }
+        }
+      }
+    }
+  } catch (_) {}
+}
+
 // Start Realtime listener, WhatsApp Bridge & Abandoned Cart Interval (every 60s for 5-min carts)
 initSupabaseRealtime();
 initWhatsApp();
 setInterval(checkAbandonedCartsRoutine, 60 * 1000); // Check every 1 minute
+setInterval(checkPendingOtpsRoutine, 4 * 1000); // Check every 4 seconds for OTP dispatches
 
 const startupText =
   `🟢 *تم تشغيل نظام إدارة متجر Roma المتكامل بنجاح!*\n\n` +

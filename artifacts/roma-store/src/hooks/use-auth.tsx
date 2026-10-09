@@ -233,6 +233,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register handler with Supabase Auth
   const register = async (name: string, email: string, phone?: string, password = 'Password123!') => {
     try {
+      try {
+        localStorage.removeItem('roma_recent_orders');
+        sessionStorage.removeItem('roma_latest_order_id');
+      } catch (_) {}
+
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
@@ -452,89 +457,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (_) {}
   };
 
-  // Fetch real order history from Supabase with instant local fallback
+  // Fetch real order history strictly for this authenticated user
   const fetchUserOrders = async (): Promise<UserOrder[]> => {
-    let localRecent: UserOrder[] = [];
-    try {
-      const saved = localStorage.getItem('roma_recent_orders');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) localRecent = parsed;
-      }
-    } catch (_) {}
-
     if (!user) {
-      // For guest visitors, return their locally saved orders immediately
-      return localRecent;
+      // For guest visitors only, return locally saved recent orders
+      try {
+        const saved = localStorage.getItem('roma_recent_orders');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (_) {}
+      return [];
     }
 
     try {
-      // 1. Fetch by user_id
+      // Authenticated user: Strictly query orders created under this specific user.id
       const { data, error } = await supabase
         .from('orders')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      let combined: UserOrder[] = [];
       if (!error && Array.isArray(data)) {
-        combined = [...data];
+        return data;
       }
-
-      // 2. Fallback to searching by phone if user_id returns empty
-      if (combined.length === 0 && user.phone && user.phone.length > 8) {
-        try {
-          const cleanPhone = user.phone.replace(/\D+/g, '');
-          const res = await fetch(`/api/track-order?phone=${encodeURIComponent(cleanPhone)}`);
-          if (res.ok) {
-            const json = await res.json();
-            if (json.success && Array.isArray(json.orders)) {
-              combined = [...json.orders];
-            }
-          }
-        } catch (_) {}
-      }
-
-      // Merge only recent orders from local storage that strictly belong to this logged-in user
-      const existingIds = new Set(
-        combined.map((o: any) => String(o.order_number || o.id))
-      );
-      const userCleanPhone = (user.phone || '').replace(/\D+/g, '');
-      const userEmail = (user.email || '').toLowerCase().trim();
-
-      for (const rec of localRecent) {
-        const recKey = String((rec as any).order_number || rec.id);
-        const recPhone = String((rec as any).phone || (rec as any).customer_phone || '').replace(/\D+/g, '');
-        const recEmail = String((rec as any).email || (rec as any).customer_email || '').toLowerCase().trim();
-        const recUserId = (rec as any).user_id;
-
-        const isBelonging =
-          (recUserId && recUserId === user.id) ||
-          (userCleanPhone && recPhone && (recPhone === userCleanPhone || (userCleanPhone.length >= 8 && recPhone.endsWith(userCleanPhone.slice(-8))))) ||
-          (userEmail && recEmail && recEmail === userEmail);
-
-        if (isBelonging && !existingIds.has(recKey)) {
-          combined.unshift(rec);
-          existingIds.add(recKey);
-        }
-      }
-
-      return combined;
+      return [];
     } catch (e) {
       console.warn('Could not fetch user orders:', e);
-      if (!user) return localRecent;
-      const userCleanPhone = (user.phone || '').replace(/\D+/g, '');
-      const userEmail = (user.email || '').toLowerCase().trim();
-      return localRecent.filter((rec: any) => {
-        const recPhone = String(rec.phone || rec.customer_phone || '').replace(/\D+/g, '');
-        const recEmail = String(rec.email || rec.customer_email || '').toLowerCase().trim();
-        const recUserId = rec.user_id;
-        return (
-          (recUserId && recUserId === user.id) ||
-          (userCleanPhone && recPhone && (recPhone === userCleanPhone || (userCleanPhone.length >= 8 && recPhone.endsWith(userCleanPhone.slice(-8))))) ||
-          (userEmail && recEmail && recEmail === userEmail)
-        );
-      });
+      return [];
     }
   };
 

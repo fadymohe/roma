@@ -268,6 +268,10 @@ export default function AccountPage() {
   // Auto-fetch latest placed order details and recent orders on mount
   useEffect(() => {
     async function refreshActiveOrders() {
+      // When a user is logged in, their orders are already strictly loaded from their user_id via fetchUserOrders()
+      // Never pull guest recent orders into an authenticated account
+      if (user) return;
+
       const targets = new Set<string>();
       if (recentOrderId) {
         targets.add(String(recentOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, ''));
@@ -278,18 +282,7 @@ export default function AccountPage() {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            const userCleanPhone = (user?.phone || '').replace(/\D+/g, '');
-            const userEmail = (user?.email || '').toLowerCase().trim();
             for (const o of parsed.slice(0, 5)) {
-              if (user) {
-                const oCleanPhone = String(o.phone || o.customer_phone || '').replace(/\D+/g, '');
-                const oEmail = String(o.email || o.customer_email || '').toLowerCase().trim();
-                const belongs =
-                  (o.user_id && o.user_id === user.id) ||
-                  (userCleanPhone && oCleanPhone && (oCleanPhone === userCleanPhone || (userCleanPhone.length >= 8 && oCleanPhone.endsWith(userCleanPhone.slice(-8))))) ||
-                  (userEmail && oEmail && oEmail === userEmail);
-                if (!belongs) continue;
-              }
               const clean = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
               if (clean) targets.add(clean);
             }
@@ -339,40 +332,40 @@ export default function AccountPage() {
       }
 
       const targets = new Set<string>();
-      if (recentOrderId) {
-        targets.add(String(recentOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim());
-      }
-      for (const o of lookupOrders.slice(0, 5)) {
-        const num = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-        if (num) targets.add(num);
-      }
-      for (const o of orders.slice(0, 5)) {
-        const num = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-        if (num) targets.add(num);
-      }
-      try {
-        const raw = localStorage.getItem('roma_recent_orders');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            const userCleanPhone = (user?.phone || '').replace(/\D+/g, '');
-            const userEmail = (user?.email || '').toLowerCase().trim();
-            for (const o of parsed.slice(0, 5)) {
-              if (user) {
-                const oCleanPhone = String(o.phone || o.customer_phone || '').replace(/\D+/g, '');
-                const oEmail = String(o.email || o.customer_email || '').toLowerCase().trim();
-                const belongs =
-                  (o.user_id && o.user_id === user.id) ||
-                  (userCleanPhone && oCleanPhone && (oCleanPhone === userCleanPhone || (userCleanPhone.length >= 8 && oCleanPhone.endsWith(userCleanPhone.slice(-8))))) ||
-                  (userEmail && oEmail && oEmail === userEmail);
-                if (!belongs) continue;
-              }
-              const clean = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
-              if (clean) targets.add(clean);
-            }
+      if (user) {
+        // Authenticated user: only poll orders that strictly belong to their user account
+        for (const o of orders) {
+          if (o.user_id === user.id) {
+            const num = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+            if (num) targets.add(num);
           }
         }
-      } catch (_) { }
+      } else {
+        // Guest mode
+        if (recentOrderId) {
+          targets.add(String(recentOrderId).replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim());
+        }
+        for (const o of lookupOrders.slice(0, 5)) {
+          const num = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+          if (num) targets.add(num);
+        }
+        for (const o of orders.slice(0, 5)) {
+          const num = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+          if (num) targets.add(num);
+        }
+        try {
+          const raw = localStorage.getItem('roma_recent_orders');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              for (const o of parsed.slice(0, 5)) {
+                const clean = String(o.order_number || o.id || '').replace(/^#+/g, '').replace(/^(ROMA-)+/gi, '').trim();
+                if (clean) targets.add(clean);
+              }
+            }
+          }
+        } catch (_) { }
+      }
 
       for (const num of targets) {
         try {
@@ -621,27 +614,10 @@ export default function AccountPage() {
 
     // Default: Strict privacy per account
     if (user) {
-      // 1. Logged-in user's orders from database
+      // Strictly show ONLY orders that belong to this authenticated user account (user_id === user.id)
       for (const o of orders) {
-        if (isAuthorizedOrder(o)) mergeOrder(o);
+        if (o.user_id === user.id) mergeOrder(o);
       }
-      // 2. Current session lookups (only if belonging to this user)
-      for (const o of lookupOrders) {
-        if (isAuthorizedOrder(o)) mergeOrder(o);
-      }
-      // 3. Local recent orders matching this user
-      try {
-        const raw = localStorage.getItem('roma_recent_orders');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            for (const o of parsed) {
-              if (isAuthorizedOrder(o)) mergeOrder(o);
-            }
-          }
-        }
-      } catch (_) {}
-
       return Array.from(map.values());
     }
 
@@ -794,7 +770,7 @@ export default function AccountPage() {
         {/* TAB 1: MY ORDERS & REALTIME TRACKING STEP INDICATOR */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
-            {recentOrderId && (
+            {recentOrderId && (!user || orders.some((o: any) => o.user_id === user.id && (String(o.order_number || o.id).includes(recentOrderId) || recentOrderId.includes(String(o.order_number || o.id))))) && (
               <div className="rounded-2xl bg-gradient-to-r from-[#D4A5A5]/25 via-[#D4A5A5]/10 to-transparent border border-[#D4A5A5]/40 p-4.5 flex items-center justify-between gap-3 text-xs text-white shadow-lg animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="flex items-center gap-3">
                   <div className="size-9 rounded-xl bg-[#D4A5A5]/20 flex items-center justify-center shrink-0">
