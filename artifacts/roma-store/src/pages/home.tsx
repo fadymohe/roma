@@ -533,52 +533,28 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2.5 self-start sm:self-auto">
-            {/* Quick Header Arrow Controls */}
-            {displayedProducts.length > 0 && (
-              <div className="hidden sm:flex items-center gap-1.5 shrink-0 bg-[#141414] border border-white/10 p-1 rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => handleScroll(bestsellersSliderRef, 'right')}
-                  className="size-8 rounded-lg flex items-center justify-center hover:bg-white/10 text-zinc-300 hover:text-white transition active:scale-90"
-                  aria-label={isAr ? 'تحريك لليمين' : 'Scroll Right'}
-                  title={isAr ? 'تحريك لليمين' : 'Scroll Right'}
-                >
-                  <ChevronRight className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleScroll(bestsellersSliderRef, 'left')}
-                  className="size-8 rounded-lg flex items-center justify-center hover:bg-white/10 text-zinc-300 hover:text-white transition active:scale-90"
-                  aria-label={isAr ? 'تحريك لليسار' : 'Scroll Left'}
-                  title={isAr ? 'تحريك لليسار' : 'Scroll Left'}
-                >
-                  <ChevronLeft className="size-4" />
-                </button>
-              </div>
-            )}
-
           </div>
         </div>
 
-        {/* Product Cards Smooth Slider with Floating Side Arrows */}
+        {/* Product Cards Smooth Slider with Floating Side Arrows (Desktop only) */}
         {displayedProducts.length > 0 ? (
           <div className="relative group/slider">
-            {/* Floating Left Button (زر تحريك يسار بجوار المنتجات) */}
+            {/* Floating Left Button (Desktop only) */}
             <button
               type="button"
               onClick={() => handleScroll(bestsellersSliderRef, 'left')}
-              className="absolute left-1 sm:left-2 md:-left-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-[#D4A5A5] text-white hover:text-[#0A0A0A] border border-white/20 hover:border-[#D4A5A5] shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(212,165,165,0.5)] backdrop-blur-md transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-90 select-none"
+              className="hidden md:flex absolute left-1 sm:left-2 md:-left-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-[#D4A5A5] text-white hover:text-[#0A0A0A] border border-white/20 hover:border-[#D4A5A5] shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(212,165,165,0.5)] backdrop-blur-md transition-all duration-300 items-center justify-center cursor-pointer active:scale-90 select-none"
               aria-label={isAr ? 'تحريك لليسار' : 'Scroll Left'}
               title={isAr ? 'تحريك لليسار' : 'Scroll Left'}
             >
               <ChevronLeft className="size-5 sm:size-6" />
             </button>
 
-            {/* Floating Right Button (زر تحريك يمين بجوار المنتجات) */}
+            {/* Floating Right Button (Desktop only) */}
             <button
               type="button"
               onClick={() => handleScroll(bestsellersSliderRef, 'right')}
-              className="absolute right-1 sm:right-2 md:-right-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-[#D4A5A5] text-white hover:text-[#0A0A0A] border border-white/20 hover:border-[#D4A5A5] shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(212,165,165,0.5)] backdrop-blur-md transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-90 select-none"
+              className="hidden md:flex absolute right-1 sm:right-2 md:-right-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-[#D4A5A5] text-white hover:text-[#0A0A0A] border border-white/20 hover:border-[#D4A5A5] shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(212,165,165,0.5)] backdrop-blur-md transition-all duration-300 items-center justify-center cursor-pointer active:scale-90 select-none"
               aria-label={isAr ? 'تحريك لليمين' : 'Scroll Right'}
               title={isAr ? 'تحريك لليمين' : 'Scroll Right'}
             >
@@ -587,16 +563,21 @@ export default function Home() {
 
             <div
               ref={bestsellersSliderRef}
-              className="flex items-stretch gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x scroll-smooth"
+              className="flex items-stretch gap-3.5 sm:gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 pb-5 -mx-4 px-8 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth touch-pan-x"
+              style={{
+                scrollSnapType: 'x mandatory',
+                WebkitOverflowScrolling: 'touch',
+                overscrollBehaviorX: 'contain',
+              }}
             >
               {displayedProducts.map((p, i) => (
-                <div key={p.id} className="w-[240px] sm:w-[270px] md:w-[290px] shrink-0 snap-start flex">
+                <div key={p.id} className="w-[76vw] max-w-[270px] sm:w-[270px] md:w-[290px] shrink-0 snap-center md:snap-start flex">
                   <ProductCard product={p} index={i} />
                 </div>
               ))}
 
               {/* Discover More Card in Slider */}
-              <div className="w-[200px] sm:w-[240px] shrink-0 snap-start flex">
+              <div className="w-[65vw] max-w-[240px] sm:w-[240px] shrink-0 snap-center md:snap-start flex">
                 <Link
                   href="/shop"
                   className="flex flex-col items-center justify-center text-center p-6 w-full h-full rounded-3xl border border-dashed border-white/15 hover:border-[#D4A5A5] bg-[#141414]/50 hover:bg-[#141414] transition group"
@@ -659,28 +640,6 @@ export default function Home() {
             </div>
 
             <div className="flex items-center gap-2.5 self-start md:self-auto">
-              {/* Quick Header Arrow Controls */}
-              <div className="hidden sm:flex items-center gap-1.5 shrink-0 bg-[#141414] border border-amber-500/25 p-1 rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => handleScroll(under10SliderRef, 'right')}
-                  className="size-8 rounded-lg flex items-center justify-center hover:bg-amber-500/20 text-amber-300 hover:text-white transition active:scale-90"
-                  aria-label={isAr ? 'تحريك لليمين' : 'Scroll Right'}
-                  title={isAr ? 'تحريك لليمين' : 'Scroll Right'}
-                >
-                  <ChevronRight className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleScroll(under10SliderRef, 'left')}
-                  className="size-8 rounded-lg flex items-center justify-center hover:bg-amber-500/20 text-amber-300 hover:text-white transition active:scale-90"
-                  aria-label={isAr ? 'تحريك لليسار' : 'Scroll Left'}
-                  title={isAr ? 'تحريك لليسار' : 'Scroll Left'}
-                >
-                  <ChevronLeft className="size-4" />
-                </button>
-              </div>
-
               <Link
                 href="/shop?maxPrice=10"
                 className="group inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-[#0A0A0A] px-3.5 py-1.5 rounded-full bg-amber-500/10 hover:bg-gradient-to-r hover:from-amber-400 hover:to-amber-500 border border-amber-500/30 transition-all duration-300 shadow-xs hover:shadow-amber-500/20"
@@ -691,24 +650,24 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Under 10 Products Smooth Slider with Floating Side Arrows */}
+          {/* Under 10 Products Smooth Slider with Floating Side Arrows (Desktop only) */}
           <div className="relative group/slider">
-            {/* Floating Left Button (زر تحريك يسار بجوار المنتجات) */}
+            {/* Floating Left Button (Desktop only) */}
             <button
               type="button"
               onClick={() => handleScroll(under10SliderRef, 'left')}
-              className="absolute left-1 sm:left-2 md:-left-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-gradient-to-r hover:from-amber-400 hover:to-amber-500 text-amber-200 hover:text-[#0A0A0A] border border-amber-500/30 hover:border-amber-400 shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(245,158,11,0.5)] backdrop-blur-md transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-90 select-none"
+              className="hidden md:flex absolute left-1 sm:left-2 md:-left-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-gradient-to-r hover:from-amber-400 hover:to-amber-500 text-amber-200 hover:text-[#0A0A0A] border border-amber-500/30 hover:border-amber-400 shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(245,158,11,0.5)] backdrop-blur-md transition-all duration-300 items-center justify-center cursor-pointer active:scale-90 select-none"
               aria-label={isAr ? 'تحريك لليسار' : 'Scroll Left'}
               title={isAr ? 'تحريك لليسار' : 'Scroll Left'}
             >
               <ChevronLeft className="size-5 sm:size-6" />
             </button>
 
-            {/* Floating Right Button (زر تحريك يمين بجوار المنتجات) */}
+            {/* Floating Right Button (Desktop only) */}
             <button
               type="button"
               onClick={() => handleScroll(under10SliderRef, 'right')}
-              className="absolute right-1 sm:right-2 md:-right-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-gradient-to-r hover:from-amber-400 hover:to-amber-500 text-amber-200 hover:text-[#0A0A0A] border border-amber-500/30 hover:border-amber-400 shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(245,158,11,0.5)] backdrop-blur-md transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-90 select-none"
+              className="hidden md:flex absolute right-1 sm:right-2 md:-right-5 top-1/2 -translate-y-1/2 z-20 size-10 sm:size-12 rounded-full bg-[#121212]/90 hover:bg-gradient-to-r hover:from-amber-400 hover:to-amber-500 text-amber-200 hover:text-[#0A0A0A] border border-amber-500/30 hover:border-amber-400 shadow-[0_4px_24px_rgba(0,0,0,0.8)] hover:shadow-[0_0_24px_rgba(245,158,11,0.5)] backdrop-blur-md transition-all duration-300 items-center justify-center cursor-pointer active:scale-90 select-none"
               aria-label={isAr ? 'تحريك لليمين' : 'Scroll Right'}
               title={isAr ? 'تحريك لليمين' : 'Scroll Right'}
             >
@@ -717,16 +676,21 @@ export default function Home() {
 
             <div
               ref={under10SliderRef}
-              className="flex items-stretch gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x scroll-smooth"
+              className="flex items-stretch gap-3.5 sm:gap-4 md:gap-6 overflow-x-auto no-scrollbar py-2 pb-5 -mx-4 px-8 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth touch-pan-x"
+              style={{
+                scrollSnapType: 'x mandatory',
+                WebkitOverflowScrolling: 'touch',
+                overscrollBehaviorX: 'contain',
+              }}
             >
               {under10Products.map((p, i) => (
-                <div key={p.id} className="w-[240px] sm:w-[270px] md:w-[290px] shrink-0 snap-start flex">
+                <div key={p.id} className="w-[76vw] max-w-[270px] sm:w-[270px] md:w-[290px] shrink-0 snap-center md:snap-start flex">
                   <ProductCard product={p} index={i} />
                 </div>
               ))}
 
               {/* Discover More Card in Under 10 Slider */}
-              <div className="w-[200px] sm:w-[240px] shrink-0 snap-start flex">
+              <div className="w-[65vw] max-w-[240px] sm:w-[240px] shrink-0 snap-center md:snap-start flex">
                 <Link
                   href="/shop"
                   className="flex flex-col items-center justify-center text-center p-6 w-full h-full rounded-3xl border border-dashed border-amber-500/25 hover:border-amber-400 bg-[#141414]/50 hover:bg-[#141414] transition group"
