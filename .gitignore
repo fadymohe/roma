@@ -61,3 +61,9 @@ Thumbs.db
 # WhatsApp Auth Tokens
 .whatsapp-auth/
 whatsapp-qr.*
+
+# Sensitive Customer, Order & Admin Data Files (Isolation)
+orders.json
+abandoned_carts.json
+admins.json
+products-sync.json

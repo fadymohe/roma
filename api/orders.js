@@ -63,13 +63,23 @@ function getCatalog() {
 }
 
 export default async function handler(req, res) {
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  const allowedOrigins = [
+    'https://roma-eg.my',
+    'https://www.roma-eg.my',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'https://roma-eg.my');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
   );
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -89,8 +99,14 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Rate Limiting Protection
-  const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
+  // Trusted IP extraction (Cloudflare > Real-IP > Remote)
+  const clientIp =
+    req.headers['cf-connecting-ip'] ||
+    req.headers['x-real-ip'] ||
+    (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) ||
+    req.socket?.remoteAddress ||
+    '127.0.0.1';
+
   if (!checkRateLimit(clientIp)) {
     return res.status(429).json({ success: false, error: 'Too many requests. Please try again in 1 minute.' });
   }
