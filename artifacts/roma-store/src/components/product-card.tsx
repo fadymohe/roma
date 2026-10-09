@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { Heart, ShoppingBag, Star, Check, MessageCircle } from 'lucide-react';
+import { Heart, ShoppingBag, Star, Check } from 'lucide-react';
 import type { Product } from '@/lib/catalog-data';
 import { getProductDiscount } from '@/lib/catalog-data';
 import { useCart } from '@/hooks/use-cart';
@@ -170,29 +170,12 @@ export function ProductCard({ product }: ProductCardProps) {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-1.5 w-full mt-auto pt-2">
-            {/* Quick WhatsApp Inquiry / Order */}
-            <a
-              href={`https://wa.me/201505566849?text=${encodeURIComponent(
-                isAr
-                  ? `مرحباً روما ستور، أود طلب أو الاستفسار عن هذا المنتج:\n• ${displayName}\n• السعر: ${product.price} ج.م`
-                  : `Hello ROMA Store, I would like to order this item:\n• ${displayName}\n• Price: ${product.price} EGP`
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={isAr ? 'طلب واستفسار مباشر عبر واتساب' : 'Quick WhatsApp Order'}
-              className="size-8 sm:size-9 rounded-xl flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/25 transition-all active:scale-95 shadow-sm shrink-0"
-              aria-label="WhatsApp"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MessageCircle className="size-4" />
-            </a>
-
+          <div className="w-full mt-auto pt-2">
             <button
               type="button"
               data-testid={`btn-add-cart-${product.id}`}
               onClick={handleAddToCart}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 rounded-xl px-1.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold transition-all active:scale-95 shadow-md h-8 sm:h-9 overflow-hidden ${
+              className={`w-full flex items-center justify-center gap-1.5 rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold transition-all active:scale-95 shadow-md h-8 sm:h-9 overflow-hidden ${
                 isAdding
                   ? 'bg-emerald-500 text-white shadow-emerald-500/30'
                   : 'bg-white hover:bg-zinc-100 text-zinc-950 shadow-md hover:shadow-lg hover:shadow-white/10 border border-white/20'
@@ -201,13 +184,12 @@ export function ProductCard({ product }: ProductCardProps) {
               {isAdding ? (
                 <>
                   <Check className="size-3.5 text-white stroke-[3] shrink-0" />
-                  <span className="font-bold truncate">{isAr ? 'تمت' : 'Added'}</span>
+                  <span className="font-bold truncate">{isAr ? 'تمت الإضافة للسلة' : 'Added to Bag'}</span>
                 </>
               ) : (
                 <>
                   <ShoppingBag className="size-3.5 text-zinc-950 shrink-0" strokeWidth={2.2} />
-                  <span className="sm:hidden font-bold truncate">{isAr ? 'أضف' : 'Add'}</span>
-                  <span className="hidden sm:inline text-zinc-950 font-bold whitespace-nowrap">{t('product.add_to_cart')}</span>
+                  <span className="font-bold whitespace-nowrap">{t('product.add_to_cart')}</span>
                 </>
               )}
             </button>
