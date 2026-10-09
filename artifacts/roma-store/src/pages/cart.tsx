@@ -934,104 +934,109 @@ export default function CartPage() {
     <div className="roma-container pt-4 pb-28 md:py-14 text-white" dir={dir}>
       {/* Top Free Shipping Progress Indicator */}
       {/* Top Minimum Order & Free Shipping Banner */}
-      <div className="mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl space-y-4">
-        {/* 1. Minimum Order Requirement (200 EGP) */}
-        <div className="space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
-            <div className="flex items-center gap-2 text-white">
-              {!isMinOrderReached ? (
-                <AlertCircle className="size-4 text-amber-400 shrink-0" />
-              ) : (
-                <Check className="size-4 text-emerald-400 shrink-0" />
-              )}
-              <span>
-                {!isMinOrderReached
-                  ? isAr
-                    ? `الحد الأدنى للطلب هو ${MIN_ORDER_AMOUNT} ج.م — أضيفي بقيمة ${remainingForMinOrder} ج.م إضافية لتأكيد الشراء`
-                    : `Minimum order amount is ${MIN_ORDER_AMOUNT} EGP — Add ${remainingForMinOrder} EGP more to proceed`
-                  : isAr
-                  ? `✨ تم استيفاء الحد الأدنى للطلب (${MIN_ORDER_AMOUNT} ج.م) بنجاح`
-                  : `✨ Minimum order requirement (${MIN_ORDER_AMOUNT} EGP) met!`}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              {!isMinOrderReached && (
-                <Link
-                  href="/shop"
-                  className="text-[11px] font-semibold text-[#D4A5A5] hover:underline"
-                >
-                  {isAr ? 'تصفح المنتجات ←' : 'Browse items →'}
-                </Link>
-              )}
-              <span className="font-mono-brand text-[#D4A5A5] bg-[#D4A5A5]/10 px-2 py-0.5 rounded-full border border-[#D4A5A5]/20">
-                {minOrderProgress}%
-              </span>
-            </div>
-          </div>
-
-          <div className="h-2 w-full rounded-full bg-[#1A1A1A] overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                isMinOrderReached
-                  ? 'bg-gradient-to-r from-[#D4A5A5] to-emerald-400'
-                  : 'bg-gradient-to-r from-rose-500 via-amber-400 to-[#D4A5A5]'
-              }`}
-              style={{ width: `${minOrderProgress}%` }}
-            />
-          </div>
-        </div>
-
-        {/* 2. Free Shipping Threshold (500 EGP) */}
-        <div className="pt-3 border-t border-white/5 space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
-            <div className="flex items-center gap-2">
-              <Truck className="size-4 text-[#D4A5A5] shrink-0" />
-              <span className="text-white font-medium">
-                {isFreeShipping
-                  ? isAr
-                    ? '🎁 تهانينا! حصلتِ على شحن مجاني بالكامل لطلبكِ (عرض الطلبات فوق 500 ج.م)'
-                    : '🎁 Congratulations! You unlocked 100% FREE shipping (500+ EGP offer)'
-                  : isAr
-                  ? `🚚 أضيفي بقيمة ${formatPrice(remainingForFreeShipping)} إضافية للحصول على شحن مجاني بالكامل!`
-                  : `🚚 Add ${formatPrice(remainingForFreeShipping)} more to enjoy 100% FREE shipping!`}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              {isFreeShipping ? (
-                <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full text-[11px] border border-emerald-500/20">
-                  {isAr ? 'شحن مجاني مفعل ✨' : 'FREE Shipping ✨'}
+      {(!isMinOrderReached || subtotal >= 400) && (
+        <div className={`mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl space-y-4 ${isMinOrderReached && subtotal < 400 ? 'hidden sm:block' : ''}`}>
+          {/* 1. Minimum Order Requirement (200 EGP) */}
+          <div className={`space-y-2 ${isMinOrderReached ? 'hidden sm:block' : ''}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
+              <div className="flex items-center gap-2 text-white">
+                {!isMinOrderReached ? (
+                  <AlertCircle className="size-4 text-amber-400 shrink-0" />
+                ) : (
+                  <Check className="size-4 text-emerald-400 shrink-0" />
+                )}
+                <span>
+                  {!isMinOrderReached
+                    ? isAr
+                      ? `الحد الأدنى للطلب هو ${MIN_ORDER_AMOUNT} ج.م — أضيفي بقيمة ${remainingForMinOrder} ج.م إضافية لتأكيد الشراء`
+                      : `Minimum order amount is ${MIN_ORDER_AMOUNT} EGP — Add ${remainingForMinOrder} EGP more to proceed`
+                    : isAr
+                    ? `✨ تم استيفاء الحد الأدنى للطلب (${MIN_ORDER_AMOUNT} ج.م) بنجاح`
+                    : `✨ Minimum order requirement (${MIN_ORDER_AMOUNT} EGP) met!`}
                 </span>
-              ) : (
-                <Link href="/shop" className="text-[11px] text-[#D4A5A5] hover:underline shrink-0 font-semibold">
-                  {isAr ? 'أضيفي منتجات +' : 'Add Items +'}
-                </Link>
-              )}
-              <span
-                className={`font-mono-brand px-2 py-0.5 rounded-full border text-[11px] ${
-                  isFreeShipping
-                    ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                    : 'text-[#D4A5A5] bg-[#D4A5A5]/10 border-[#D4A5A5]/20'
+              </div>
+
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                {!isMinOrderReached && (
+                  <Link
+                    href="/shop"
+                    className="text-[11px] font-semibold text-[#D4A5A5] hover:underline"
+                  >
+                    {isAr ? 'تصفح المنتجات ←' : 'Browse items →'}
+                  </Link>
+                )}
+                {/* Fulfillment percentage badge - hidden on mobile as requested */}
+                <span className="hidden sm:inline-flex font-mono-brand text-[#D4A5A5] bg-[#D4A5A5]/10 px-2 py-0.5 rounded-full border border-[#D4A5A5]/20">
+                  {minOrderProgress}%
+                </span>
+              </div>
+            </div>
+
+            <div className="h-2 w-full rounded-full bg-[#1A1A1A] overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  isMinOrderReached
+                    ? 'bg-gradient-to-r from-[#D4A5A5] to-emerald-400'
+                    : 'bg-gradient-to-r from-rose-500 via-amber-400 to-[#D4A5A5]'
                 }`}
-              >
-                {freeShippingProgress}%
-              </span>
+                style={{ width: `${minOrderProgress}%` }}
+              />
             </div>
           </div>
 
-          <div className="h-2 w-full rounded-full bg-[#1A1A1A] overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                isFreeShipping
-                  ? 'bg-gradient-to-r from-[#D4A5A5] to-emerald-400'
-                  : 'bg-gradient-to-r from-rose-500/80 via-[#D4A5A5] to-emerald-400'
-              }`}
-              style={{ width: `${freeShippingProgress}%` }}
-            />
-          </div>
+          {/* 2. Free Shipping Threshold (Appears only when subtotal >= 400 EGP) */}
+          {subtotal >= 400 && (
+            <div className={`space-y-2 ${!isMinOrderReached ? 'pt-3 border-t border-white/5' : 'pt-0 sm:pt-3 sm:border-t sm:border-white/5'}`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
+                <div className="flex items-center gap-2">
+                  <Truck className="size-4 text-[#D4A5A5] shrink-0" />
+                  <span className="text-white font-medium">
+                    {isFreeShipping
+                      ? isAr
+                        ? '🎁 تهانينا! حصلتِ على شحن مجاني بالكامل لطلبكِ (عرض الطلبات فوق 500 ج.م)'
+                        : '🎁 Congratulations! You unlocked 100% FREE shipping (500+ EGP offer)'
+                      : isAr
+                      ? `🚚 أضيفي بقيمة ${formatPrice(remainingForFreeShipping)} إضافية للحصول على شحن مجاني بالكامل!`
+                      : `🚚 Add ${formatPrice(remainingForFreeShipping)} more to enjoy 100% FREE shipping!`}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  {isFreeShipping ? (
+                    <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full text-[11px] border border-emerald-500/20">
+                      {isAr ? 'شحن مجاني مفعل ✨' : 'FREE Shipping ✨'}
+                    </span>
+                  ) : (
+                    <Link href="/shop" className="text-[11px] text-[#D4A5A5] hover:underline shrink-0 font-semibold">
+                      {isAr ? 'أضيفي منتجات +' : 'Add Items +'}
+                    </Link>
+                  )}
+                  <span
+                    className={`font-mono-brand px-2 py-0.5 rounded-full border text-[11px] ${
+                      isFreeShipping
+                        ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                        : 'text-[#D4A5A5] bg-[#D4A5A5]/10 border-[#D4A5A5]/20'
+                    }`}
+                  >
+                    {freeShippingProgress}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="h-2 w-full rounded-full bg-[#1A1A1A] overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    isFreeShipping
+                      ? 'bg-gradient-to-r from-[#D4A5A5] to-emerald-400'
+                      : 'bg-gradient-to-r from-rose-500/80 via-[#D4A5A5] to-emerald-400'
+                  }`}
+                  style={{ width: `${freeShippingProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       {/* Mobile Top Segmented Control (lg:hidden) */}
       <div className="lg:hidden mb-5 bg-[#161616] p-1.5 rounded-2xl border border-white/10 flex items-center gap-1.5 shadow-xl sticky top-20 z-20 backdrop-blur-md">
