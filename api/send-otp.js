@@ -1,17 +1,8 @@
 import { sendWhatsAppText } from '../lib/whatsapp-bridge.js';
-import { createClient } from '@supabase/supabase-js';
+import { insertSupabaseOrder } from '../lib/supabase-server.js';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID;
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://dsgrgbmvbvqwzizbbwxf.supabase.co';
-const SUPABASE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzZ3JnYm12YnZxd3ppemJid3hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzODE0MTMsImV4cCI6MjEwNTk1NzQxM30.kd8bIzK5UzbWIPP4eCHhkflhaRLQ7C1AKb-RhDnvbhM';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: false },
-});
 
 // Rate limiting in-memory store
 const ipRateLimits = new Map();
@@ -106,9 +97,9 @@ export default async function handler(req, res) {
       console.warn('[SEND-OTP] Direct WhatsApp dispatch note:', waErr?.message);
     }
 
-    // Queue in Supabase so the background bot service picks it up via Baileys if running remotely
+    // Queue in Supabase with authenticated client so the background bot service picks it up via Baileys
     try {
-      await supabase.from('orders').insert({
+      await insertSupabaseOrder({
         order_number: `OTP-${Date.now()}-${cleanOtp}`,
         status: 'otp_pending',
         phone: cleanPhone,
@@ -116,9 +107,8 @@ export default async function handler(req, res) {
         items: [{ otp: cleanOtp, message }],
         total_amount: 0,
         shipping_address: 'تحقق من الهاتف',
-        payment_method: 'واتساب OTP',
-        created_at: new Date().toISOString(),
       });
+      console.log(`[SEND-OTP] Successfully queued OTP in Supabase for ${cleanPhone}`);
     } catch (queueErr) {
       console.warn('[SEND-OTP] Supabase queue error:', queueErr?.message);
     }

@@ -447,7 +447,7 @@ export default function AuthPage() {
                 </p>
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-800/50 text-emerald-300 font-mono text-xs font-bold shadow-sm">
                   <span className="size-2 rounded-full bg-emerald-400 animate-ping" />
-                  <span>
+                  <span dir="ltr">
                     {pendingUserData?.phone
                       ? `${pendingUserData.phone.slice(0, 3)}****${pendingUserData.phone.slice(7)}`
                       : ''}

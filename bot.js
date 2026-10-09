@@ -2149,7 +2149,8 @@ console.log('🤖 Telegram Bot @romaupbot is RUNNING with Realtime Order Trackin
 // Fast fallback poller to dispatch pending OTPs in case Realtime connection fluctuates
 async function checkPendingOtpsRoutine() {
   try {
-    const { data, error } = await supabase
+    const sb = await getAuthenticatedSupabase();
+    const { data, error } = await sb
       .from('orders')
       .select('*')
       .eq('status', 'otp_pending')
@@ -2165,14 +2166,16 @@ async function checkPendingOtpsRoutine() {
           try {
             const res = await sendWhatsAppText(cleanPhone, msg);
             console.log(`[WHATSAPP-OTP] Poller sent OTP to ${cleanPhone}:`, res);
-            await supabase.from('orders').update({ status: 'otp_sent' }).eq('id', row.id);
+            await sb.from('orders').update({ status: 'otp_sent' }).eq('id', row.id);
           } catch (waErr) {
             console.error('[WHATSAPP-OTP] Poller send error:', waErr?.message);
           }
         }
       }
     }
-  } catch (_) {}
+  } catch (err) {
+    console.warn('[WHATSAPP-OTP] Poller notice:', err?.message);
+  }
 }
 
 // Start Realtime listener, WhatsApp Bridge & Abandoned Cart Interval (every 60s for 5-min carts)
