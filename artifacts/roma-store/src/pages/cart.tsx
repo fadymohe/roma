@@ -931,11 +931,11 @@ export default function CartPage() {
   }
 
   return (
-    <div className="roma-container pt-4 pb-28 md:py-14 text-white" dir={dir}>
+    <div className="roma-container pt-2.5 sm:pt-4 pb-28 md:py-14 text-white" dir={dir}>
       {/* Top Free Shipping Progress Indicator */}
       {/* Top Minimum Order & Free Shipping Banner */}
       {(!isMinOrderReached || subtotal >= 400) && (
-        <div className={`mb-8 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl space-y-4 ${isMinOrderReached && subtotal < 400 ? 'hidden sm:block' : ''}`}>
+        <div className={`mb-4 sm:mb-6 rounded-3xl border border-white/10 bg-[#141414] p-4 md:p-5 shadow-xl space-y-4 ${isMinOrderReached && subtotal < 400 ? 'hidden sm:block' : ''}`}>
           {/* 1. Minimum Order Requirement (200 EGP) */}
           <div className={`space-y-2 ${isMinOrderReached ? 'hidden sm:block' : ''}`}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
@@ -1039,14 +1039,14 @@ export default function CartPage() {
       )}
 
       {/* Mobile Top Segmented Control (lg:hidden) */}
-      <div className="lg:hidden mb-5 bg-[#161616] p-1.5 rounded-2xl border border-white/10 flex items-center gap-1.5 shadow-xl sticky top-20 z-20 backdrop-blur-md">
+      <div className="lg:hidden mb-4 bg-[#161616] p-1.5 rounded-2xl border border-white/10 flex items-center gap-1.5 shadow-lg">
         <button
           type="button"
           onClick={() => {
             setMobileViewTab('checkout');
-            window.scrollTo({ top: 80, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex-1 py-3 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+          className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
             mobileViewTab === 'checkout'
               ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/25'
               : 'text-[#A1A1AA] hover:text-white'
@@ -1059,9 +1059,9 @@ export default function CartPage() {
           type="button"
           onClick={() => {
             setMobileViewTab('items');
-            window.scrollTo({ top: 80, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex-1 py-3 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+          className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
             mobileViewTab === 'items'
               ? 'bg-[#D4A5A5] text-[#0A0A0A] shadow-md shadow-[#D4A5A5]/25'
               : 'text-[#A1A1AA] hover:text-white'
@@ -1233,7 +1233,7 @@ export default function CartPage() {
                 type="button"
                 onClick={() => {
                   setMobileViewTab('checkout');
-                  window.scrollTo({ top: 80, behavior: 'smooth' });
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#D4A5A5] to-[#B38888] text-[#0A0A0A] text-xs font-bold shadow-lg shadow-[#D4A5A5]/25 hover:opacity-95 active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer"
               >
@@ -1320,7 +1320,7 @@ export default function CartPage() {
                       type="button"
                       onClick={() => {
                         setMobileViewTab('items');
-                        window.scrollTo({ top: 80, behavior: 'smooth' });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                       }}
                       className="text-[11px] text-[#D4A5A5] hover:underline font-bold flex items-center gap-1 cursor-pointer"
                     >
