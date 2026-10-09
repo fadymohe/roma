@@ -10,11 +10,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Sparkles,
-  MessageCircle,
-  ArrowLeft,
-  ArrowRight,
   ShieldCheck,
-  RotateCcw,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/lib/language-context';
@@ -51,33 +47,6 @@ export default function AuthPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // WhatsApp OTP Verification Step
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState('');
-  const [enteredOtp, setEnteredOtp] = useState('');
-  const [otpTimer, setOtpTimer] = useState(60);
-  const [canResendOtp, setCanResendOtp] = useState(false);
-
-  // If already logged in, redirect to account page
-  useEffect(() => {
-    if (user) {
-      setLocation('/account');
-    }
-  }, [user, setLocation]);
-
-  // OTP Countdown timer
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isVerifyingOtp && otpTimer > 0) {
-      interval = setInterval(() => {
-        setOtpTimer((prev) => prev - 1);
-      }, 1000);
-    } else if (otpTimer === 0) {
-      setCanResendOtp(true);
-    }
-    return () => clearInterval(interval);
-  }, [isVerifyingOtp, otpTimer]);
-
   // Password Strength
   const checkPasswordStrength = (pass: string) => {
     let score = 0;
@@ -95,122 +64,63 @@ export default function AuthPage() {
     : ['Very Weak', 'Weak', 'Fair', 'Strong 🔒', 'Excellent ✨'];
   const strengthColors = ['bg-rose-500', 'bg-orange-500', 'bg-amber-500', 'bg-emerald-500', 'bg-emerald-400'];
 
-  // Start WhatsApp Verification Step
-  const initiateWhatsAppVerification = () => {
-    // 1. Validate Two-part Name (letters only, no symbols/digits, at least 2 words)
-    const trimmedName = name.trim();
-    const nameParts = trimmedName.split(/\s+/).filter(Boolean);
-    if (nameParts.length < 2) {
-      setErrorMsg(isAr ? 'الاسم يجب أن يكون ثنائياً على الأقل (مثال: نورا أحمد)' : 'Full name must consist of at least two words (First and Last name)');
-      return;
-    }
-    const validNameRegex = /^[\u0600-\u06FFa-zA-Z\s]+$/;
-    if (!validNameRegex.test(trimmedName)) {
-      setErrorMsg(isAr ? 'الاسم يجب أن يتكون من أحرف فقط وبدون أي أرقام أو رموز' : 'Name must contain letters only, without numbers or symbols');
-      return;
-    }
-
-    // 2. Validate Email
-    if (!email.trim() || !email.includes('@')) {
-      setErrorMsg(isAr ? 'يرجى إدخال بريد إلكتروني صالح' : 'Please provide a valid email address');
-      return;
-    }
-
-    // 3. Validate Phone Number (Egyptian format: 010, 011, 012, 015 - exactly 11 digits)
-    const cleanPhone = phone.trim().replace(/\D/g, '');
-    const validEgyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
-    if (!validEgyptianPhoneRegex.test(cleanPhone) || cleanPhone.length !== 11) {
-      setErrorMsg(isAr ? 'رقم الهاتف يجب أن يتكون من 11 رقماً ويبدأ بـ (010 أو 011 أو 012 أو 015)' : 'Phone must be 11 digits starting with 010, 011, 012, or 015');
-      return;
-    }
-
-    // 4. Validate Password
-    if (password.length < 6) {
-      setErrorMsg(isAr ? 'كلمة المرور يجب أن تكون ٦ خانات على الأقل' : 'Password must be at least 6 characters');
-      return;
-    }
-
-    setErrorMsg(null);
-
-    // Generate random 6-digit OTP code
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(otp);
-    setEnteredOtp('');
-    setOtpTimer(60);
-    setCanResendOtp(false);
-    setIsVerifyingOtp(true);
-
-    // Automatically send WhatsApp message to customer's phone
-    fetch('/api/send-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        phone: cleanPhone,
-        otp,
-        name: trimmedName,
-      }),
-    }).catch((err) => {
-      console.warn('WhatsApp OTP dispatch note:', err);
-    });
-  };
-
-  // Resend OTP
-  const handleResendOtp = () => {
-    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(newOtp);
-    setOtpTimer(60);
-    setCanResendOtp(false);
-    setErrorMsg(null);
-
-    const cleanPhone = phone.trim().replace(/\D/g, '');
-    fetch('/api/send-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        phone: cleanPhone,
-        otp: newOtp,
-        name: name.trim(),
-      }),
-    }).catch((err) => {
-      console.warn('WhatsApp OTP resend note:', err);
-    });
-  };
-
-  // Confirm OTP and complete registration
-  const handleConfirmOtp = async () => {
-    if (enteredOtp.trim() !== generatedOtp.trim()) {
-      setErrorMsg(isAr ? 'رمز التحقق غير صحيح، يرجى كتابة الرمز المكون من ٦ أرقام' : 'Invalid verification code. Please check and try again.');
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg(null);
-
-    try {
-      const res = await register(name.trim(), email.trim(), phone.trim(), password);
-      if (res.success) {
-        showLoader(isAr ? 'تم تأكيد الحساب بنجاح! جاري تحضير ملفك الملكي...' : 'Verified! Preparing your profile...', 500);
-        setTimeout(() => {
-          setLocation('/account');
-        }, 500);
-      } else {
-        setErrorMsg(res.error || (isAr ? 'حدث خطأ أثناء حفظ الحساب' : 'Registration error'));
-        setLoading(false);
-      }
-    } catch (e: any) {
-      setErrorMsg(e?.message || 'Error occurred');
-      setLoading(false);
-    }
-  };
-
-  // Handle Form Submission (Login, Forgot, or Register initial step)
+  // Handle Form Submission (Login, Forgot, or Register)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
 
+    // Register Mode
     if (mode === 'register') {
-      initiateWhatsAppVerification();
+      // 1. Validate Two-part Name
+      const trimmedName = name.trim();
+      const nameParts = trimmedName.split(/\s+/).filter(Boolean);
+      if (nameParts.length < 2) {
+        setErrorMsg(isAr ? 'الاسم يجب أن يكون ثنائياً على الأقل (مثال: نورا أحمد)' : 'Full name must consist of at least two words (First and Last name)');
+        return;
+      }
+      const validNameRegex = /^[\u0600-\u06FFa-zA-Z\s]+$/;
+      if (!validNameRegex.test(trimmedName)) {
+        setErrorMsg(isAr ? 'الاسم يجب أن يتكون من أحرف فقط وبدون أي أرقام أو رموز' : 'Name must contain letters only, without numbers or symbols');
+        return;
+      }
+
+      // 2. Validate Email
+      if (!email.trim() || !email.includes('@')) {
+        setErrorMsg(isAr ? 'يرجى إدخال بريد إلكتروني صالح' : 'Please provide a valid email address');
+        return;
+      }
+
+      // 3. Validate Phone Number (Egyptian format: 010, 011, 012, 015 - exactly 11 digits)
+      const cleanPhone = phone.trim().replace(/\D/g, '');
+      const validEgyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
+      if (!validEgyptianPhoneRegex.test(cleanPhone) || cleanPhone.length !== 11) {
+        setErrorMsg(isAr ? 'رقم الهاتف يجب أن يتكون من 11 رقماً ويبدأ بـ (010 أو 011 أو 012 أو 015)' : 'Phone must be 11 digits starting with 010, 011, 012, or 015');
+        return;
+      }
+
+      // 4. Validate Password
+      if (password.length < 6) {
+        setErrorMsg(isAr ? 'كلمة المرور يجب أن تكون ٦ خانات على الأقل' : 'Password must be at least 6 characters');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await register(trimmedName, email.trim(), cleanPhone, password);
+        if (res.success) {
+          showLoader(isAr ? 'تم إنشاء الحساب بنجاح! جاري تحضير ملفك الملكي...' : 'Account created! Preparing your profile...', 500);
+          setTimeout(() => {
+            setLocation('/account');
+          }, 500);
+        } else {
+          setErrorMsg(res.error || (isAr ? 'حدث خطأ أثناء حفظ الحساب' : 'Registration error'));
+          setLoading(false);
+        }
+      } catch (e: any) {
+        setErrorMsg(e?.message || (isAr ? 'حدث خطأ أثناء إنشاء الحساب' : 'Error occurred'));
+        setLoading(false);
+      }
       return;
     }
 
@@ -274,19 +184,6 @@ export default function AuthPage() {
     }
   };
 
-  const cleanCustomerPhone = phone.trim().replace(/\D/g, '');
-  const maskedPhone = cleanCustomerPhone.length === 11
-    ? `${cleanCustomerPhone.slice(0, 3)}****${cleanCustomerPhone.slice(7)}`
-    : cleanCustomerPhone.length > 4
-    ? `${cleanCustomerPhone.slice(0, 2)}****${cleanCustomerPhone.slice(-2)}`
-    : '****';
-
-  const whatsappMessage = encodeURIComponent(
-    isAr
-      ? `رمز تأكيد حسابي في متجر روما هو: ${generatedOtp} ✨`
-      : `My ROMA verification code is: ${generatedOtp} ✨`
-  );
-
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#F9FAFB] py-12 px-4 relative overflow-hidden" dir={dir}>
       {/* Ambient Radial Lights */}
@@ -325,7 +222,7 @@ export default function AuthPage() {
           className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#141414] via-[#121212] to-[#0D0D0D] p-6 sm:p-8 shadow-2xl shadow-black/80 relative"
         >
           {/* Tabs: Login vs Register */}
-          {mode !== 'forgot' && !isVerifyingOtp && (
+          {mode !== 'forgot' && (
             <div className="grid grid-cols-2 p-1 mb-6 rounded-2xl bg-[#1C1C1C] border border-white/10">
               <button
                 type="button"
@@ -402,117 +299,8 @@ export default function AuthPage() {
             )}
           </AnimatePresence>
 
-          {/* WhatsApp Verification Step Container */}
-          {isVerifyingOtp ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-5"
-            >
-              <div className="text-center space-y-2">
-                <div className="size-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
-                  <MessageCircle className="size-8" />
-                </div>
-                <h3 className="font-bold text-lg text-white">
-                  {isAr ? 'التحقق من رقم الهاتف عبر واتساب' : 'WhatsApp Phone Verification'}
-                </h3>
-                <p className="text-xs text-zinc-400 leading-relaxed max-w-sm mx-auto">
-                  {isAr ? (
-                    <>
-                      تم إرسال رمز التحقق الخاص بكِ عبر واتساب إلى الرقم{' '}
-                      <strong className="text-emerald-400 font-mono mx-1 font-bold tracking-wider" dir="ltr">{maskedPhone}</strong>
-                      . أدخلي الرمز لتأكيد الرقم وتفعيل الحساب.
-                    </>
-                  ) : (
-                    <>
-                      A verification code was sent to your WhatsApp number{' '}
-                      <strong className="text-emerald-400 font-mono mx-1 font-bold" dir="ltr">{maskedPhone}</strong>.
-                    </>
-                  )}
-                </p>
-              </div>
-
-              {/* Status Badge: Sent to WhatsApp */}
-              <div className="p-3.5 rounded-2xl bg-[#161E19] border border-emerald-500/25 text-center">
-                <div className="flex items-center justify-center gap-2 text-emerald-400 text-xs font-bold mb-1">
-                  <span className="inline-block size-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{isAr ? 'تم إرسال كود التأكيد إلى واتساب' : 'Code Sent to WhatsApp'}</span>
-                </div>
-                <p className="text-[11px] text-zinc-400">
-                  {isAr
-                    ? 'يرجى مراجعة رسائل واتساب على رقمكِ وإدخال الرمز المكون من 6 أرقام أدناه'
-                    : 'Check your WhatsApp messages and enter the 6-digit code below'}
-                </p>
-              </div>
-
-              {/* Direct WhatsApp Action Button (Backup) */}
-              <a
-                href={`https://wa.me/201505566849?text=${whatsappMessage}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 py-2.5 px-4 text-xs font-medium transition-all text-center"
-              >
-                <MessageCircle className="size-4 text-[#25D366]" />
-                <span>{isAr ? 'لم يصلكِ الرمز بعد؟ فتح محادثة واتساب 💬' : 'Didn’t receive code? Open WhatsApp 💬'}</span>
-              </a>
-
-              {/* OTP Input Field */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-white block text-center">
-                  {isAr ? 'أدخلي رمز التحقق المكون من ٦ أرقام' : 'Enter 6-digit Verification Code'}
-                </label>
-                <input
-                  type="text"
-                  maxLength={6}
-                  value={enteredOtp}
-                  onChange={(e) => setEnteredOtp(e.target.value.replace(/\D/g, ''))}
-                  placeholder="••••••"
-                  className="w-full text-center tracking-[0.5em] text-2xl font-mono py-3 rounded-2xl bg-[#181818] border border-white/15 focus:border-[#D4A5A5] text-white outline-none"
-                  autoFocus
-                />
-              </div>
-
-              {/* Action Buttons: Confirm & Resend */}
-              <button
-                type="button"
-                onClick={handleConfirmOtp}
-                disabled={enteredOtp.length < 6 || loading}
-                className="w-full py-3.5 rounded-2xl bg-[#D4A5A5] hover:bg-[#C89595] text-[#0A0A0A] font-extrabold text-sm transition-all shadow-lg shadow-[#D4A5A5]/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
-              >
-                {loading
-                  ? (isAr ? 'جاري التحقق وإنشاء الحساب...' : 'Verifying and Creating Account...')
-                  : (isAr ? 'تأكيد الحساب والدخول ✓' : 'Verify & Complete Account ✓')}
-              </button>
-
-              <div className="flex items-center justify-between pt-2 text-xs text-zinc-400">
-                <button
-                  type="button"
-                  onClick={() => setIsVerifyingOtp(false)}
-                  className="hover:text-white transition flex items-center gap-1"
-                >
-                  {isAr ? <ArrowRight className="size-3.5" /> : <ArrowLeft className="size-3.5" />}
-                  <span>{isAr ? 'تعديل البيانات' : 'Edit Info'}</span>
-                </button>
-
-                {canResendOtp ? (
-                  <button
-                    type="button"
-                    onClick={handleResendOtp}
-                    className="text-[#D4A5A5] font-bold hover:underline flex items-center gap-1"
-                  >
-                    <RotateCcw className="size-3.5" />
-                    <span>{isAr ? 'إعادة إرسال الرمز' : 'Resend Code'}</span>
-                  </button>
-                ) : (
-                  <span>
-                    {isAr ? `إعادة الإرسال بعد (${otpTimer} ثانية)` : `Resend in (${otpTimer}s)`}
-                  </span>
-                )}
-              </div>
-            </motion.div>
-          ) : (
-            /* Regular Login / Register Form */
-            <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Regular Login / Register Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
               {/* Google OAuth Login Button */}
               {mode !== 'forgot' && (
                 <div>
@@ -615,8 +403,8 @@ export default function AuthPage() {
                     <Phone className="absolute top-3.5 start-3 size-4 text-zinc-400" />
                   </div>
                   <span className="text-[10px] text-zinc-400 mt-1 block flex items-center gap-1">
-                    <MessageCircle className="size-3 text-emerald-400" />
-                    <span>{isAr ? 'سيتم إرسال رمز تأكيد مباشر على هذا الرقم' : 'We will verify this phone number via WhatsApp'}</span>
+                    <ShieldCheck className="size-3 text-emerald-400" />
+                    <span>{isAr ? 'رقم هاتف مصري معتمد (010, 011, 012, 015) لتسليم الطلبات وتتبع الشحنات' : 'Egyptian phone (010, 011, 012, 015) for order delivery & tracking'}</span>
                   </span>
                 </div>
               )}
@@ -692,14 +480,14 @@ export default function AuthPage() {
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="size-4 rounded-full border-2 border-[#0A0A0A] border-t-transparent animate-spin" />
-                    <span>{isAr ? 'جاري المعالجة...' : 'Processing...'}</span>
+                    <span>{isAr ? 'جاري المعالجة وإنشاء الحساب...' : 'Creating Account...'}</span>
                   </span>
                 ) : mode === 'login' ? (
                   isAr ? 'تسجيل الدخول' : 'Sign In'
                 ) : mode === 'register' ? (
                   <span className="flex items-center justify-center gap-1.5">
-                    <span>{isAr ? 'متابعة وتأكيد الرقم عبر واتساب' : 'Continue to WhatsApp Verification'}</span>
-                    {isAr ? <ArrowLeft className="size-4" /> : <ArrowRight className="size-4" />}
+                    <Sparkles className="size-4 text-[#0A0A0A]" />
+                    <span>{isAr ? 'إنشاء الحساب والدخول فوراً ✨' : 'Create Account & Sign In ✨'}</span>
                   </span>
                 ) : (
                   isAr ? 'إرسال رابط استعادة المرور' : 'Send Reset Link'
@@ -728,7 +516,6 @@ export default function AuthPage() {
                 <span>{isAr ? 'بياناتك مشفرة ومحمية ببروتوكول SSL-256' : 'Encrypted with 256-Bit SSL Protection'}</span>
               </div>
             </form>
-          )}
         </motion.div>
       </div>
     </div>
