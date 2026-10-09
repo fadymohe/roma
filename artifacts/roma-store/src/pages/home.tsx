@@ -1,4 +1,4 @@
-import { Crown, Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck, Flame, ChevronLeft, ChevronRight, Timer, ShieldCheck, Truck, Gem } from 'lucide-react';
+import { Crown, Star, ShoppingBag, Sparkles, Quote, CheckCircle2, MessageCircle, ArrowLeft, ArrowRight, Boxes, Construction, BadgeCheck, Flame, ChevronLeft, ChevronRight, Timer, ShieldCheck, Truck, Gem, Camera, ZoomIn, X } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,6 +29,7 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [[currentHeroImageIdx, direction], setSlide] = useState([0, 0]);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
+  const [previewReviewImage, setPreviewReviewImage] = useState<string | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
@@ -712,25 +713,26 @@ export default function Home() {
       )}
 
       {/* Client Testimonials & Social Proof - Elevated Luxury with Micro-Animations */}
+      {/* Client Testimonials & Social Proof - Elevated Luxury with Real Customer Photos */}
       <section className="roma-container">
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#141414] via-[#0E0E0E] to-[#121212] p-5 sm:p-8 md:p-14 shadow-2xl">
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#141414] via-[#0E0E0E] to-[#121212] p-5 sm:p-8 md:p-12 shadow-2xl">
           {/* Ambient soft glow backdrop */}
           <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#D4A5A5]/10 rounded-full blur-3xl" />
 
-          <div className="relative text-center max-w-xl mx-auto mb-8 md:mb-12">
+          <div className="relative text-center max-w-xl mx-auto mb-7 md:mb-10">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#D4A5A5]/10 border border-[#D4A5A5]/25 text-[#D4A5A5] text-xs font-semibold mb-3 shadow-xs">
-              <BadgeCheck className="size-4 text-[#D4A5A5]" />
-              <span>{isAr ? 'شهادات عميلاتنا الموثقة' : 'Verified Client Reviews'}</span>
+              <Camera className="size-3.5 text-[#D4A5A5]" />
+              <span>{isAr ? 'تصوير وتقييمات حقيقية' : 'Real Customer Reviews & Photos'}</span>
             </div>
             <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mt-1 leading-snug">
-              {isAr ? 'ماذا تقول جميلات ROMA عنا؟' : 'Cherished Experiences'}
+              {isAr ? 'تجارب عميلاتنا وصور المنتجات على الطبيعة' : 'Customer Unboxings & Real Photos'}
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 mt-2 font-normal leading-relaxed">
-              {isAr ? 'ثقة وتجارب حقيقية تعكس رقي وجودة مستحضراتنا الملكية' : 'Authentic reflections of luxury, purity and care'}
+              {isAr ? 'صور وتجارب واقعية شاركتها معنا عميلات روما بعد الاستلام والتجربة' : 'Authentic photos shared by our customers after receiving their orders'}
             </p>
           </div>
 
-          {/* Mobile Testimonials Animated Carousel (Side-by-side switching with luxury animation, swipe, and controls) */}
+          {/* Mobile Testimonials Animated Carousel (Swipe & Controls) */}
           <div
             className="block md:hidden relative select-none"
             onMouseEnter={() => setIsTestimonialHovered(true)}
@@ -739,7 +741,7 @@ export default function Home() {
             onTouchMove={handleTestimonialTouchMove}
             onTouchEnd={handleTestimonialTouchEnd}
           >
-            <div className="relative min-h-[220px] overflow-hidden rounded-2xl">
+            <div className="relative min-h-[360px] overflow-hidden rounded-2xl">
               <AnimatePresence mode="popLayout" custom={testimonialDirection} initial={false}>
                 <motion.div
                   key={currentTestimonialIdx}
@@ -750,60 +752,81 @@ export default function Home() {
                   exit="exit"
                   className="w-full"
                 >
-                  <div className="group relative flex flex-col justify-between rounded-2xl border border-white/10 hover:border-[#D4A5A5]/40 bg-[#161616]/95 backdrop-blur-md p-5 sm:p-6 shadow-xl min-h-[210px] overflow-hidden">
-                    {/* Floating Quote Icon Watermark */}
-                    <Quote className="absolute top-3 left-3 size-14 text-white/[0.03] pointer-events-none -rotate-12" />
-
+                  <div className="group relative flex flex-col justify-between rounded-2xl border border-white/10 hover:border-[#D4A5A5]/40 bg-[#161616]/95 backdrop-blur-md p-4 sm:p-5 shadow-xl overflow-hidden">
+                    {/* Header: User Info & Verification */}
                     <div>
-                      {/* Rating Stars & Verified Pill */}
-                      <div className="flex items-center justify-between gap-2 mb-3.5">
-                        <div className="flex text-[#D4A5A5] gap-1 drop-shadow-[0_0_6px_rgba(212,165,165,0.4)]">
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex size-9 rounded-full bg-gradient-to-tr from-[#D4A5A5]/25 to-[#D4A5A5]/10 border border-[#D4A5A5]/35 items-center justify-center font-bold text-xs text-[#D4A5A5] shrink-0">
+                            {TESTIMONIALS[currentTestimonialIdx].nameAr.charAt(0)}
+                          </div>
+                          <div className="flex flex-col text-right">
+                            <strong className="text-xs font-bold text-white tracking-wide">
+                              {isAr ? TESTIMONIALS[currentTestimonialIdx].nameAr.split('—')[0]?.trim() : TESTIMONIALS[currentTestimonialIdx].nameEn.split('—')[0]?.trim()}
+                            </strong>
+                            <span className="text-[10px] text-zinc-400 font-medium">
+                              {isAr ? TESTIMONIALS[currentTestimonialIdx].nameAr.split('—')[1]?.trim() : TESTIMONIALS[currentTestimonialIdx].nameEn.split('—')[1]?.trim()} • {isAr ? (TESTIMONIALS[currentTestimonialIdx] as any).dateAr : (TESTIMONIALS[currentTestimonialIdx] as any).dateEn}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 font-bold px-2 py-0.5 rounded-full shadow-xs shrink-0">
+                          <CheckCircle2 className="size-3 text-emerald-400 shrink-0" />
+                          <span>{isAr ? 'شراء موثق' : 'Verified'}</span>
+                        </span>
+                      </div>
+
+                      {/* Stars & Product Badge */}
+                      <div className="flex items-center justify-between gap-2 mb-2.5">
+                        <div className="flex text-[#D4A5A5] gap-0.5">
                           {Array.from({ length: TESTIMONIALS[currentTestimonialIdx].rating }).map((_, i) => (
                             <Star key={i} className="size-3.5 fill-[#D4A5A5]" />
                           ))}
                         </div>
-                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 font-bold px-2 py-0.5 rounded-full shadow-xs">
-                          <CheckCircle2 className="size-3 text-emerald-400 shrink-0" />
-                          <span>{isAr ? 'مشتري موثق' : 'Verified'}</span>
-                        </span>
+                        {(TESTIMONIALS[currentTestimonialIdx] as any).productNameAr && (
+                          <span className="text-[10px] text-[#D4A5A5] bg-[#D4A5A5]/10 border border-[#D4A5A5]/20 px-2 py-0.5 rounded-md font-medium truncate max-w-[170px]">
+                            {isAr ? (TESTIMONIALS[currentTestimonialIdx] as any).productNameAr : (TESTIMONIALS[currentTestimonialIdx] as any).productNameEn}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Review Quote with Clear Arabic Typography */}
-                      <div className="relative z-10 rounded-xl bg-white/[0.03] p-3.5 sm:p-4 border border-white/[0.08] shadow-inner">
-                        <p className="text-[13px] sm:text-[14px] text-[#FFF7EC] leading-[1.8] sm:leading-[1.9] font-medium tracking-normal text-right">
-                          <span className="text-[#D4A5A5] font-serif text-base font-bold inline-block me-1">“</span>
-                          {isAr ? TESTIMONIALS[currentTestimonialIdx].quoteAr : TESTIMONIALS[currentTestimonialIdx].quoteEn}
-                          <span className="text-[#D4A5A5] font-serif text-base font-bold inline-block ms-1">”</span>
-                        </p>
-                      </div>
+                      {/* Review Quote Text - Natural & Conversational */}
+                      <p className="text-[13px] text-[#FFF7EC] leading-[1.75] font-normal text-right mb-3.5">
+                        {isAr ? TESTIMONIALS[currentTestimonialIdx].quoteAr : TESTIMONIALS[currentTestimonialIdx].quoteEn}
+                      </p>
                     </div>
 
-                    {/* Author Signature & City */}
-                    <div className="mt-4 pt-3.5 border-t border-white/10 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex size-8 rounded-full bg-gradient-to-tr from-[#D4A5A5]/25 to-[#D4A5A5]/10 border border-[#D4A5A5]/35 items-center justify-center font-bold text-xs text-[#D4A5A5] shrink-0">
-                          {TESTIMONIALS[currentTestimonialIdx].nameAr.charAt(0)}
-                        </div>
-                        <div className="flex flex-col text-right">
-                          <strong className="text-xs font-bold text-white tracking-wide">
-                            {isAr ? TESTIMONIALS[currentTestimonialIdx].nameAr.split('—')[0]?.trim() : TESTIMONIALS[currentTestimonialIdx].nameEn.split('—')[0]?.trim()}
-                          </strong>
-                          <span className="text-[10px] text-zinc-400 font-medium">
-                            {isAr ? TESTIMONIALS[currentTestimonialIdx].nameAr.split('—')[1]?.trim() : TESTIMONIALS[currentTestimonialIdx].nameEn.split('—')[1]?.trim()}
+                    {/* Customer Real Photo Card */}
+                    {(TESTIMONIALS[currentTestimonialIdx] as any).photoUrl && (
+                      <div
+                        onClick={() => setPreviewReviewImage((TESTIMONIALS[currentTestimonialIdx] as any).photoUrl)}
+                        className="relative rounded-xl overflow-hidden border border-white/10 bg-black/40 aspect-[4/3] cursor-pointer group/photo active:scale-[0.99] transition"
+                      >
+                        <img
+                          src={(TESTIMONIALS[currentTestimonialIdx] as any).photoUrl}
+                          alt="Customer Review Photo"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover/photo:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
+                        <div className="absolute bottom-2.5 right-2.5 left-2.5 flex items-center justify-between text-[10px] text-white/90">
+                          <span className="inline-flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/15">
+                            <Camera className="size-3 text-[#D4A5A5]" />
+                            <span>{isAr ? 'تصوير العميلة على الطبيعة' : 'Real Photo'}</span>
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] text-white/80 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/15">
+                            <ZoomIn className="size-3" />
+                            <span>{isAr ? 'تكبير الصورة' : 'Zoom'}</span>
                           </span>
                         </div>
                       </div>
-
-                      <span className="text-[10px] text-[#D4A5A5] font-bold bg-[#D4A5A5]/10 px-2 py-0.5 rounded-full border border-[#D4A5A5]/25">
-                        {currentTestimonialIdx + 1} / {TESTIMONIALS.length}
-                      </span>
-                    </div>
+                    )}
                   </div>
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* Sleek Carousel Controls: Prev Button, Indicators, Next Button */}
+            {/* Carousel Controls */}
             <div className="flex items-center justify-between mt-3.5 px-1">
               <button
                 type="button"
@@ -814,7 +837,6 @@ export default function Home() {
                 {isAr ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
               </button>
 
-              {/* Dots indicators */}
               <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
                 {TESTIMONIALS.map((_, idx) => (
                   <button
@@ -842,59 +864,118 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Desktop 3-column Grid (Hidden on Mobile) */}
-          <div className="relative hidden md:grid md:grid-cols-3 gap-6 md:gap-8">
-            {TESTIMONIALS.map((tItem) => (
+          {/* Desktop 3-column Grid */}
+          <div className="relative hidden md:grid md:grid-cols-3 gap-6 md:gap-7">
+            {TESTIMONIALS.map((tItem: any) => (
               <div
                 key={tItem.id}
-                className="group relative flex flex-col justify-between rounded-2xl border border-white/10 hover:border-[#D4A5A5]/50 bg-[#161616]/90 backdrop-blur-md p-6 sm:p-7 md:p-8 shadow-xl hover:shadow-2xl hover:shadow-[#D4A5A5]/10 transition-all duration-500 hover:-translate-y-2 overflow-hidden"
+                className="group relative flex flex-col justify-between rounded-2xl border border-white/10 hover:border-[#D4A5A5]/50 bg-[#161616]/90 backdrop-blur-md p-5 sm:p-6 shadow-xl hover:shadow-2xl hover:shadow-[#D4A5A5]/10 transition-all duration-500 hover:-translate-y-1.5 overflow-hidden"
               >
-                {/* Floating Quote Icon Watermark */}
-                <Quote className="absolute top-4 left-4 size-16 text-white/[0.03] group-hover:text-[#D4A5A5]/[0.08] transition-all duration-500 pointer-events-none -rotate-12" />
-
                 <div>
-                  {/* Rating Stars & Verified Pill */}
-                  <div className="flex items-center justify-between gap-2 mb-5">
-                    <div className="flex text-[#D4A5A5] gap-1 drop-shadow-[0_0_6px_rgba(212,165,165,0.4)]">
+                  {/* Top Header: User Info & Verification */}
+                  <div className="flex items-start justify-between gap-2 mb-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-9 rounded-full bg-gradient-to-tr from-[#D4A5A5]/25 to-[#D4A5A5]/10 border border-[#D4A5A5]/30 items-center justify-center font-bold text-xs text-[#D4A5A5] shrink-0">
+                        {tItem.nameAr.charAt(0)}
+                      </div>
+                      <div className="flex flex-col text-right">
+                        <strong className="text-xs sm:text-sm font-bold text-white tracking-wide group-hover:text-[#D4A5A5] transition-colors">
+                          {isAr ? tItem.nameAr.split('—')[0]?.trim() : tItem.nameEn.split('—')[0]?.trim()}
+                        </strong>
+                        <span className="text-[10px] text-zinc-400 font-medium">
+                          {isAr ? tItem.nameAr.split('—')[1]?.trim() : tItem.nameEn.split('—')[1]?.trim()} • {isAr ? tItem.dateAr : tItem.dateEn}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 font-bold px-2 py-0.5 rounded-full shadow-xs shrink-0">
+                      <CheckCircle2 className="size-3 text-emerald-400" />
+                      <span>{isAr ? 'شراء موثق' : 'Verified'}</span>
+                    </span>
+                  </div>
+
+                  {/* Stars & Product Badge */}
+                  <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                    <div className="flex text-[#D4A5A5] gap-0.5">
                       {Array.from({ length: tItem.rating }).map((_, i) => (
-                        <Star key={i} className="size-4 fill-[#D4A5A5] transition-transform duration-300 group-hover:scale-110" />
+                        <Star key={i} className="size-3.5 fill-[#D4A5A5]" />
                       ))}
                     </div>
-                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 font-bold px-2.5 py-0.5 rounded-full shadow-xs">
-                      <CheckCircle2 className="size-3 text-emerald-400" />
-                      <span>{isAr ? 'مشتري موثق' : 'Verified'}</span>
-                    </span>
+                    {tItem.productNameAr && (
+                      <span className="text-[10px] text-[#D4A5A5] bg-[#D4A5A5]/10 border border-[#D4A5A5]/20 px-2 py-0.5 rounded-md font-medium truncate max-w-[180px]">
+                        {isAr ? tItem.productNameAr : tItem.productNameEn}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Review Quote with Clear Arabic Typography */}
-                  <div className="relative z-10 rounded-2xl bg-white/[0.03] p-4 sm:p-5 border border-white/[0.08] shadow-inner group-hover:border-[#D4A5A5]/30 transition-all duration-300">
-                    <p className="text-[14px] md:text-[15px] text-[#FFF7EC] leading-[1.85] font-medium tracking-normal text-right">
-                      <span className="text-[#D4A5A5] font-serif text-lg font-bold inline-block me-1">“</span>
-                      {isAr ? tItem.quoteAr : tItem.quoteEn}
-                      <span className="text-[#D4A5A5] font-serif text-lg font-bold inline-block ms-1">”</span>
-                    </p>
-                  </div>
+                  {/* Review Text - Natural & Conversational */}
+                  <p className="text-[13px] sm:text-[14px] text-[#F3F4F6] leading-[1.8] font-normal text-right mb-4">
+                    {isAr ? tItem.quoteAr : tItem.quoteEn}
+                  </p>
                 </div>
 
-                {/* Author Signature & City */}
-                <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-3">
-                  <div className="flex size-9 rounded-full bg-gradient-to-tr from-[#D4A5A5]/20 to-[#D4A5A5]/10 border border-[#D4A5A5]/30 items-center justify-center font-bold text-xs text-[#D4A5A5] shrink-0">
-                    {tItem.nameAr.charAt(0)}
+                {/* Customer Real Photo Card */}
+                {tItem.photoUrl && (
+                  <div
+                    onClick={() => setPreviewReviewImage(tItem.photoUrl)}
+                    className="relative rounded-xl overflow-hidden border border-white/10 group-hover:border-[#D4A5A5]/40 bg-black/40 aspect-[4/3] cursor-pointer transition-all duration-300"
+                  >
+                    <img
+                      src={tItem.photoUrl}
+                      alt={isAr ? tItem.nameAr : tItem.nameEn}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute bottom-2.5 right-2.5 left-2.5 flex items-center justify-between text-[10px] text-white/90">
+                      <span className="inline-flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/15">
+                        <Camera className="size-3 text-[#D4A5A5]" />
+                        <span>{isAr ? 'تصوير العميلة على الطبيعة' : 'Real Photo'}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-white/80 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/15">
+                        <ZoomIn className="size-3" />
+                        <span>{isAr ? 'تكبير' : 'Zoom'}</span>
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col text-right">
-                    <strong className="text-xs sm:text-sm font-bold text-white tracking-wide group-hover:text-[#D4A5A5] transition-colors">
-                      {isAr ? tItem.nameAr.split('—')[0]?.trim() : tItem.nameEn.split('—')[0]?.trim()}
-                    </strong>
-                    <span className="text-[11px] text-zinc-400 font-medium">
-                      {isAr ? tItem.nameAr.split('—')[1]?.trim() : tItem.nameEn.split('—')[1]?.trim()}
-                    </span>
-                  </div>
-                </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Real Customer Photo Fullscreen Lightbox Modal */}
+      {previewReviewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200 cursor-pointer"
+          onClick={() => setPreviewReviewImage(null)}
+        >
+          <div
+            className="relative max-w-sm sm:max-w-md w-full rounded-2xl overflow-hidden border border-white/20 bg-[#141414] shadow-2xl p-2.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={previewReviewImage}
+              alt="Customer Review Photo"
+              className="w-full h-auto max-h-[75vh] object-contain rounded-xl bg-black"
+            />
+            <div className="pt-2.5 pb-1 text-center">
+              <span className="text-xs text-zinc-300 font-medium">
+                {isAr ? '📷 تصوير حقيقي مرسل من العميلة بعد استلام وتجربة المنتج' : '📷 Real customer unboxing photo after delivery'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPreviewReviewImage(null)}
+              className="absolute top-4 right-4 size-8 rounded-full bg-black/80 text-white flex items-center justify-center hover:bg-white hover:text-black transition cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Floating WhatsApp Quick Contact Button (Home Page Only) */}
       <a
